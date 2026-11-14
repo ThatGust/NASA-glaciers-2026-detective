@@ -280,7 +280,7 @@ function headline({ variable: v, place, lat, series, r }) {
 // Second witness: only for catalog places with a precomputed series. A contradicting witness lowers "confirmed" to "likely".
 function withWitness(c) {
   const p = PLACES.find((x) => x.lat === c.lat && x.lon === c.lon);
-  const w = p && WITNESSES?.series?.[p.id]?.[c.variable.id];
+  const w = c.witnessSeries ?? (p && WITNESSES?.series?.[p.id]?.[c.variable.id]);
   if (!w) return { ...c, witness: null };
   let cmp;
   try { cmp = compareWitnesses(c.series, w); } catch { return { ...c, witness: null }; }
@@ -497,14 +497,18 @@ $('tour-pause').addEventListener('click', () => {
 });
 
 // --- Global view: a precomputed NASA POWER trend for every grid cell, drawn on the globe. ---
-let GRID = null, gridLayer = null, gridVar = 'T2M';
+let GRID = null, GRID2 = null, gridLayer = null, gridVar = 'T2M';
+// Trends, regions and cell series for a grid variable, from the live-capable POWER grid or the precomputed Earthdata grid.
+const gridSet = (id) => (GRID?.trends[id] ? GRID : GRID2?.trends?.[id] ? GRID2 : null);
 const area = (lat) => Math.cos((lat * Math.PI) / 180);
 
 function fillGlobal() {
   $('global-link').hidden = !GRID;
   if (!GRID) return;
   const ids = VARIABLES.filter((v) => GRID.trends[v.id]).map((v) => v.id);
-  $('global-var').innerHTML = ids.map((id) => `<option value="${id}">${varById(id).name}</option>`).join('');
+  const more = (GRID2?.variables ?? []).filter((v) => GRID2.trends[v.id]);
+  $('global-var').innerHTML = `<optgroup label="Near the surface · NASA POWER">${ids.map((id) => `<option value="${id}">${varById(id).name}</option>`).join('')}</optgroup>`
+    + (more.length ? `<optgroup label="Atmosphere, land and satellites · NASA (precomputed)">${more.map((v) => `<option value="${v.id}">${v.name} (${v.source.split(' (')[0]})</option>`).join('')}</optgroup>` : '');
   $('global-var').value = gridVar;
   $('global-note').textContent = `${GRID.cells.length} cells of ${GRID.step}° × ${GRID.step}°, each with its own trend test (NASA POWER, value at the cell center). Verdicts are adjusted for testing thousands of cells at once (Benjamini-Hochberg).`;
 }
@@ -512,7 +516,7 @@ $('global-var').addEventListener('change', () => { gridVar = $('global-var').val
 
 function drawGrid() {
   if (!GRID) return;
-  const v = varById(gridVar), t = GRID.trends[gridVar], step = GRID.step;
+  const set = gridSet(gridVar), v = varById(gridVar), t = set.trends[gridVar], step = GRID.step;
   // Color scale: the 95th percentile of |slope| is full color, so a few extreme cells do not wash out the rest.
   const mags = t.filter(Boolean).map((x) => Math.abs(x[0])).sort((a, b) => a - b);
   const top = mags[Math.floor(mags.length * 0.95)] || 1;
@@ -548,7 +552,7 @@ function drawGrid() {
     <li><span class="swatch unsure"></span><strong>${pct(share.unsure)}</strong>: not confirmed yet (faint)</li>
     ${share.none ? `<li><span class="swatch"></span><strong>${pct(share.none)}</strong>: no data (for example, land-only variables over the ocean)</li>` : ''}`;
   $('global-scale').textContent = `Full color = ${fmtSlope(top)} ${u} per decade or more.`;
-  $('regions').innerHTML = Object.entries(GRID.regions).filter(([, r]) => r.series[gridVar]).map(([id, r]) => {
+  $('regions').innerHTML = Object.entries(set.regions).filter(([, r]) => r.series[gridVar]).map(([id, r]) => {
     const res = analyze(r.series[gridVar]);
     return `<li><button type="button" class="lead-btn" data-region="${id}"><span class="lead-verdict">${VERDICTS[res.verdict].label}</span>
       <strong>${r.name[0].toUpperCase() + r.name.slice(1)}</strong> ${signed(res.slopePerDecade)} ${u} per decade</button></li>`;
@@ -558,8 +562,12 @@ function drawGrid() {
 $('regions').addEventListener('click', (e) => {
   const b = e.target.closest('[data-region]');
   if (!b) return;
-  const r = GRID.regions[b.dataset.region], series = { ...r.series[gridVar], source: GRID.source };
-  render({ variable: varById(gridVar), place: r.name, lat: null, lon: null, series, r: analyze(series) });
+  const set = gridSet(gridVar), r = set.regions[b.dataset.region], v = varById(gridVar);
+  const series = { ...r.series[gridVar], source: set === GRID ? GRID.source : v.source };
+  // A satellite variable that checks this one (e.g. AIRS for MERRA-2) becomes the second witness for the region.
+  const wv = GRID2?.variables?.find((x) => x.witnessOf === gridVar);
+  const ws = wv && GRID2.regions[b.dataset.region]?.series[wv.id];
+  render({ variable: v, place: r.name, lat: null, lon: null, series, r: analyze(series), witnessSeries: ws ? { ...ws, source: wv.source } : undefined });
   location.hash = '#/evidence';
 });
 
@@ -567,11 +575,23 @@ function openCell(position) {
   const p = viewer.camera.pickEllipsoid(position);
   if (!p) return;
   const g = C.Cartographic.fromCartesian(p);
+  if (gridSet(gridVar) === GRID2) return openStoredCell(C.Math.toDegrees(g.latitude), C.Math.toDegrees(g.longitude));
   setPoint(+C.Math.toDegrees(g.latitude).toFixed(2), +C.Math.toDegrees(g.longitude).toFixed(2));
   $('place').value = '';
   document.querySelector(`input[name="variable"][value="${gridVar}"]`).checked = true;
   location.hash = '#/case';
   $('case-form').requestSubmit();
+}
+
+// Precomputed variables cannot be fetched live, so a click opens the cell's stored annual series.
+function openStoredCell(lat, lon) {
+  const step = GRID.step, i = GRID.cells.findIndex(([a, o]) => Math.abs(a - lat) <= step / 2 && Math.abs(o - lon) <= step / 2);
+  const values = GRID2.cellSeries?.[gridVar]?.[i], [first, last] = GRID2.years?.[gridVar] ?? [];
+  if (!values || values.length !== last - first + 1) { $('global-note').textContent = 'No stored series for that cell and variable.'; return; }
+  const [clat, clon] = GRID.cells[i], v = varById(gridVar);
+  const series = { years: values.map((_, k) => first + k), values, units: v.units, source: v.source };
+  render({ variable: v, place: `the ${step}° cell centered at ${fmt(clat, 1)}°, ${fmt(clon, 1)}°`, lat: null, lon: null, series, r: analyze(series) });
+  location.hash = '#/evidence';
 }
 
 // --- Start: load the verified catalog and demos if they exist, then draw. ---
@@ -584,6 +604,8 @@ INDICES = indices;
 const [modis, rivers] = await Promise.all([loadJson('data/modis.json'), loadJson('data/rivers.json')]);
 WITNESSES = witnesses;
 GRID = grid;
+GRID2 = await loadJson('data/grid_atmos.json');
+if (GRID2?.variables) EXTRA_VARS.push(...GRID2.variables.filter((v) => !EXTRA_VARS.some((x) => x.id === v.id)));
 if (catalog?.variables?.length) VARIABLES = catalog.variables;
 if (catalog?.places?.length) PLACES = catalog.places;
 function addExtra(file) {
