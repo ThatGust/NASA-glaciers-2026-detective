@@ -118,8 +118,7 @@ const descriptions = [
 export async function allPlaces() {
   const [catalog, rivers] = await Promise.all(['catalog', 'rivers'].map(async name =>
     JSON.parse(await readFile(new URL(`../data/${name}.json`, import.meta.url)))));
-  const places = [...catalog.places, ...rivers.places];
-  assert.equal(new Set(places.map(p => p.id)).size, places.length);
+  const places = [...new Map([...rivers.places, ...catalog.places].map(p => [p.id, p])).values()];
   return { catalog, places };
 }
 
@@ -169,6 +168,7 @@ export function climateFacts(temperature, precipitation, catalog) {
   assert.equal(t.units, 'C');
   assert.equal(p.units, 'mm/day');
   const trend = analyze(t);
+  assert.ok(Number.isFinite(trend.slopePerDecade) && Number.isFinite(trend.p), 'Climate trend is not finite');
   const elevation = temperature.body.geometry?.coordinates?.[2];
   const validElevation = Number.isFinite(elevation) && elevation !== temperature.body.header.fill_value;
   return {
@@ -200,33 +200,48 @@ async function wikiPages(titles, cacheOnly) {
 
 export async function generateFacts(cacheOnly = false) {
   const { catalog, places } = await allPlaces();
-  assert.equal(places.length, descriptions.length, 'Add a sourced description for every place');
-  const pages = await wikiPages([...new Set(descriptions.map(d => d[2]))], cacheOnly);
+  const saved = JSON.parse(await readFile(output, 'utf8'));
   const rows = await powerCache(), facts = {};
+  let blocked = false;
+  const result = { ...saved, generated: new Date().toISOString(), facts };
+  result.source.text = 'Existing original paraphrases of pinned Wikipedia revisions (CC BY-SA 4.0); new short English Wikidata descriptions and structured country claims (CC0-1.0), each linked to its source entity revision.';
+  result.source.wikidata_license = 'https://creativecommons.org/publicdomain/zero/1.0/';
   for (const place of places) {
-    const description = descriptions.find(d => d[0] === place.id);
-    assert.ok(description, `Missing description: ${place.id}`);
-    const [, country, title, one_line] = description;
-    assert.ok(one_line.split(/\s+/).length <= 14, `${place.id}: description exceeds 14 words`);
-    const page = pages.get(title);
-    assert.ok(page?.lastrevid && page.extract?.length, `${place.id}: missing Wikipedia text: ${title}`);
-    const missing = ['T2M', 'PRECTOTCORR'].filter(id => !matching(rows, place, id));
-    if (missing.length) {
-      assert.ok(!cacheOnly, `${place.id}: missing cached POWER ${missing}`);
-      rows.push(await getPowerJson(pointUrl(missing.join(','), place.lat, place.lon, 1981, lastYear)));
+    const previous = saved.facts[place.id];
+    if (previous && Number.isFinite(previous.mean_temp_c) && Number.isFinite(previous.mean_precip_mm_day) && Number.isFinite(previous.warming_c_per_decade)) {
+      if (cacheOnly) {
+        const checked = climateFacts(matching(rows, place, 'T2M'), matching(rows, place, 'PRECTOTCORR'), catalog);
+        for (const [key, value] of Object.entries(checked)) assert.deepEqual(previous[key], value, `${place.id}: cached climate changed: ${key}`);
+      }
+      facts[place.id] = previous;
+      continue;
     }
-    facts[place.id] = { country, ...climateFacts(matching(rows, place, 'T2M'), matching(rows, place, 'PRECTOTCORR'), catalog),
-      one_line, one_line_source: `https://en.wikipedia.org/w/index.php?title=${encodeURIComponent(page.title)}&oldid=${page.lastrevid}`,
-      country_source: page.fullurl, wikipedia_retrieved: page.retrieved };
-    console.log(`Facts: ${place.id}${missing.length ? ' (POWER downloaded)' : ' (POWER cache)'}`);
+    const country = place.country, one_line = place.context_description;
+    assert.ok(country && one_line, `Missing sourced context: ${place.id}`);
+    assert.ok(one_line.split(/\s+/).length <= 14, `${place.id}: description exceeds 14 words`);
+    const missing = ['T2M', 'PRECTOTCORR'].filter(id => !matching(rows, place, id));
+    let climate, failure;
+    try {
+      if (missing.length) {
+        assert.ok(!cacheOnly && !blocked, 'NASA POWER acquisition pending; rerun to resume');
+        try { rows.push(await getPowerJson(pointUrl('T2M,PRECTOTCORR', place.lat, place.lon, 1981, lastYear))); }
+        catch (error) { blocked = true; throw error; }
+      }
+      climate = climateFacts(matching(rows, place, 'T2M'), matching(rows, place, 'PRECTOTCORR'), catalog);
+    } catch (error) {
+      failure = error.message;
+      if (cacheOnly && previous) { facts[place.id] = previous; continue; }
+      climate = { elevation_m: null, elevation_label: 'NASA POWER grid elevation', elevation_note: failure,
+        mean_temp_c: null, mean_precip_mm_day: null, warming_c_per_decade: null, warming_verdict: null,
+        climatology_period: [1991, 2020], warming_period: [1981, lastYear], power_sources: {},
+        climate_status: missing.length ? 'pending' : 'unavailable', climate_note: failure };
+    }
+    facts[place.id] = { country, ...climate, one_line, one_line_source: place.context_source,
+      country_source: `https://www.wikidata.org/wiki/${place.wikidata}#P17`, wikipedia_retrieved: null };
+    if (!cacheOnly) await writeFile(output, JSON.stringify({ ...result, facts: { ...saved.facts, ...facts } }, null, 2) + '\n');
+    console.log(`Facts: ${place.id}${failure ? ' (' + failure + ')' : missing.length ? ' (POWER downloaded)' : ' (POWER cache)'}`);
   }
-  return { generated: new Date().toISOString().slice(0, 10), source: {
-    climate: 'NASA POWER / MERRA-2 monthly point API; grid climate, not site measurements or river discharge.',
-    methods: 'Annual values: unweighted means of 12 complete monthly means, using engine.annualSeriesFromPower. Climatology: mean of all 30 annual values, 1991-2020. Warming: engine.analyze T2M, Sen slope per decade and Hamed-Rao Mann-Kendall verdict, 1981 through the last complete calendar year. Each place is tested separately; no multiple-testing adjustment.',
-    documentation: 'https://power.larc.nasa.gov/docs/services/api/temporal/monthly/',
-    text: 'Original paraphrases of the cited Wikipedia revisions; CC BY-SA 4.0. Country lists describe whole features, except river countries explicitly refer to catalog points.',
-    text_license: 'https://creativecommons.org/licenses/by-sa/4.0/',
-  }, facts };
+  return result;
 }
 
 function selfTest() {

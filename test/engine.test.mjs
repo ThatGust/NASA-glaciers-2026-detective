@@ -236,3 +236,25 @@ test('projection band covers about 95% of held-out future years', async () => {
   const share = inside / total;
   assert.ok(share > 0.88 && share < 0.995, `coverage ${share}`);
 });
+
+test('lunar node: major standstills near 2006 and 2025, minor near 2015', async () => {
+  const { lunarIndex } = await import('../engine.js');
+  assert.ok(lunarIndex(2006) > 0.9 && lunarIndex(2025) > 0.9, `${lunarIndex(2006)} ${lunarIndex(2025)}`);
+  assert.ok(lunarIndex(2015) < -0.9, `${lunarIndex(2015)}`);
+});
+
+test('lunar test: about 5% false alarms on noise with a trend, and finds a planted lunar signal', async () => {
+  const { lunarTest, lunarIndex } = await import('../engine.js');
+  const u = rng(21);
+  const years = Array.from({ length: 45 }, (_, i) => 1981 + i);
+  const series = (amp, phi) => { let e = 0; return { years, values: years.map((y, i) => { e = phi * e + normal(u); return 0.03 * i + e + amp * lunarIndex(y); }) }; };
+  for (const phi of [0.3, 0.6]) {
+    let fp = 0;
+    for (let k = 0; k < 200; k++) if (lunarTest(series(0, phi), { placebos: 199, random: u }).p < 0.05) fp++;
+    assert.ok(fp / 200 < 0.085, `false alarms ${fp / 200} at persistence ${phi}`);
+  }
+  let hit = 0;
+  for (let k = 0; k < 200; k++) if (lunarTest(series(0.9, 0.3), { placebos: 199, random: u }).p < 0.05) hit++;
+  assert.ok(hit / 200 > 0.6, `power ${hit / 200}`);
+  assert.equal(lunarTest({ years: years.slice(0, 30), values: years.slice(0, 30) }).status, 'too-short');
+});

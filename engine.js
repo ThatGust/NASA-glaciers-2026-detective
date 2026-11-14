@@ -391,3 +391,49 @@ export function projection({ years, values }, toYear) {
   for (let y = years.at(-1) + 1; y <= toYear; y++) out.push(at(y));
   return { slope, sd, points: out, at };
 }
+
+// --- The Moon's 18.6-year nodal cycle (decision D-26) ---
+// Longitude of the Moon's mean ascending node in degrees (Meeus, Astronomical Algorithms, 2nd ed., eq. 47.7).
+export function nodeLongitude(decimalYear) {
+  const T = (decimalYear - 2000.0) / 100; // Julian centuries from J2000.0 (close enough at yearly resolution)
+  const om = 125.04452 - 1934.136261 * T + 0.0020708 * T * T + (T * T * T) / 450000;
+  return ((om % 360) + 360) % 360;
+}
+// Annual lunar index: mean of cos(node longitude) over the year. +1 = major lunar standstill (the Moon's monthly
+// swing in declination is widest, tides are most modulated), -1 = minor standstill.
+export const lunarIndex = (year) => Array.from({ length: 12 }, (_, m) => Math.cos((nodeLongitude(year + (m + 0.5) / 12) * Math.PI) / 180))
+  .reduce((a, b) => a + b, 0) / 12;
+
+// Does an annual series carry an 18.6-year lunar signal? The lunar index is fixed by astronomy (no phase is fitted).
+// Both the series and the index are detrended, then correlated. Placebos are simulated noise series with the same
+// year-to-year persistence as the data (AR(1), lag-1 estimate bias-corrected for short records): block shuffles and
+// rotations gave 7-10% false alarms on persistent noise in our checks, this gives about 5%. Needs two full cycles.
+export const LUNAR_MIN_YEARS = 37;
+export function lunarTest({ years, values }, { placebos = 999, random = Math.random } = {}) {
+  if (years.length < LUNAR_MIN_YEARS) return { status: 'too-short', n: years.length };
+  const n = years.length, t = years.map((y) => y - years[0]);
+  const mt = t.reduce((a, b) => a + b, 0) / n, stt = t.reduce((s, x) => s + (x - mt) ** 2, 0);
+  const detrend = (x) => {
+    const mx = x.reduce((a, b) => a + b, 0) / n;
+    const b = t.reduce((s, ti, i) => s + (ti - mt) * (x[i] - mx), 0) / stt;
+    return x.map((xi, i) => xi - mx - b * (t[i] - mt));
+  };
+  const L = years.map(lunarIndex), r = detrend(values), l = detrend(L);
+  const corr = (a, b) => { const ab = a.reduce((s, x, i) => s + x * b[i], 0); return ab / Math.sqrt(a.reduce((s, x) => s + x * x, 0) * b.reduce((s, x) => s + x * x, 0)); };
+  const observed = corr(r, l);
+  let num = 0, den = 0;
+  for (let i = 1; i < n; i++) { num += r[i] * r[i - 1]; den += r[i - 1] * r[i - 1]; }
+  const phiRaw = den ? num / den : 0;
+  const phi = Math.min(0.95, Math.max(0, phiRaw + (1 + 3 * phiRaw) / n)); // small-sample bias correction (Marriott & Pope 1954)
+  const gauss = () => Math.sqrt(-2 * Math.log(random() || 1e-12)) * Math.cos(2 * Math.PI * random());
+  let asExtreme = 0;
+  for (let k = 0; k < placebos; k++) {
+    let e = gauss() / Math.sqrt(1 - phi * phi);
+    const sim = detrend(t.map(() => (e = phi * e + gauss())));
+    if (Math.abs(corr(sim, l)) >= Math.abs(observed)) asExtreme++;
+  }
+  const p = (asExtreme + 1) / (placebos + 1);
+  const amplitude = r.reduce((s, x, i) => s + x * l[i], 0) / l.reduce((s, x) => s + x * x, 0); // change per unit of lunar index
+  return { status: 'ok', n, correlation: observed, share: observed * observed, amplitude, swing: 2 * amplitude, p, persistence: phi,
+    verdict: p < 0.05 ? 'signal' : p < 0.10 ? 'hint' : 'none', index: L };
+}

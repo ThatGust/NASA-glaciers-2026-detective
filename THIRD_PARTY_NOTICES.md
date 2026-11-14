@@ -61,4 +61,6 @@ Place coordinates come from Wikipedia (CC BY-SA 4.0), Wikidata (CC0) and the WGM
 - Benjamini, Y., & Hochberg, Y. (1995). Controlling the false discovery rate. *JRSS B*, 57(1), 289–300. doi:10.1111/j.2517-6161.1995.tb02031.x
 - Santer, B. D., et al. (2000). Statistical significance of trends and trend differences in layer-average atmospheric temperature time series. *JGR: Atmospheres*, 105(D6), 7337–7356. doi:10.1029/1999JD901105
 - Buja, A., et al. (2009). Statistical inference for exploratory data analysis and model diagnostics. *Phil. Trans. R. Soc. A*, 367, 4361–4383. doi:10.1098/rsta.2009.0120
+- Meeus, J. (1998). *Astronomical Algorithms* (2nd ed.), eq. 47.7 (longitude of the Moon's mean ascending node). Willmann-Bell.
+- Marriott, F. H. C., & Pope, J. A. (1954). Bias in the estimation of autocorrelations. *Biometrika*, 41, 390–402. doi:10.1093/biomet/41.3-4.390
 - Gilbert, R. O. (1987). *Statistical Methods for Environmental Pollution Monitoring*. Van Nostrand Reinhold.
