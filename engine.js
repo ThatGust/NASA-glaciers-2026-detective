@@ -304,3 +304,20 @@ export function linearTTest(years, values) {
   for (let k = 0; k < 60; k++) { const mid = (lo + hi) / 2; if (studentTwoSidedP(mid, df) > 0.05) lo = mid; else hi = mid; }
   return { slope, ci: [slope - hi * se, slope + hi * se], t, df, p: studentTwoSidedP(Math.abs(t), df), r1, nEff };
 }
+
+// Prediction test (the thesis idea of incremental predictive value, without any lunar term): fit the trend on the
+// first part of the record and check whether it predicts the held-out recent years better than "nothing changes"
+// (the mean of the training years). skill > 0 means the trend adds predictive value.
+export function predictionTest({ years, values }, holdout = 15) {
+  if (years.length - holdout < MIN_YEARS) return null;
+  const cut = years.length - holdout;
+  const ty = years.slice(0, cut), tv = values.slice(0, cut);
+  const { slope, intercept } = senSlope(ty, tv);
+  const mean = tv.reduce((a, b) => a + b, 0) / tv.length;
+  let errTrend = 0, errFlat = 0;
+  for (let i = cut; i < years.length; i++) {
+    errTrend += Math.abs(values[i] - (intercept + slope * years[i]));
+    errFlat += Math.abs(values[i] - mean);
+  }
+  return { trainYears: [ty[0], ty.at(-1)], testYears: [years[cut], years.at(-1)], skill: errFlat ? 1 - errTrend / errFlat : 0 };
+}

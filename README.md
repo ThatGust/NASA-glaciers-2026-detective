@@ -16,6 +16,14 @@ Two more ways to investigate:
 - **Scan a place.** Test every variable at once and see which ones are changing. Because many tests raise the chance of a false alarm, the verdicts are adjusted with the Benjamini-Hochberg procedure.
 - **Compare two places.** The same variable can trend in opposite directions in different regions. The app states a direction only when both trends are at least "likely".
 
+Each case also runs three detective tests:
+
+- **Your hunch.** Before seeing the data, you can write down what you expect, as scientists do with a hypothesis.
+- **A second method.** A linear regression t-test (with the effective sample size for autocorrelation, Santer et al. 2000) double-checks the Mann-Kendall verdict.
+- **A prediction test.** A trend fitted to the older years must predict the last 15 years better than "nothing changes".
+
+Demonstrations play as short guided tours, and the place list suggests where a detective could start for each kind of place (deserts, cities, glaciers…).
+
 There is no server: the page calls NASA POWER and NASA GIBS directly from the browser.
 
 ## Run it locally

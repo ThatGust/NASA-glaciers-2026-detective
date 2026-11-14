@@ -82,6 +82,14 @@
   .legend li { margin:4px 0; }
   .swatch { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:6px; vertical-align:-1px; background:rgba(255,255,255,.15); }
   .swatch.up { background:#ff7a26; } .swatch.down { background:#2678ff; } .swatch.unsure { background:rgba(255,255,255,.3); }
+  .card.suggested { border-color:rgba(0,212,255,.55); }
+  .card.suggested strong::after { content:" · suggested"; font:12px var(--font-mono); color:var(--accent); }
+  .hunch { display:flex; flex-wrap:wrap; gap:6px 14px; }
+  .hunch input { accent-color:var(--accent); }
+  .tour { position:fixed; z-index:4; left:16px; bottom:40px; width:min(520px, calc(100vw - 32px)); background:var(--glass-bg); backdrop-filter:blur(14px);
+          border:1px solid var(--accent); border-radius:var(--panel-radius); padding:14px 16px; }
+  .tour p { margin:0 0 4px; }
+  @media (max-width:640px) { .tour { top:64px; bottom:auto; } }
   [hidden] { display:none !important; }
 </style>
 </head>
@@ -91,6 +99,12 @@
 <a class="brand" href="#/home">Trend Detective</a>
 <p class="credits">Imagery: NASA Blue Marble via NASA GIBS · Globe: CesiumJS (Apache 2.0)</p>
 <a class="btn sec skip" href="#/case" id="skip">Skip</a>
+<div class="tour" id="tour" hidden role="status" aria-live="polite">
+  <p id="tour-text"></p>
+  <button type="button" class="btn sec" id="tour-pause">Pause</button>
+  <button type="button" class="btn" id="tour-next">Next</button>
+  <button type="button" class="btn sec" id="tour-stop">Exit demo</button>
+</div>
 
 <main>
 <section class="view cover" id="view-home" aria-labelledby="t0">
@@ -124,6 +138,7 @@
   <form id="case-form">
     <fieldset>
       <legend><h2 id="t1" tabindex="-1">What do you want to investigate?</h2></legend>
+      <p class="note" id="suggest-note"></p>
       <ul class="groups" id="variables"></ul>
     </fieldset>
     <fieldset>
@@ -138,6 +153,16 @@
         <label for="lon">Longitude</label> <input id="lon" type="number" step="any" min="-180" max="180" required>
       </div>
       <p class="note">NASA POWER data average a cell of roughly 50 × 60 km around the point.</p>
+    </fieldset>
+    <fieldset>
+      <legend><h2>Your hunch</h2></legend>
+      <p class="note">Before seeing the data, what do you expect? (Optional: scientists write their hypothesis first.)</p>
+      <div class="hunch">
+        <label><input type="radio" name="hunch" value="up"> It rises</label>
+        <label><input type="radio" name="hunch" value="down"> It falls</label>
+        <label><input type="radio" name="hunch" value="none"> No clear change</label>
+        <label><input type="radio" name="hunch" value="unsure" checked> Not sure</label>
+      </div>
     </fieldset>
     <button class="btn" type="submit">Investigate</button>
     <button class="btn sec" type="button" id="scan">Scan every variable here</button>
@@ -165,7 +190,9 @@
   <p class="verdict" id="verdict"></p>
   <p id="explanation"></p>
   <p><strong id="clock"></strong></p>
+  <p id="hunch-result"></p>
   <p id="second-method"></p>
+  <p id="prediction"></p>
   <details>
     <summary>See the statistics</summary>
     <ul id="details"></ul>

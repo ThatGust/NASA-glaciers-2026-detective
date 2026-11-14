@@ -171,3 +171,14 @@ test('the linear t-test finds a clear trend and agrees in direction with Sen', a
   const r = linearTTest(years, values);
   assert.ok(Math.abs(r.slope - 0.05) < 0.005 && r.p < 0.001 && r.ci[0] > 0);
 });
+
+test('prediction test: a real trend beats "nothing changes", pure noise does not', async () => {
+  const { predictionTest } = await import('../engine.js');
+  const years = Array.from({ length: 45 }, (_, i) => 1981 + i);
+  const trend = predictionTest({ years, values: years.map((_, i) => 0.05 * i + (((i * 7) % 5) - 2) * 0.05) });
+  assert.ok(trend.skill > 0.5, `skill ${trend.skill}`);
+  assert.deepEqual(trend.testYears, [2011, 2025]);
+  const flat = predictionTest({ years, values: years.map((_, i) => (Math.sin(i * 12.9898) * 43758.5453) % 1) });
+  assert.ok(flat.skill < 0.2, `skill ${flat.skill}`);
+  assert.equal(predictionTest({ years: years.slice(0, 20), values: years.slice(0, 20) }), null);
+});

@@ -1,5 +1,5 @@
 // Trend Detective UI: ties the form, NASA POWER and the engine together. Data formats: see README.
-import { analyze, compareWitnesses, fetchPower, fetchPowerMany, scan } from './engine.js';
+import { analyze, compareWitnesses, fetchPower, fetchPowerMany, predictionTest, scan } from './engine.js';
 
 // Built-in fallback catalog. data/catalog.json (verified sources, more variables and places) replaces it when present.
 let VARIABLES = [
@@ -30,6 +30,16 @@ let PLACES = [
 let DEMOS = [];
 let WITNESSES = null; // data/witnesses.json: second, independent source (ERA5) for catalog places
 
+// Where a detective could start, by kind of place (fixed rules, no AI): what usually changes there and why.
+const SUGGESTIONS = {
+  glacier: [['T2M', 'SNODP', 'PRECTOTCORR', 'ALLSKY_SFC_SW_DWN'], 'ice responds to warmth, snowfall and sunlight'],
+  desert: [['AOD_55', 'GWETTOP', 'T2M_MAX', 'PRECTOTCORR'], 'dust, dry soil and extreme heat shape deserts'],
+  rainforest: [['PRECTOTCORR', 'GWETROOT', 'EVLAND', 'T2M'], 'forests live on rain, soil water and evaporation'],
+  city: [['T2M_MIN', 'T2M', 'AOD_55', 'RH2M'], 'cities trap heat at night and add particles to the air'],
+  coast: [['T2M', 'WS2M', 'PRECTOTCORR', 'RH2M'], 'coasts feel the sea through wind, humidity and rain'],
+  ocean: [['T2M', 'WS2M', 'CLOUD_AMT', 'PRECTOTCORR'], 'over the sea, air temperature, wind and clouds tell the story'],
+  polar: [['T2M', 'SNODP', 'CLOUD_AMT', 'ALLSKY_SFC_SW_DWN'], 'the poles warm fastest, and snow and clouds respond'],
+};
 const ENVIRONMENTS = { glacier: 'Glaciers and snow peaks', desert: 'Deserts', rainforest: 'Rainforests', city: 'Large cities', coast: 'Coasts and estuaries', ocean: 'Open ocean', polar: 'Polar regions' };
 const VERDICTS = {
   confirmed: { label: '● Confirmed', text: 'In this dataset the trend is statistically significant: it is very unlikely to be chance.' },
@@ -113,9 +123,17 @@ function setPoint(lat, lon) {
   if (marker) marker.position = C.Cartesian3.fromDegrees(lon, lat);
 }
 
+function markSuggestions(env) {
+  const [ids, why] = SUGGESTIONS[env] ?? [[], ''];
+  document.querySelectorAll('#variables .card').forEach((c) => c.classList.toggle('suggested', ids.includes(c.querySelector('input').value)));
+  const names = ids.map((id) => varById(id)?.name).filter(Boolean);
+  $('suggest-note').textContent = names.length ? `Suggested for ${ENVIRONMENTS[env].toLowerCase()}: ${names.join(', ')}, because ${why}.` : '';
+}
+
 function selectPlace(id) {
   const p = PLACES.find((x) => x.id === id);
   if (!p) return;
+  markSuggestions(p.environment);
   if ($('environment').value && $('environment').value !== p.environment) { $('environment').value = p.environment; fillPlaceList(); }
   $('place').value = p.id;
   setPoint(p.lat, p.lon);
@@ -176,7 +194,7 @@ $('case-form').addEventListener('submit', async (e) => {
   $('status').textContent = 'Asking NASA POWER…';
   try {
     const series = await fetchPower(v.id, lat, lon, v.start ?? 1981);
-    const caseNow = { variable: v, place, lat, lon, series, r: analyze(series) };
+    const caseNow = { variable: v, place, lat, lon, series, r: analyze(series), hunch: new FormData(e.target).get('hunch') || null };
     $('status').textContent = '';
     flyTo(lat, lon);
     if (compareWith && compareWith.variable.id === v.id) {
@@ -294,6 +312,14 @@ function render(c0) {
   // Second method named in the challenge: a t-test on the least-squares slope.
   const tt = r.ttest, ttVerdict = tt.p < 0.05 ? 'confirmed' : tt.p < 0.1 ? 'likely' : 'unknown';
   const sameCall = (ttVerdict === 'confirmed') === (r.verdict === 'confirmed') && Math.sign(tt.slopePerDecade) === Math.sign(r.slopePerDecade);
+  const pt = predictionTest(series);
+  $('prediction').textContent = !pt ? '' : `Prediction test: a trend fitted to ${pt.trainYears[0]}–${pt.trainYears[1]} predicts ${pt.testYears[0]}–${pt.testYears[1]} ${
+    pt.skill > 0.1 ? `${Math.round(pt.skill * 100)}% better than` : pt.skill < -0.1 ? `${Math.round(-pt.skill * 100)}% worse than` : 'about as well as'} assuming that nothing changes.`;
+  const saw = r.verdict === 'unknown' ? 'none' : r.slopePerDecade > 0 ? 'up' : 'down';
+  const words = { up: 'it rises', down: 'it falls', none: 'no clear change' };
+  $('hunch-result').textContent = !c.hunch || c.hunch === 'unsure' ? ''
+    : c.hunch === saw ? `Your hunch was "${words[c.hunch]}", and the data agree. Good detective work.`
+      : `Your hunch was "${words[c.hunch]}", but the data show ${saw === 'none' ? 'no clear change yet' : `that ${words[saw]}`}. That is how science works: test the hunch, then follow the evidence.`;
   $('second-method').textContent = sameCall
     ? `A second method agrees: a linear regression t-test gives ${signed(tt.slopePerDecade)} ${u} per decade (p ${tt.p < 0.001 ? '< 0.001' : '= ' + fmt(tt.p, 3)}).`
     : `A second method reads it differently: a linear regression t-test gives ${signed(tt.slopePerDecade)} ${u} per decade (p ${tt.p < 0.001 ? '< 0.001' : '= ' + fmt(tt.p, 3)}). When methods disagree, trust the trend less.`;
@@ -393,10 +419,39 @@ $('demo-list').addEventListener('click', (e) => {
   const [a, b2] = d.places;
   current = { ...make(a), other: b2 ? make(b2) : undefined };
   render(current);
-  if (b2) { renderCompare(current); $('compare-summary').textContent += ` ${d.why}`; location.hash = '#/compare'; }
-  else { $('chart-caption').textContent += ` ${d.why}`; location.hash = '#/evidence'; }
+  if (b2) { renderCompare(current); $('compare-summary').textContent += ` ${d.why}`; }
+  else $('chart-caption').textContent += ` ${d.why}`;
   const first = PLACES.find((x) => x.id === a);
   if (first) flyTo(first.lat, first.lon, 4000000);
+  playTour([
+    ...(b2 ? [['#/compare', `Two places, one variable. ${d.why}`]] : []),
+    ['#/evidence', `The evidence: one value per year from NASA data, so the seasons cancel out. The dashed line is the trend.${b2 ? '' : ' ' + d.why}`],
+    ['#/verdict', 'The verdict: the Mann-Kendall test asks whether a trend this clear could come from chance. A second method (a t-test) double-checks it, and the clock says how long until we would know.'],
+    ['#/record', 'The case file keeps the data, the source and the method, so anyone can check the result.'],
+    ['#/case', 'Your turn: choose what and where, make a hunch, and investigate.'],
+  ]);
+});
+
+// A demo plays like a short guided video: it advances on its own, and can be paused or left at any time.
+let tourTimer = null, tourSteps = [], tourAt = 0;
+function playTour(steps) { tourSteps = steps; tourAt = 0; $('tour').hidden = false; showStep(); }
+function showStep() {
+  clearTimeout(tourTimer);
+  const [hash, text] = tourSteps[tourAt];
+  location.hash = hash;
+  $('tour-text').textContent = `${tourAt + 1}/${tourSteps.length} · ${text}`;
+  $('tour-pause').textContent = 'Pause';
+  if (tourAt < tourSteps.length - 1 && !reducedMotion) tourTimer = setTimeout(nextStep, 9000);
+  if (tourAt === tourSteps.length - 1) $('tour-next').textContent = 'Close';
+  else $('tour-next').textContent = 'Next';
+}
+function nextStep() { if (++tourAt < tourSteps.length) showStep(); else stopTour(); }
+function stopTour() { clearTimeout(tourTimer); $('tour').hidden = true; }
+$('tour-next').addEventListener('click', nextStep);
+$('tour-stop').addEventListener('click', stopTour);
+$('tour-pause').addEventListener('click', () => {
+  if ($('tour-pause').textContent === 'Pause') { clearTimeout(tourTimer); $('tour-pause').textContent = 'Play'; }
+  else { $('tour-pause').textContent = 'Pause'; tourTimer = setTimeout(nextStep, 4000); }
 });
 
 // --- Global view: a precomputed NASA POWER trend for every grid cell, drawn on the globe. ---
