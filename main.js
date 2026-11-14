@@ -306,6 +306,22 @@ function showDefinition() {
 }
 $('variables').addEventListener('change', showDefinition);
 
+// Series bundled in the app (data/place_series.json) are used first, so classes still work when NASA POWER rate-limits.
+let BUNDLE = null;
+async function seriesFor(v, lat, lon, start) {
+  const pid = PLACES.find((p) => p.lat === lat && p.lon === lon)?.id;
+  if (pid) {
+    BUNDLE ??= (await loadJson('data/place_series.json'))?.places ?? {};
+    const b = BUNDLE[pid]?.[v.id];
+    if (b) { const keep = b.years.map((y) => y >= (start ?? 1981)); return { ...b, years: b.years.filter((_, i) => keep[i]), values: b.values.filter((_, i) => keep[i]), source: 'NASA POWER · MERRA2', variable: v.id }; }
+  }
+  return fetchPower(v.id, lat, lon, start ?? 1981);
+}
+// Plain explanation when NASA POWER is busy (it answers 429, which browsers often report as a network error).
+const powerError = (err) => (/429|Failed to fetch|NetworkError|Load failed/i.test(err.message)
+  ? 'NASA POWER is busy right now (too many requests). Wait a minute and try again, or pick a place from the list: their main series are stored in the app.'
+  : err.message);
+
 function chosen() {
   const id = new FormData($('case-form')).get('variable');
   const lat = +$('lat').value, lon = +$('lon').value;
@@ -318,7 +334,7 @@ $('case-form').addEventListener('submit', async (e) => {
   const { v, lat, lon, place } = chosen();
   $('status').textContent = 'Asking NASA POWER…';
   try {
-    const series = await fetchPower(v.id, lat, lon, v.start ?? 1981);
+    const series = await seriesFor(v, lat, lon, v.start);
     const caseNow = { variable: v, place, lat, lon, series, r: analyze(series), hunch: new FormData(e.target).get('hunch') || null };
     $('status').textContent = '';
     flyTo(lat, lon);
@@ -334,7 +350,7 @@ $('case-form').addEventListener('submit', async (e) => {
       location.hash = '#/evidence';
     }
   } catch (err) {
-    $('status').textContent = `The case could not be completed: ${err.message}`;
+    $('status').textContent = `The case could not be completed. ${powerError(err)}`;
   }
 });
 
@@ -351,7 +367,7 @@ $('scan').addEventListener('click', async () => {
     flyTo(lat, lon);
     location.hash = '#/leads';
   } catch (err) {
-    $('status').textContent = `The scan could not be completed: ${err.message}`;
+    $('status').textContent = `The scan could not be completed. ${powerError(err)}`;
   }
 });
 
@@ -823,8 +839,8 @@ const MOON_PLACES = [
   ["Chang'e 4 landing site", -45.444, 177.599, 'In 2019, the first spacecraft to land on the far side of the Moon.'],
 ];
 const MOON_CASES = [
-  { id: 'tides', title: 'Ocean tides', tag: ['proven', 'Proven'],
-    text: 'The Moon\'s pull raises two bulges of ocean water, so most coasts get two high tides a day. Over the 18.6-year cycle, tides grow a few percent bigger or smaller.' },
+  { id: 'tides', title: 'Ocean tides', tag: ['proven', 'Proven'], kinds: 'tides',
+    text: 'The Moon raises two bulges of ocean water, so most coasts get two high tides a day. Over 18.6 years the tides grow and shrink a little. Test it with 100 years of tide gauges.' },
   { id: 'corals', title: 'Coral spawning', tag: ['proven', 'Proven'],
     text: 'On many reefs, corals release their eggs together a few nights after a full moon. Moonlight is one of the clocks they use.' },
   { id: 'rain', title: 'Rain and air temperature', tag: ['weak', 'Weak effect'], kinds: null,
@@ -833,7 +849,45 @@ const MOON_CASES = [
     text: 'Does the Moon\'s 18.6-year rhythm leave a mark on the climate of glaciers? This is an open research question (the author\'s thesis). Test it with NASA data.' },
 ];
 const LUNAR_VARS = ['T2M', 'PRECTOTCORR', 'SNODP', 'T2M_MAX', 'T2M_MIN', 'RH2M'];
-let moonViewer = null, lunarCase = null, onMoon = false;
+let moonViewer = null, lunarCase = null, onMoon = false, TIDES = null;
+// Official lunar names (IAU/USGS gazetteer) grouped into map layers; loaded the first time the Moon opens.
+const MOON_LAYERS = [
+  ['seas', 'Seas and lakes', '#4d9bff', ['Mare', 'Oceanus', 'Lacus', 'Sinus', 'Palus'], 12000000, 7],
+  ['mountains', 'Mountains and valleys', '#e8c27a', ['Mons', 'Montes', 'Rupes', 'Vallis'], 3000000, 6],
+  ['craters', 'Craters', '#c8c8d0', ['Crater'], 1200000, 4],
+  ['landing', 'Landing sites', '#3ddc97', ['Landing site'], 20000000, 9],
+];
+const moonLayerOn = { seas: true, mountains: true, craters: false, landing: true };
+let MOON_FEATURES = [];
+function moonLayerOf(f) { return MOON_LAYERS.find((l) => l[3].includes(f.type)); }
+function renderMoonLayers() {
+  $('moon-layers').innerHTML = MOON_LAYERS.map(([id, label, color]) => `<li><button type="button" class="chip" data-layer="${id}" aria-pressed="${moonLayerOn[id]}"><span class="dot" style="background:${color}"></span>${label}</button></li>`).join('');
+}
+$('moon-layers').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-layer]');
+  if (!b) return;
+  moonLayerOn[b.dataset.layer] = !moonLayerOn[b.dataset.layer];
+  renderMoonLayers();
+  moonViewer?.entities.values.forEach((en) => { if (en.layer) en.show = moonLayerOn[en.layer]; });
+});
+renderMoonLayers();
+async function loadMoonFeatures(M) {
+  const data = await loadJson('data/moon_features.json');
+  MOON_FEATURES = data?.features ?? [];
+  for (const f of MOON_FEATURES) {
+    const layer = moonLayerOf(f);
+    if (!layer) continue;
+    const [id, , color, , far, size] = layer;
+    const en = moonViewer.entities.add({
+      id: `gaz:${f.name}`, position: C.Cartesian3.fromDegrees(f.lon, f.lat, 0, M),
+      point: { pixelSize: size, color: C.Color.fromCssColorString(color), outlineColor: C.Color.BLACK, outlineWidth: 1 },
+      label: { text: f.name, font: `600 ${id === 'seas' ? 14 : 12}px Inter, sans-serif`, verticalOrigin: C.VerticalOrigin.BOTTOM, pixelOffset: new C.Cartesian2(0, -10),
+               fillColor: C.Color.fromCssColorString(color), showBackground: true, backgroundColor: C.Color.fromCssColorString('rgba(10,10,15,.85)'),
+               backgroundPadding: new C.Cartesian2(5, 2), distanceDisplayCondition: new C.DistanceDisplayCondition(0, far) },
+    });
+    en.layer = id; en.show = moonLayerOn[id]; en.feature = f;
+  }
+}
 
 function setWorld(moon) {
   if (moon === onMoon && (!moon || moonViewer)) return;
@@ -861,14 +915,23 @@ function setWorld(moon) {
                  showBackground: true, backgroundColor: C.Color.fromCssColorString('rgba(10,10,15,.88)'), backgroundPadding: new C.Cartesian2(6, 3) },
       });
       new C.ScreenSpaceEventHandler(moonViewer.scene.canvas).setInputAction((e) => {
-        const id = moonViewer.scene.pick(e.position)?.id?.id;
+        const ent = moonViewer.scene.pick(e.position)?.id, id = ent?.id;
         const f = typeof id === 'string' && MOON_PLACES.find(([n]) => `moon:${n}` === id);
-        if (!f) return;
+        const g = ent?.feature;
+        if (!f && !g) return;
         $('place-pop').hidden = false; $('pop-img').hidden = true;
-        $('pop-name').textContent = f[0]; $('pop-country').textContent = `Moon · ${fmt(f[1], 2)}°, ${fmt(f[2], 2)}°`;
-        $('pop-line').textContent = f[3]; $('pop-facts').textContent = '';
-        $('pop-credit').innerHTML = `Coordinates: <a href="https://en.wikipedia.org/wiki/${encodeURIComponent(f[0].replace(/ /g, '_'))}" target="_blank" rel="noopener">Wikipedia</a>`;
+        if (f) {
+          $('pop-name').textContent = f[0]; $('pop-country').textContent = `Moon · ${fmt(f[1], 2)}°, ${fmt(f[2], 2)}°`;
+          $('pop-line').textContent = f[3]; $('pop-facts').textContent = '';
+          $('pop-credit').innerHTML = `Coordinates: <a href="https://en.wikipedia.org/wiki/${encodeURIComponent(f[0].replace(/ /g, '_'))}" target="_blank" rel="noopener">Wikipedia</a>`;
+        } else {
+          $('pop-name').textContent = g.name; $('pop-country').textContent = `${g.type} · ${fmt(g.lat, 1)}°, ${fmt(g.lon, 1)}°`;
+          $('pop-line').textContent = g.origin ? `Name: ${g.origin}` : '';
+          $('pop-facts').textContent = [g.diameter_km && `About ${Math.round(g.diameter_km).toLocaleString('en-US')} km across`, g.approval_year && `named in ${g.approval_year}`].filter(Boolean).join(' · ');
+          $('pop-credit').innerHTML = `IAU/USGS Gazetteer of Planetary Nomenclature · <a href="${esc(g.link)}" target="_blank" rel="noopener">feature page</a>`;
+        }
       }, C.ScreenSpaceEventType.LEFT_CLICK);
+      loadMoonFeatures(M);
     } catch (err) { console.warn('Moon globe unavailable:', err); }
   }
   if (moon) $('place-pop').hidden = true;
@@ -929,6 +992,12 @@ function openLunarCase() {
       : 'This effect is well documented by marine biologists; it shows that living things keep time with the Moon.';
     return;
   }
+  if (c.kinds === 'tides') {
+    // Positive control: tide gauges, where the 18.6-year lunar cycle is known to act.
+    $('lunar-place').innerHTML = (TIDES?.stations ?? []).map((s) => `<option value="tide:${esc(s.id)}">${esc(s.name)} tide gauge (${s.years[0]}–${s.years.at(-1)})</option>`).join('');
+    $('lunar-var').innerHTML = '<option value="TIDE_RANGE">Tidal range</option>';
+    return;
+  }
   const places = PLACES.filter((p) => !c.kinds || c.kinds.includes(p.environment));
   $('lunar-place').innerHTML = places.map((p) => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
   if (places.some((p) => p.id === 'coropuna')) $('lunar-place').value = 'coropuna';
@@ -936,11 +1005,14 @@ function openLunarCase() {
 }
 
 $('lunar-run').addEventListener('click', async () => {
-  const p = PLACES.find((x) => x.id === $('lunar-place').value), v = varById($('lunar-var').value);
+  const tide = $('lunar-place').value.startsWith('tide:') && TIDES?.stations.find((x) => `tide:${x.id}` === $('lunar-place').value);
+  const p = tide ? { short: tide.name } : PLACES.find((x) => x.id === $('lunar-place').value);
+  const v = tide ? { name: 'Tidal range' } : varById($('lunar-var').value);
   if (!p || !v) return;
-  $('lunar-stat').textContent = 'Asking NASA POWER…'; $('lunar-note').textContent = ''; $('lunar-chart').innerHTML = '';
+  $('lunar-stat').textContent = tide ? 'Reading NOAA tide gauges…' : 'Asking NASA POWER…'; $('lunar-note').textContent = ''; $('lunar-chart').innerHTML = '';
   try {
-    const s = await fetchPower(v.id, p.lat, p.lon, 1981);
+    // Tide range is shown in centimetres so a few-cm lunar swing is readable.
+    const s = tide ? { years: tide.years, values: tide.values.map((x) => x * 100), units: 'cm' } : await seriesFor(v, p.lat, p.lon, 1981);
     const t = lunarTest(s);
     if (t.status === 'too-short') { $('lunar-stat').textContent = 'Record too short'; $('lunar-note').textContent = `The test needs at least ${LUNAR_MIN_YEARS} years (two full 18.6-year cycles); this record has ${t.n}.`; return; }
     const pv = t.p < 0.001 ? 'p < 0.001' : `p = ${fmt(t.p, 3)}`;
@@ -949,13 +1021,14 @@ $('lunar-run').addEventListener('click', async () => {
     const u = unitOf(s);
     $('lunar-note').textContent = `${v.name} at ${p.short}, ${s.years[0]}–${s.years.at(-1)}: the Moon's rhythm lines up with ${Math.round(t.share * 100)}% of the year-to-year ups and downs (after removing the trend). From minor to major standstill: ${signed(t.swing)}${u ? ' ' + u : ''}. A signal is not proof of cause.`;
     $('lunar-chart').innerHTML = lunarChart(s, t);
+    if (tide) $('lunar-note').textContent += ' Source: NOAA CO-OPS tide gauge (monthly mean high and low water).';
     const sawMoon = t.verdict === 'signal' ? 'yes' : 'no';
     if (!lunarGuess) feedback('lunar-feedback', 'close', 'Tip: make a guess before testing to earn points.');
     else if (lunarGuess === sawMoon) { award(1); feedback('lunar-feedback', 'good', `✓ Your guess matched the test. +1 point.`); }
     else feedback('lunar-feedback', 'miss', `✗ Your guess did not match the test${t.verdict === 'hint' ? ' (there is only a weak hint)' : ''}. That is how real research goes!`);
     lunarGuess = null;
     $('lunar-guess').querySelectorAll('.chip').forEach((x) => x.setAttribute('aria-pressed', 'false'));
-  } catch (err) { $('lunar-stat').textContent = 'The test could not run'; $('lunar-note').textContent = err.message; }
+  } catch (err) { $('lunar-stat').textContent = 'The test could not run'; $('lunar-note').textContent = powerError(err); }
 });
 
 function lunarChart(s, t) {
@@ -983,8 +1056,9 @@ async function loadJson(url) {
   try { const r = await fetch(url); return r.ok ? await r.json() : null; } catch { return null; }
 }
 // Everything the first screen needs loads in parallel; the 5 MB atmosphere grid loads later, in the background.
-const [catalog, demos, witnesses, grid, indices, modis, rivers, facts, photos] = await Promise.all(['catalog', 'demos', 'witnesses', 'grid',
-  'indices', 'modis', 'rivers', 'place_facts', 'place_photos'].map((f) => loadJson(`data/${f}.json`)));
+const [catalog, demos, witnesses, grid, indices, modis, rivers, facts, photos, tides] = await Promise.all(['catalog', 'demos', 'witnesses', 'grid',
+  'indices', 'modis', 'rivers', 'place_facts', 'place_photos', 'tides'].map((f) => loadJson(`data/${f}.json`)));
+TIDES = tides;
 INDICES = indices;
 WITNESSES = witnesses;
 GRID = grid;

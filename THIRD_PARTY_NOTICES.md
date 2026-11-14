@@ -51,6 +51,8 @@ SOFTWARE.
 | Place descriptions in `data/place_facts.json` | One short factual sentence per place, written for students | Facts paraphrased from the cited Wikipedia revision of each place (CC BY-SA 4.0); climate numbers from NASA POWER |
 | [NASA Moon Trek](https://trek.nasa.gov/moon/): LRO WAC global mosaic (303 ppd, v02) map tiles | Moon globe imagery | NASA open data; credit NASA/GSFC/Arizona State University (LROC) and NASA Moon Trek |
 | Lunar feature coordinates and one-line notes (Wikipedia coordinate data, globe=moon) | Moon place markers | Coordinates are facts; descriptions paraphrased from Wikipedia (CC BY-SA 4.0) |
+| [IAU/USGS Gazetteer of Planetary Nomenclature](https://planetarynames.wr.usgs.gov/GIS_Downloads), Moon feature center points (LOLA 2011), in `data/moon_features.json` | Official names of lunar seas, mountains, valleys, craters and landing sites on the Moon map | U.S. public domain (USGS); names approved by the International Astronomical Union |
+| [NOAA CO-OPS](https://tidesandcurrents.noaa.gov/) verified monthly mean high and low water at 8 long-record tide gauges, annual mean tidal range in `data/tides.json` | Positive control of the lunar test: the 18.6-year cycle in ocean tides | U.S. Government public domain; cite NOAA/NOS/CO-OPS |
 | [NASA GIBS](https://www.earthdata.nasa.gov/engage/open-data-services-software/earthdata-developer-portal/gibs-api), Blue Marble Shaded Relief and Bathymetry | Globe imagery | NASA open data |
 
 Place coordinates come from Wikipedia (CC BY-SA 4.0), Wikidata (CC0) and the WGMS Global Glacier Change Bulletin No. 5; each place cites its source in `data/catalog.json`. Details: `tools/THIRD_PARTY_NOTICES.md`.
@@ -65,4 +67,6 @@ Place coordinates come from Wikipedia (CC BY-SA 4.0), Wikidata (CC0) and the WGM
 - Buja, A., et al. (2009). Statistical inference for exploratory data analysis and model diagnostics. *Phil. Trans. R. Soc. A*, 367, 4361–4383. doi:10.1098/rsta.2009.0120
 - Meeus, J. (1998). *Astronomical Algorithms* (2nd ed.), eq. 47.7 (longitude of the Moon's mean ascending node). Willmann-Bell.
 - Marriott, F. H. C., & Pope, J. A. (1954). Bias in the estimation of autocorrelations. *Biometrika*, 41, 390–402. doi:10.1093/biomet/41.3-4.390
+- Peng, D., Hill, E. M., Meltzner, A. J., & Switzer, A. D. (2019). Tide gauge records show that the 18.61-year nodal tidal cycle can change high water levels by up to 30 cm. *JGR: Oceans*, 124, 736–749. doi:10.1029/2018JC014695
+- Kaye, C. A., & Stuckey, G. W. (1973). Nodal tidal cycle of 18.6 yr: its importance in sea-level curves of the east coast of the United States. *Geology*, 1(3), 141–144.
 - Gilbert, R. O. (1987). *Statistical Methods for Environmental Pollution Monitoring*. Van Nostrand Reinhold.
