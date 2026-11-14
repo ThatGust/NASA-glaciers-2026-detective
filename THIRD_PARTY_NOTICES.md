@@ -49,4 +49,5 @@ SOFTWARE.
 - Sen, P. K. (1968). Estimates of the regression coefficient based on Kendall's tau. *JASA*, 63, 1379–1389. doi:10.1080/01621459.1968.10480934
 - Hamed, K. H., & Rao, A. R. (1998). A modified Mann-Kendall trend test for autocorrelated data. *Journal of Hydrology*, 204, 182–196. doi:10.1016/S0022-1694(97)00125-X
 - Weatherhead, E. C., et al. (1998). Factors affecting the detection of trends. *JGR: Atmospheres*, 103(D14), 17149–17161. doi:10.1029/98JD00995
+- Benjamini, Y., & Hochberg, Y. (1995). Controlling the false discovery rate. *JRSS B*, 57(1), 289–300. doi:10.1111/j.2517-6161.1995.tb02031.x
 - Gilbert, R. O. (1987). *Statistical Methods for Environmental Pollution Monitoring*. Van Nostrand Reinhold.

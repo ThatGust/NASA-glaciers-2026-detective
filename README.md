@@ -6,10 +6,15 @@ Trend Detective lets anyone pick a NASA Earth-science variable and a place on a 
 
 ## How it works
 
-1. **Open a case.** Choose a variable (temperature, precipitation, solar radiation, humidity, wind, soil moisture) and a place: click the globe, pick a preset or type coordinates.
+1. **Open a case.** Choose a variable (temperature, precipitation, soil moisture, humidity, solar radiation, wind…) and a place: click a dot on the globe (glaciers, deserts, rainforests, cities, coasts, ocean, polar regions), any other point, or type coordinates.
 2. **Evidence.** The app downloads the monthly series from NASA POWER, averages each year to remove the seasonal cycle, and plots it with its trend line.
 3. **Verdict.** A Mann-Kendall test corrected for autocorrelation (Hamed & Rao, 1998) decides the verdict; Sen's slope gives how much it changes per decade.
 4. **Case file.** Every result can be downloaded with its data, source and method.
+
+Two more ways to investigate:
+
+- **Scan a place.** Test every variable at once and see which ones are changing. Because many tests raise the chance of a false alarm, the verdicts are adjusted with the Benjamini-Hochberg procedure.
+- **Compare two places.** The same variable can trend in opposite directions in different regions. The app states a direction only when both trends are at least "likely".
 
 There is no server: the page calls NASA POWER and NASA GIBS directly from the browser.
 
