@@ -177,8 +177,8 @@ function factLine(p) {
   if (!f) return `${fmt(p.lat, 1)}°, ${fmt(p.lon, 1)}°`;
   const bits = [];
   if (f.mean_temp_c != null) bits.push(`${Math.round(f.mean_temp_c)} °C`);
-  if (f.mean_precip_mm_day != null) bits.push(`${fmt(f.mean_precip_mm_day * 365 / 1000, 1)} m rain/yr`);
-  if (f.warming_c_per_decade != null) bits.push(`${signed(f.warming_c_per_decade)} °C/decade`);
+  if (f.mean_precip_mm_day != null) bits.push(`${(Math.round(f.mean_precip_mm_day * 36.5) * 10).toLocaleString('en-US')} mm/yr`);
+  if (f.warming_c_per_decade != null) bits.push(`${signed(f.warming_c_per_decade)} °C/dec`);
   return bits.join(' · ');
 }
 
