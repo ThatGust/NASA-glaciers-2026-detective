@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { allPlaces } from './place_facts.mjs';
@@ -10,7 +10,7 @@ const imageDir = new URL('../img/places/', import.meta.url);
 const cache = new URL('./.cache/place_images/', import.meta.url);
 const manifestFile = new URL('./.cache/place_images.json', import.meta.url);
 const layers = ['MODIS_Terra_CorrectedReflectance_TrueColor', 'VIIRS_SNPP_CorrectedReflectance_TrueColor'];
-const fallback = 'BlueMarble_ShadedRelief_Bathymetry';
+const fallback = 'BlueMarble_NextGeneration';
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 const esc = text => String(text).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
@@ -30,7 +30,7 @@ export function bboxFor(place) {
 export function snapshotUrl(layer, date, bbox, crs = 'EPSG:4326') {
   return 'https://wvs.earthdata.nasa.gov/api/v1/snapshot?' + new URLSearchParams({
     REQUEST: 'GetSnapshot', LAYERS: layer, CRS: crs, TIME: date,
-    BBOX: bbox.join(','), FORMAT: 'image/jpeg', WIDTH: '480', HEIGHT: '320',
+    BBOX: bbox.join(','), FORMAT: 'image/jpeg', WIDTH: '360', HEIGHT: '240',
   });
 }
 
@@ -63,30 +63,44 @@ async function download(url) {
 
 // Pillow is used only by this offline tool: no new app or npm dependency.
 const pixelCheck = `
-import json, sys
-from PIL import Image, ImageStat
-im = Image.open(sys.argv[1]).convert('RGB')
-assert im.size == (480, 320), im.size
-pixels = list(im.getdata())
-n = len(pixels)
-white = sum(min(p) >= 220 and max(p)-min(p) <= 35 for p in pixels)/n
-black = sum(max(p) <= 5 for p in pixels)/n
-cloudlike = sum(min(p) >= 155 and max(p)-min(p) <= 40 for p in pixels)/n
-rim = [p for i,p in enumerate(pixels) if i%480 < 120 or i%480 >= 360 or i//480 < 80 or i//480 >= 240]
-rim_cloudlike = sum(min(p) >= 155 and max(p)-min(p) <= 40 for p in rim)/len(rim)
-print(json.dumps({'white': white, 'black': black, 'cloudlike': cloudlike, 'rim_cloudlike': rim_cloudlike, 'texture': ImageStat.Stat(im.convert('L')).stddev[0]}))
-if len(sys.argv) > 2:
-    for quality in (85, 75, 65, 55, 45):
-        im.save(sys.argv[2], 'JPEG', quality=quality, optimize=True)
-        import os
-        if os.path.getsize(sys.argv[2]) < 70000: break
-    assert os.path.getsize(sys.argv[2]) < 70000
+import json, os, sys
+from PIL import Image, ImageStat, ImageChops
+def mask(low, spread, brightness, difference):
+    return ImageChops.multiply(low.point(lambda p: 255 if p >= brightness else 0), spread.point(lambda p: 255 if p <= difference else 0))
+def inspect(path, output=None):
+    with Image.open(path) as source:
+        original_size = source.size
+        assert original_size in ((480, 320), (360, 240)), original_size
+        im = source.convert('RGB').resize((360, 240), Image.Resampling.LANCZOS)
+    red, green, blue = im.split()
+    low = ImageChops.darker(ImageChops.darker(red, green), blue)
+    high = ImageChops.lighter(ImageChops.lighter(red, green), blue)
+    spread = ImageChops.subtract(high, low)
+    n = 360 * 240
+    white = mask(low, spread, 220, 35).histogram()[255] / n
+    black = sum(high.histogram()[:6]) / n
+    cloud_mask = mask(low, spread, 155, 40)
+    clouds = cloud_mask.histogram()[255]
+    cloudlike = clouds / n
+    rim_cloudlike = (clouds - cloud_mask.crop((90, 60, 270, 180)).histogram()[255]) / (n - 180 * 120)
+    if output:
+        for quality in (80, 70, 60, 50, 40, 30, 20):
+            im.save(output, 'JPEG', quality=quality, optimize=True)
+            if os.path.getsize(output) <= 25000: break
+        assert os.path.getsize(output) <= 25000
+    return {'width': original_size[0], 'height': original_size[1], 'white': white, 'black': black, 'cloudlike': cloudlike, 'rim_cloudlike': rim_cloudlike, 'texture': ImageStat.Stat(im.convert('L')).stddev[0]}
+test_low = Image.frombytes('L', (5, 1), bytes([154, 155, 220, 255, 255]))
+test_spread = Image.frombytes('L', (5, 1), bytes([0, 40, 35, 41, 36]))
+assert list(mask(test_low, test_spread, 155, 40).getdata()) == [0, 255, 255, 0, 255]
+assert list(mask(test_low, test_spread, 220, 35).getdata()) == [0, 0, 255, 0, 0]
+print(json.dumps([inspect(*paths) for paths in json.load(sys.stdin)]))
 `;
-function inspect(file, output) {
-  const result = spawnSync('python', ['-c', pixelCheck, fileURLToPath(file), ...(output ? [fileURLToPath(output)] : [])], { encoding: 'utf8', windowsHide: true });
+function inspectBatch(files) {
+  const result = spawnSync('python', ['-c', pixelCheck], { input: JSON.stringify(files.map(paths => paths.map(file => fileURLToPath(file)))), encoding: 'utf8', windowsHide: true });
   assert.equal(result.status, 0, result.stderr || result.error?.message);
   return JSON.parse(result.stdout);
 }
+function inspect(file, output) { return inspectBatch([[file, ...(output ? [output] : [])]])[0]; }
 
 export function imageScore(metrics, environment) {
   if (metrics.black > 0.02 || metrics.texture < 1) return Infinity;
@@ -95,43 +109,46 @@ export function imageScore(metrics, environment) {
 }
 
 async function imageFor(place) {
-  const bbox = bboxFor(place), snow = ['glacier', 'polar'].includes(place.environment);
+  const polar = Math.abs(place.lat) >= 66.5;
+  const crs = polar ? place.lat > 0 ? 'EPSG:3413' : 'EPSG:3031' : 'EPSG:4326';
+  const bbox = polar ? polarBbox(place, crs) : bboxFor(place), snow = ['glacier', 'polar'].includes(place.environment);
   const candidates = [];
   async function candidate(date, layer) {
-    const url = snapshotUrl(layer, date, bbox);
+    const url = snapshotUrl(layer, date, bbox, crs);
     try {
-      const file = await download(url), metrics = inspect(file);
-      candidates.push({ layer, date, bbox, url, file: fileURLToPath(file), ...metrics });
+      const file = await download(url);
+      candidates.push({ layer, date, bbox, crs, url, file: fileURLToPath(file) });
     } catch (error) { candidates.push({ layer, date, bbox, url, error: error.message }); }
   }
-  for (const date of datesFor(place)) for (const layer of layers) await candidate(date, layer);
+  for (const date of datesFor(place)) await Promise.all(layers.map(layer => candidate(date, layer)));
   // This narrow reef needs Landsat/Sentinel HLS pixels rather than a MODIS-sized footprint.
   if (place.id === 'elphinstone_reef') {
-    for (let day = 1; day <= 10; day++)
-      for (const layer of ['HLS_L30_Nadir_BRDF_Adjusted_Reflectance', 'HLS_S30_Nadir_BRDF_Adjusted_Reflectance'])
-        await candidate(`2025-06-${String(day).padStart(2, '0')}`, layer);
+    for (let day = 1; day <= 10; day++) await Promise.all(['HLS_L30_Nadir_BRDF_Adjusted_Reflectance', 'HLS_S30_Nadir_BRDF_Adjusted_Reflectance']
+      .map(layer => candidate(`2025-06-${String(day).padStart(2, '0')}`, layer)));
   }
   function best() {
+    const pending = candidates.filter(c => !c.error && c.texture === undefined);
+    const metrics = inspectBatch(pending.map(c => [pathToFileURL(c.file)]));
+    pending.forEach((c, i) => Object.assign(c, metrics[i]));
     return candidates.filter(c => !c.error && Number.isFinite(imageScore(c, place.environment)))
-      .sort((a, b) => imageScore(a, place.environment) - imageScore(b, place.environment) || Number(b.layer.startsWith('HLS_')) - Number(a.layer.startsWith('HLS_')))[0];
+      .sort((a, b) => imageScore(a, place.environment) - imageScore(b, place.environment) || Number(b.layer.startsWith('HLS_')) - Number(a.layer.startsWith('HLS_')) || a.date.localeCompare(b.date) || a.layer.localeCompare(b.layer))[0];
   }
   let selected = best();
   if (place.environment !== 'polar' && (!selected || imageScore(selected, place.environment) > 0.1)) {
-    for (const date of datesFor(place).map(d => d.replace(/20$/, '05')))
-      for (const layer of layers) await candidate(date, layer);
+    for (const date of datesFor(place).map(d => d.replace(/20$/, '05'))) await Promise.all(layers.map(layer => candidate(date, layer)));
     selected = best();
   }
   let note = snow ? 'Snow/ice expected; white pixels are not a reliable cloud measure.' : '';
   // shortcut: RGB whiteness cannot distinguish cloud from bright sand or salt; review the contact sheet.
   if (!selected || (place.environment !== 'polar' && imageScore(selected, place.environment) > 0.35)) {
-    const date = '2004-01-01', layer = fallback, url = snapshotUrl(layer, date, bbox);
+    const date = '2004-08-01', layer = fallback, url = snapshotUrl(layer, date, bbox, crs);
     try {
       const file = await download(url), metrics = inspect(file);
-      const composite = { layer, date, bbox, url, file: fileURLToPath(file), ...metrics };
+      const composite = { layer, date, bbox, crs, url, file: fileURLToPath(file), ...metrics };
       candidates.push(composite);
-      if (metrics.black <= 0.02 && (metrics.texture >= 1 || snow)) {
+      if (metrics.black <= 0.02 && (metrics.texture >= 1 || snow || place.environment === 'ocean')) {
         selected = composite;
-        note = 'Blue Marble satellite composite with shaded relief/bathymetry; TIME is an API parameter, not a single acquisition date.';
+        note = 'Cloud-free Blue Marble Next Generation satellite composite; TIME is an API parameter, not a single acquisition date.';
       }
     } catch (error) { candidates.push({ layer, date, bbox, url, error: error.message }); }
   }
@@ -143,25 +160,36 @@ async function imageFor(place) {
   inspect(pathToFileURL(selected.file), output);
   const bytes = (await readFile(output)).length;
   console.log(`Image: ${place.id}: ${selected.layer}, ${selected.date}, ${bytes} bytes`);
-  return { id: place.id, name: place.name, selected, note: note.trim(), bytes, candidates };
+  return { id: place.id, name: place.name, selected, note: note.trim(), width: 360, height: 240, bytes, candidates };
 }
 
 export async function validateImages(places) {
-  for (const place of places) {
-    const file = new URL(`${place.id}.jpg`, imageDir);
-    assert.ok((await readFile(file)).length < 70000, `${place.id}: exceeds 70 KB`);
-    inspect(file);
-  }
+  const result = spawnSync('python', ['-c', `
+import json, os, sys
+from PIL import Image
+for path in json.load(sys.stdin):
+    assert os.path.getsize(path) <= 25000, path
+    with Image.open(path) as im:
+        assert im.format == 'JPEG' and im.size == (360, 240), path
+        im.verify()
+`], { input: JSON.stringify(places.map(p => fileURLToPath(new URL(`${p.id}.jpg`, imageDir)))), encoding: 'utf8', windowsHide: true });
+  assert.equal(result.status, 0, result.stderr || result.error?.message);
+}
+
+async function saveManifest(report) {
+  const temporary = new URL('./.cache/place_images.json.tmp', import.meta.url);
+  await writeFile(temporary, JSON.stringify(report, null, 2) + '\n');
+  await rename(temporary, manifestFile);
 }
 
 async function writeOutputs(rows) {
   const report = { generated: new Date().toISOString(), rows, total_bytes: rows.reduce((sum, row) => sum + row.bytes, 0) };
-  await writeFile(manifestFile, JSON.stringify(report, null, 2) + '\n');
+  await saveManifest(report);
   const credits = [
     '# Place image credits', '',
     'NASA Worldview / GIBS, public domain. We acknowledge imagery from NASA Global Imagery Browse Services (GIBS), part of NASA ESDIS.', '',
     '[NASA data use guidance](https://www.earthdata.nasa.gov/engage/open-data-services-software-policies/data-use-guidance) · [GIBS API documentation](https://nasa-gibs.github.io/gibs-api-docs/) · [current Worldview Snapshots request implementation](https://wvs.earthdata.nasa.gov/js/index-chunk.js).', '',
-    '480 × 320 JPEGs, each below 70,000 bytes. EPSG:4326 BBOX uses latitude,longitude: minLat,minLon,maxLat,maxLon. EPSG:3413 (Arctic) and EPSG:3031 (Antarctic) BBOX uses projected metres: minX,minY,maxX,maxY. Cropped by the API and recompressed locally; no synthetic content.', '',
+    '360 × 240 JPEGs, each at most 25,000 bytes. EPSG:4326 BBOX uses latitude,longitude: minLat,minLon,maxLat,maxLon. EPSG:3413 (Arctic) and EPSG:3031 (Antarctic) BBOX uses projected metres: minX,minY,maxX,maxY. Cropped by the API and recompressed locally; no synthetic content.', '',
     'Selection compares six real true-colour snapshots (three seasonal dates, MODIS Terra and VIIRS SNPP), plus six alternate dates if the best cloud score exceeds 10%. Reject >2% near-black pixels (all channels ≤5) or nearly flat images (grayscale standard deviation <1). Rank by 10×black fraction + cloud-like fraction (all channels ≥155, channel spread ≤40, including gray cloud). Also record near-white fraction (all channels ≥220, spread ≤35). For glaciers, score cloud-like pixels only in the outer rim, excluding the central half-width/half-height feature where snow is expected. For polar places, omit the brightness penalty. If none passes, or the best non-polar cloud score exceeds 35%, try Blue Marble. This is a heuristic, not a validated cloud mask; sand, salt, snow, haze and ocean colour can mislead it. Human review remains necessary.', '',
     'Blue Marble Next Generation is a cloud-free satellite composite. ShadedRelief/Bathymetry variants add relief/bathymetry. Dates below are requested TIME parameters, not single acquisition dates or current glacier outlines. Integrator-requested replacements use Next Generation, retaining geographic bounds; polar replacements use metre bounds in polar stereographic projections. Small reefs can be near the sensor resolution limit.', '',
     '| Place / file | Layer | Requested date | BBOX | Projection | Credit | Review note |',
@@ -248,7 +276,37 @@ async function main() {
     for (const [id, before] of unchanged) assert.equal(await hash(id), before, `${id}: unrequested image changed`);
     await writeOutputs(report.rows.map(row => updates.find(update => update.id === row.id) ?? row));
     console.log(`Replaced only ${updates.length} requested images; ${unchanged.size} other image hashes unchanged.`);
-  } else await writeOutputs(await mapLimited(places, imageFor));
+  } else {
+    let rows = [];
+    try { rows = JSON.parse(await readFile(manifestFile, 'utf8')).rows; }
+    catch (error) { if (error.code !== 'ENOENT') throw error; }
+    const completed = new Map(rows.map(row => [row.id, row]));
+    let next = 0, finished = 0, checkpoint = Promise.resolve();
+    // Six places, with two instruments per date: at most twelve snapshot requests in flight.
+    await Promise.all(Array.from({ length: 6 }, async () => {
+      while (next < places.length) {
+        const place = places[next++], previous = completed.get(place.id);
+        let row = previous;
+        if (!previous) row = await imageFor(place);
+        else {
+          const output = new URL(`${place.id}.jpg`, imageDir);
+          if (previous.width !== 360 || previous.height !== 240 || (await readFile(output)).length > 25000) {
+            const metrics = inspect(output);
+            if (metrics.width !== 360 || (await readFile(output)).length > 25000) inspect(pathToFileURL(previous.selected.file), output);
+            row = { ...previous, width: 360, height: 240, bytes: (await readFile(output)).length };
+          }
+        }
+        completed.set(place.id, row);
+        finished++;
+        const current = places.map(p => completed.get(p.id)).filter(Boolean);
+        const report = { generated: new Date().toISOString(), rows: current, total_bytes: current.reduce((n, r) => n + r.bytes, 0) };
+        checkpoint = checkpoint.then(() => saveManifest(report));
+        await checkpoint;
+        if (finished % 6 === 0) console.log(`Image progress saved: ${finished}/${places.length}`);
+      }
+    }));
+    await writeOutputs(places.map(p => completed.get(p.id)));
+  }
 }
 
 function selfTest() {
