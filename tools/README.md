@@ -140,3 +140,65 @@ The free [Open-Meteo API terms](https://open-meteo.com/en/terms) permit non-comm
 - **Measured MODIS acquisition pass: 1345.5 s (22.4 min)**; successful cached rebuild: 0.075 s. The first successful 17-river build took **178.7 s**, after earlier cached probes; the final cache-only rebuild took **0.709 s**. These are process timings, not a controlled cold-network benchmark.
 - **Validation passed:** node tools/validate_extras.mjs --cache checked both JSON files, 25 cited series, equal lengths, strictly increasing years, finite values, units, organization labels, the six mismatch flags, all non-ocean MODIS attempts, exact reproduction from cached raw values and finite results from analyze. Synthetic self-checks cover NPP/ET fill and scale, constant series, duplicate years/days, complete leap years and missing days. The default validator also works without the cache.
 - **npm test: all 19 tests passed.** No browser/UI check, field calibration or period-matched gauge validation was performed. UI integration, root context/PDF regeneration and root source notices remain outside this write scope; this lane's source/licence details are appended to tools/THIRD_PARTY_NOTICES.md.
+
+## Earthdata lane 3 — atmosphere and water (14 November 2026)
+
+`tools/fetch_earthdata.mjs` builds `data/grid_atmos.json`: **12 NASA variables, 2,592 cells in exactly `grid.json` order, eight regions, 5,163,702 bytes (5.16 MB)**. All twelve `cellSeries` variables fit under 8 MB. Existing app files were not edited by this lane; integration is a separate task. Source and permission details are appended to `tools/THIRD_PARTY_NOTICES.md`.
+
+From `app/`, using the existing `app/.env.earthdata` file with `EARTHDATA_USER` and `EARTHDATA_PASSWORD`:
+
+```sh
+node tools/fetch_earthdata.mjs --self-test
+node tools/fetch_earthdata.mjs --sample
+node tools/fetch_earthdata.mjs --omi
+node tools/fetch_earthdata.mjs
+node tools/fetch_earthdata.mjs --validate
+npm test
+```
+
+Authentication is performed only inside the script. Credentials and authentication responses are never logged or cached; the bearer token stays in memory. Raw CMR, DDS, DAS, coordinate and monthly ASCII responses use SHA-256 URL filenames under the already ignored `tools/.cache/earthdata/`. Re-running resumes those responses; `report.json` there records timings, failures, coverage and global slopes. Cache entries are snapshots: revisions require removing the relevant cached response or deliberately refreshing this lane's cache. Validation and self-tests need no login/network. `--sample` checks the first January of each product. There are no added dependencies or commits.
+
+### Acquisition, geometry and processing
+
+- **MERRA-2 M2TMNXSLV 5.12.4:** 540 months, January 1981–December 2025; T850, T500, T250, TO3 and TQV. Read coordinate variables verify latitude `[5:10:355]` and longitude **`[4:8:572]`**. Longitude index 572, not 571, is 177.5 degrees east; the latter endpoint would lose the last column.
+- **AIRS3STM 7.0:** 276 months, January 2003–December 2025. AIRS-only ascending `_A` fields are used throughout: `Temperature_A`, `TotO3_A`, `TotH2OVap_A`, plus their counts. The coordinate arrays run 87.5 to -87.5 degrees after `[2:5:177][2:5:357]` selection and are reordered to the existing south-to-north grid. `StdPressureLev_ascending` verifies zero-based indices **2 = 850, 5 = 500, 8 = 250 hPa**; temperatures use `[2:3:5]`. T250_AIRS was not requested and is not added. HDF field attributes omit units; the [AIRS V7 L3 User Guide, Table 1 and section 2.5.1](https://docserver.gesdisc.eosdis.nasa.gov/public/project/AIRS/V7_L3_User_Guide.pdf) supplies them. Counts must be positive; no ascending/descending or AIRS/AMSU splice is made.
+- **GLDAS_NOAH10_M 2.1:** 312 months, January 2000–December 2025, with `[2:5:147][2:5:357]`. Read coordinates verify centers -57.5 to 87.5 degrees; other southern rows and all `grid.json` ocean cells stay null. The file has 614 usable land sampling points. No version 2.0 values are used.
+- Each month uses **one combined strided global data request per product**, never a point-request loop. Three year workers each await one request at a time. Successful records contain **1,128 monthly subsets**; metadata/coordinate probes are additional. The retired hydro1/goldsmr4 endpoints are not used.
+- For each cell/variable, a year is the unweighted mean of twelve valid months. Missing requests, non-finite data, declared fill (-9999 or MERRA-2's approximately 1e15), or AIRS zero counts invalidate that cell-year. Fill is tested before conversion, and either missing runoff component invalidates their sum. Negative evaporation is retained. No gaps are interpolated. Current-year 2026 data are excluded.
+- Temperature is **K - 273.15**, ozone stays **Dobson units (DU)**, and column water stays **kg/m2**. For GLDAS, **RUNOFF = (Qs_acc + Qsb_acc) x 8 mm/day**, **EVAP = Evap_tavg x 86400 mm/day**, while **SOILMOI retains kg/m2**. Monthly `_acc` fields average three-hour accumulations; they are not monthly totals. See the [GLDAS-2 README, sections 3.3 and 3.5(5–6), printed pages 21–25](https://docserver.gesdisc.eosdis.nasa.gov/public/project/hydrology/README_GLDAS2.pdf).
+- `analyze` and per-variable, across-cell `benjaminiHochberg` are imported from the unedited engine. Eligibility and verdict thresholds match `build_grid.mjs`: at least eight annual observations, non-flat record, q < .05 confirmed / q < .10 likely / otherwise unknown. Calculations precede rounding; slopes use four significant digits, q three. The unrounded q sets the verdict, so rounding can place an exported q exactly on a threshold.
+- `areaWeightedMean` uses the builder's eight region definitions, existing ocean flags and cosine-latitude weights, retaining matching longest records within each region. All global records span their full product windows here. Flat cells are excluded from regional means as in the builder; this excludes 20 constant SOILMOI cells. GLDAS ocean/Antarctic series are absent rather than zero.
+- Compact `cellSeries` stores three-significant-digit values only for cells with every year in the declared `[first,last]` window; other cells are null because value-only arrays cannot identify skipped years. Trends can still use complete annual observations in a partly missing record. Such trend cells number **8 T850, 142 T850_AIRS, 25 TO3_AIRS and 128 TQV_AIRS**. The existing engine treats successive retained observations as successive lags in its autocorrelation correction; gapped-cell uncertainty has that limitation. Regional curves use fixed matching records.
+
+### Measured run and checks
+
+The successful acquisition/build pass took **769.019 s (12.8 minutes)**, including earlier cached probes: MERRA-2 **346.62 s**, AIRS **182.44 s**, GLDAS **190.83 s**, with analysis/setup in the remaining time. This is not a controlled cold-cache benchmark. The final warm-cache build took **32.133 s** (monthly processing 2.899 / 1.707 / 0.816 s), with the same output size and all twelve global slopes. **No terminal monthly request failures** occurred in either successful pass. An earlier run was interrupted after a parser assertion: Hyrax encodes latitude in row labels rather than a separate coordinate array. The parser was corrected, tested and successfully resumed from cached raw responses; no output from that interrupted attempt was used.
+
+**Validation passed:** all trend arrays and present cell-series arrays have 2,592 entries; values/q are finite; years strictly increase; annual/value lengths agree; source coordinates map exactly to the existing cell order; GLDAS masks hold; all eight region containers exist; JSON is below 8,000,000 bytes. Synthetic checks cover DAP Grid/HDF rows, malformed numbers, temperature-independent water conversions, runoff fill propagation, ocean/southern masks and missing-month annual rejection. **All 19 `npm test` tests passed.**
+
+### Global-mean sanity checks
+
+These are Sen slopes of the engine's area-weighted regional curves, not means of cell slopes. “Global” means the retained sampling footprint; GLDAS means land only. Counts below exclude incomplete and flat regional members.
+
+| Variable | Years | Global-mean change per decade | Regional cells |
+|---|---|---:|---:|
+| T850 | 1981–2025 | +0.2091 C | 2334 |
+| T500 | 1981–2025 | +0.2384 C | 2592 |
+| T250 | 1981–2025 | +0.2206 C | 2592 |
+| TO3 | 1981–2025 | -0.4054 DU | 2592 |
+| TQV | 1981–2025 | +0.2573 kg/m2 | 2592 |
+| T850_AIRS | 2003–2025 | +0.1511 C | 2230 |
+| T500_AIRS | 2003–2025 | +0.04069 C | 2592 |
+| TO3_AIRS | 2003–2025 | +0.2952 DU | 2551 |
+| TQV_AIRS | 2003–2025 | +0.1402 kg/m2 | 2464 |
+| RUNOFF | 2000–2025 | -0.09633 mm/day | 614 |
+| EVAP | 2000–2025 | +0.07260 mm/day | 614 |
+| SOILMOI | 2000–2025 | -0.3956 kg/m2 | 594 |
+
+Temperature signs agree with [NASA/JPL's AIRS lower-troposphere warming visualization](https://airs.jpl.nasa.gov/resources/232/airs-temperature-anomaly-trends-in-the-lower-troposphere-and-upper-stratosphere-2002-2020/). [Steiner et al. (2020), abstract](https://doi.org/10.1175/JCLI-D-19-0998.1) reports approximately 0.25–0.35 K/decade tropospheric warming, with different periods, layers and sampling. This is a scale comparison, not a matching benchmark. **AIRS is substantially weaker here:** over the common 2003–2025 period MERRA-2 gives +0.2740 C/decade at 850 hPa and +0.3090 at 500 hPa, versus AIRS +0.1511 and +0.04069. These satellite witnesses check the same quantities but do not establish quantitative agreement or full statistical independence. The source of the magnitude difference was not resolved; no drift correction or tuning was applied. AIRS sampling/quality caveats remain applicable.
+
+Ozone needs extra caution: [Wargan et al. (2017)](https://pmc.ncbi.nlm.nih.gov/articles/PMC5842360/) documents MERRA-2's October 2004 switch from SBUV to OMI/MLS. The 1981–2025 slope crosses that observing-system change and is not a clean recovery estimate. On 2003–2025 MERRA-2 gives +2.001 DU/decade, while AIRS gives +0.2952, with raw global p = 0.673 (unknown). AIRS water vapor likewise has raw global p = 0.113 (unknown); its positive sign alone does not corroborate MERRA-2. Increasing vapor has the expected direction from [NASA's water-vapor feedback explanation](https://science.nasa.gov/earth/climate-change/steamy-relationships-how-atmospheric-water-vapor-amplifies-earths-greenhouse-effect/), without validating this record's magnitude. These regional p-values are separate from cell BH verdicts. No like-for-like published global benchmark was established for the three GLDAS sampled-land slopes; they are model results, not validated global observations.
+
+**OMI search:** the [cached CMR query](https://cmr.earthdata.nasa.gov/search/collections.json?keyword=OMI%20ozone&page_size=200) returned 175 collections. No monthly OMI L3 total-column grid matched. `TrCO3_Monthly_OMIMLS` is tropospheric ozone; `OMTO3d`, `OMTO3e` and `OMDOAO3e` are daily; `MSO3L3zm5` is a merged multi-satellite zonal mean. None is substituted for the requested product, so **OMI_O3 is omitted**. A newly appearing monthly collection makes the script stop for an explicit adapter rather than silently ignore it.
+
+No browser/UI integration, external field calibration, full-resolution global averaging or independent magnitude validation was performed. Root context/PDF updates are outside this lane's explicit write scope; the requested single AI-use log row is appended separately.

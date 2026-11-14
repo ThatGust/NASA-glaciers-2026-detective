@@ -57,7 +57,10 @@ const KIND_COLOR = { glacier: '#cfefff', polar: '#ffffff', tundra: '#9fd3c7', vo
 // Plain-language names for students; the technical name stays in the details.
 const PLAIN = { T2M: 'Air temperature', T2M_MAX: 'Monthly highs', T2M_MIN: 'Monthly lows', TS: 'Ground temperature', PRECTOTCORR: 'Rain and snow',
   EVLAND: 'Evaporation', GWETTOP: 'Topsoil moisture', GWETROOT: 'Root soil moisture', SNODP: 'Snow depth', RH2M: 'Humidity', QV2M: 'Water vapor',
-  ALLSKY_SFC_SW_DWN: 'Sunlight', CLOUD_AMT: 'Cloud cover', WS2M: 'Wind', AOD_55: 'Haze (dust and smoke)' };
+  ALLSKY_SFC_SW_DWN: 'Sunlight', CLOUD_AMT: 'Cloud cover', WS2M: 'Wind', AOD_55: 'Haze (dust and smoke)',
+  T850: 'Air temperature 1.5 km up', T500: 'Air temperature 5.5 km up', T250: 'Air temperature 10 km up', TO3: 'Ozone layer', TQV: 'Water vapor in the sky',
+  T850_AIRS: 'Air temperature 1.5 km up (satellite)', T500_AIRS: 'Air temperature 5.5 km up (satellite)', TO3_AIRS: 'Ozone layer (satellite)',
+  TQV_AIRS: 'Water vapor in the sky (satellite)', RUNOFF: 'Water running off the land', EVAP: 'Evaporation from land and plants', SOILMOI: 'Topsoil water' };
 let FACTS = {};
 const VERDICTS = {
   confirmed: { label: '● Confirmed', text: 'A real change: very unlikely to be chance.' },
@@ -561,7 +564,7 @@ function fillGlobal() {
   const ids = VARIABLES.filter((v) => GRID.trends[v.id]).map((v) => v.id);
   const more = (GRID2?.variables ?? []).filter((v) => GRID2.trends[v.id]);
   $('global-var').innerHTML = `<optgroup label="Near the ground · NASA POWER">${ids.map((id) => `<option value="${id}">${varById(id).name}</option>`).join('')}</optgroup>`
-    + (more.length ? `<optgroup label="Atmosphere, land and satellites · NASA (precomputed)">${more.map((v) => `<option value="${v.id}">${v.name} (${v.source.split(' (')[0]})</option>`).join('')}</optgroup>` : '');
+    + (more.length ? `<optgroup label="Higher in the sky, and land water · NASA">${more.map((v) => `<option value="${v.id}">${v.name} · ${v.source.split(' (')[0].split(' on ')[0]}</option>`).join('')}</optgroup>` : '');
   $('global-var').value = gridVar;
   $('global-note').textContent = `${GRID.cells.length} cells of ${GRID.step}° × ${GRID.step}°, each with its own trend test on NASA data (value at the cell centre). With thousands of tests, the bar for "confirmed" is raised (Benjamini-Hochberg). Regions are area-weighted means.`;
 }
@@ -657,6 +660,7 @@ const [modis, rivers] = await Promise.all([loadJson('data/modis.json'), loadJson
 WITNESSES = witnesses;
 GRID = grid;
 GRID2 = await loadJson('data/grid_atmos.json');
+for (const v of GRID2?.variables ?? []) { v.technical = v.name; v.name = PLAIN[v.id] ?? v.name; }
 if (GRID2?.variables) EXTRA_VARS.push(...GRID2.variables.filter((v) => !EXTRA_VARS.some((x) => x.id === v.id)));
 if (catalog?.variables?.length) VARIABLES = catalog.variables;
 for (const v of VARIABLES) { v.technical = v.name; v.name = PLAIN[v.id] ?? v.name; }
