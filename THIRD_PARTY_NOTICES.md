@@ -1,0 +1,52 @@
+# Third-party notices
+
+This project's own code is released under the Apache License 2.0 (see `LICENSE`). It uses or adapts the following third-party material.
+
+## Software
+
+| Component | Use | License |
+|---|---|---|
+| [CesiumJS](https://github.com/CesiumGS/cesium) 1.124.0, loaded from the jsDelivr CDN | 3D globe | Apache License 2.0 |
+| [God's Eye View](https://github.com/bilawalsidhu/gods-eye-view) © 2026 Bilawal Sidhu and contributors | Style variables (colors, fonts, glass panels), adapted in `index.html` | MIT License (notice below) |
+| [Inter](https://fonts.google.com/specimen/Inter) and [JetBrains Mono](https://fonts.google.com/specimen/JetBrains+Mono), via Google Fonts | Typography | SIL Open Font License 1.1 |
+| [pymannkendall](https://github.com/mmhs013/pyMannKendall) (test reference only, not shipped) | Cross-check of the statistics engine in `test/reference.py` | MIT License |
+
+### MIT License notice for God's Eye View
+
+```
+MIT License
+
+Copyright (c) 2026 Bilawal Sidhu
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+## Data
+
+| Source | Use | Terms |
+|---|---|---|
+| [NASA POWER](https://power.larc.nasa.gov/) (NASA Langley Research Center), monthly point API: MERRA-2 (NASA GMAO) meteorology and CERES SYN1deg solar radiation | Live time series for every case | NASA open data; cite NASA POWER |
+| [NASA GIBS](https://www.earthdata.nasa.gov/engage/open-data-services-software/earthdata-developer-portal/gibs-api), Blue Marble Shaded Relief and Bathymetry | Globe imagery | NASA open data |
+
+## References for the methods
+
+- Sen, P. K. (1968). Estimates of the regression coefficient based on Kendall's tau. *JASA*, 63, 1379–1389. doi:10.1080/01621459.1968.10480934
+- Hamed, K. H., & Rao, A. R. (1998). A modified Mann-Kendall trend test for autocorrelated data. *Journal of Hydrology*, 204, 182–196. doi:10.1016/S0022-1694(97)00125-X
+- Weatherhead, E. C., et al. (1998). Factors affecting the detection of trends. *JGR: Atmospheres*, 103(D14), 17149–17161. doi:10.1029/98JD00995
+- Gilbert, R. O. (1987). *Statistical Methods for Environmental Pollution Monitoring*. Van Nostrand Reinhold.

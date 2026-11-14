@@ -1,6 +1,6 @@
 [
  {
-  "name": "Coropuna temperatura",
+  "name": "Coropuna temperature",
   "years": [
    1984,
    1985,
@@ -94,7 +94,7 @@
   "variable": "T2M"
  },
  {
-  "name": "Coropuna lluvia",
+  "name": "Coropuna precipitation",
   "years": [
    1984,
    1985,
@@ -188,7 +188,7 @@
   "variable": "PRECTOTCORR"
  },
  {
-  "name": "Arequipa temperatura",
+  "name": "Arequipa temperature",
   "years": [
    1984,
    1985,
@@ -282,7 +282,7 @@
   "variable": "T2M"
  },
  {
-  "name": "Coropuna radiación",
+  "name": "Coropuna solar radiation",
   "years": [
    1984,
    1985,

@@ -1,27 +1,27 @@
 [
  {
-  "name": "Coropuna temperatura",
+  "name": "Coropuna temperature",
   "p": 5.532115103790147e-07,
   "z": 5.006873871864415,
   "s": 463.0,
   "slope_per_year": 0.02562500000000001
  },
  {
-  "name": "Coropuna lluvia",
+  "name": "Coropuna precipitation",
   "p": 0.014315405281054794,
   "z": 2.4492499892670083,
   "s": 227.0,
   "slope_per_year": 0.006637931034482758
  },
  {
-  "name": "Arequipa temperatura",
+  "name": "Arequipa temperature",
   "p": 2.220446049250313e-16,
   "z": 8.282769564832964,
   "s": 469.0,
   "slope_per_year": 0.028333333333333252
  },
  {
-  "name": "Coropuna radiaci\u00f3n",
+  "name": "Coropuna solar radiation",
   "p": 0.05647132973198765,
   "z": -1.9073805226150153,
   "s": -177.0,

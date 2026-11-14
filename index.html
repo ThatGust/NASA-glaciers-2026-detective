@@ -1,18 +1,18 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Detective de tendencias · NASA Space Apps 2026</title>
+<title>Trend Detective · NASA Space Apps 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/cesium@1.124.0/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
 <style>
-  /* Variables de estilo tomadas de Gods Eye View (MIT, (c) 2026 Bilawal Sidhu), src/ui/styles/foundation.css */
+  /* Style variables taken from God's Eye View (MIT, (c) 2026 Bilawal Sidhu), src/ui/styles/foundation.css */
   :root {
     --bg-dark:#0a0a0f; --glass-bg:rgba(12,12,20,.78); --glass-border:rgba(255,255,255,.08);
     --accent:#00d4ff; --accent-dim:rgba(0,212,255,.15);
     --text-primary:#e8eaed;
-    --text-secondary:rgba(232,234,237,.72); /* GEV usa .5; subido para contraste AA (D-14) */
+    --text-secondary:rgba(232,234,237,.72); /* GEV uses .5; raised for WCAG AA contrast */
     --font-mono:'JetBrains Mono','SF Mono',monospace; --font-sans:'Inter',-apple-system,sans-serif;
     --panel-radius:16px; --btn-radius:10px; --transition-fast:150ms cubic-bezier(.4,0,.2,1);
   }
@@ -20,46 +20,46 @@
   html, body { margin:0; height:100%; overflow:hidden; background:var(--bg-dark); }
   body { font:16px/1.5 var(--font-sans); color:var(--text-primary); -webkit-font-smoothing:antialiased; }
 
-  /* El globo ocupa toda la pantalla; todo lo demás va encima. */
-  #globo { position:fixed; inset:0; }
-  #globo .cesium-viewer-bottom { display:none; }
-  .sin3d { position:fixed; inset:0; display:grid; place-items:center; color:var(--text-secondary); }
+  /* The globe fills the screen; everything else sits on top. */
+  #globe { position:fixed; inset:0; }
+  #globe .cesium-viewer-bottom { display:none; }
+  .no3d { position:fixed; inset:0; display:grid; place-items:center; color:var(--text-secondary); }
 
-  .marca { position:fixed; top:16px; left:16px; z-index:3; font:13px var(--font-mono); letter-spacing:.08em; text-transform:uppercase;
+  .brand { position:fixed; top:16px; left:16px; z-index:3; font:13px var(--font-mono); letter-spacing:.08em; text-transform:uppercase;
            color:var(--accent); background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:var(--btn-radius); padding:8px 12px; text-decoration:none; }
-  .creditos { position:fixed; bottom:8px; left:16px; z-index:3; margin:0; font-size:12px; color:var(--text-secondary); text-shadow:0 1px 2px #000; }
+  .credits { position:fixed; bottom:8px; left:16px; z-index:3; margin:0; font-size:12px; color:var(--text-secondary); text-shadow:0 1px 2px #000; }
 
-  /* Vistas: una visible a la vez. */
-  .vista { position:fixed; z-index:2; overflow:auto; background:var(--glass-bg); backdrop-filter:blur(14px);
+  /* Views: one visible at a time. */
+  .view { position:fixed; z-index:2; overflow:auto; background:var(--glass-bg); backdrop-filter:blur(14px);
            border:1px solid var(--glass-border); border-radius:var(--panel-radius); padding:24px; }
-  .vista:not(.activa) { display:none; }
-  .lateral { top:72px; right:16px; bottom:40px; width:min(460px, calc(100vw - 32px)); }
-  .portada { left:50%; bottom:56px; transform:translateX(-50%); width:min(680px, calc(100vw - 32px)); text-align:center; }
-  @media (max-width:640px) { .lateral { top:auto; bottom:0; right:0; left:0; width:auto; max-height:62vh; border-radius:var(--panel-radius) var(--panel-radius) 0 0; } }
+  .view:not(.active) { display:none; }
+  .side { top:72px; right:16px; bottom:40px; width:min(460px, calc(100vw - 32px)); }
+  .cover { left:50%; bottom:56px; transform:translateX(-50%); width:min(680px, calc(100vw - 32px)); text-align:center; }
+  @media (max-width:640px) { .side { top:auto; bottom:0; right:0; left:0; width:auto; max-height:62vh; border-radius:var(--panel-radius) var(--panel-radius) 0 0; } }
 
-  .paso { font:13px var(--font-mono); letter-spacing:.08em; text-transform:uppercase; color:var(--accent); margin:0 0 8px; }
+  .step { font:13px var(--font-mono); letter-spacing:.08em; text-transform:uppercase; color:var(--accent); margin:0 0 8px; }
   h1, h2, h3 { margin:0 0 12px; line-height:1.2; }
   h1 { font-size:32px; } h2 { font-size:22px; } h3 { font-size:17px; margin-top:16px; }
   h1:focus, h2:focus { outline:none; }
   p { margin:0 0 12px; }
-  .nota { color:var(--text-secondary); font-size:14px; }
+  .note { color:var(--text-secondary); font-size:14px; }
   .btn { display:inline-block; padding:12px 20px; margin:8px 8px 0 0; border:1px solid var(--accent); border-radius:var(--btn-radius); background:var(--accent);
          color:var(--bg-dark); font:600 16px var(--font-sans); text-decoration:none; cursor:pointer; transition:background var(--transition-fast); }
   .btn.sec { background:transparent; color:var(--text-primary); border-color:rgba(255,255,255,.3); }
   .btn:focus-visible, a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline:2px solid var(--text-primary); outline-offset:2px; }
-  .saltar { position:fixed; right:16px; bottom:16px; z-index:3; margin:0; }
+  .skip { position:fixed; right:16px; bottom:16px; z-index:3; margin:0; }
 
   fieldset { border:0; padding:0; margin:0 0 16px; } legend { padding:0; }
-  .rejilla { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:8px; margin:8px 0; padding:0; list-style:none; }
-  .tarjeta { border:1px solid var(--glass-border); border-radius:var(--btn-radius); background:rgba(255,255,255,.03); padding:10px 12px; }
-  .tarjeta label { display:block; cursor:pointer; font-size:14px; }
-  .tarjeta strong { display:block; font-size:16px; }
-  .tarjeta input[type=radio] { margin-right:6px; accent-color:var(--accent); }
-  .tarjeta:has(input:checked) { border-color:var(--accent); background:var(--accent-dim); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:8px; margin:8px 0; padding:0; list-style:none; }
+  .card { border:1px solid var(--glass-border); border-radius:var(--btn-radius); background:rgba(255,255,255,.03); padding:10px 12px; }
+  .card label { display:block; cursor:pointer; font-size:14px; }
+  .card strong { display:block; font-size:16px; }
+  .card input[type=radio] { margin-right:6px; accent-color:var(--accent); }
+  .card:has(input:checked) { border-color:var(--accent); background:var(--accent-dim); }
   select, input[type=number] { font:inherit; padding:8px; margin:4px 8px 4px 0; background:rgba(255,255,255,.06); color:var(--text-primary);
                                border:1px solid rgba(255,255,255,.3); border-radius:var(--btn-radius); width:120px; }
   select { width:100%; } select option { background:var(--bg-dark); }
-  .veredicto { font-size:40px; font-weight:700; margin:4px 0 8px; }
+  .verdict { font-size:40px; font-weight:700; margin:4px 0 8px; }
   table { border-collapse:collapse; width:100%; margin:8px 0; font-size:14px; }
   th, td { border:1px solid var(--glass-border); padding:6px 8px; text-align:left; }
   details { border:1px solid var(--glass-border); border-radius:var(--btn-radius); padding:10px 12px; margin-top:12px; }
@@ -69,76 +69,76 @@
 </style>
 </head>
 <body>
-<div id="globo" aria-hidden="true"></div>
-<div class="sin3d" hidden id="sin3d">Tu navegador no puede mostrar el globo 3D.</div>
-<a class="marca" href="#/inicio">Detective de tendencias</a>
-<p class="creditos">Imágenes: NASA Blue Marble vía NASA GIBS · Globo: CesiumJS (Apache 2.0)</p>
-<a class="btn sec saltar" href="#/caso" id="saltar">Saltar</a>
+<div id="globe" aria-hidden="true"></div>
+<div class="no3d" hidden id="no3d">Your browser cannot display the 3D globe.</div>
+<a class="brand" href="#/home">Trend Detective</a>
+<p class="credits">Imagery: NASA Blue Marble via NASA GIBS · Globe: CesiumJS (Apache 2.0)</p>
+<a class="btn sec skip" href="#/case" id="skip">Skip</a>
 
 <main>
-<section class="vista portada" id="vista-inicio" aria-labelledby="t0">
-  <h1 id="t0" tabindex="-1">La Tierra está cambiando. ¿Qué es seguro y qué no?</h1>
-  <p>Investiga un cambio con datos de la NASA y recibe un veredicto honesto.</p>
-  <a class="btn" href="#/caso">Abrir un caso</a>
+<section class="view cover" id="view-home" aria-labelledby="t0">
+  <h1 id="t0" tabindex="-1">The Earth is changing. What do we know for sure?</h1>
+  <p>Investigate a change with NASA data and get an honest verdict.</p>
+  <a class="btn" href="#/case">Open a case</a>
 </section>
 
-<section class="vista lateral" id="vista-caso" aria-labelledby="t1">
-  <p class="paso">Paso 1 de 4 · Abrir caso</p>
-  <form id="caso">
+<section class="view side" id="view-case" aria-labelledby="t1">
+  <p class="step">Step 1 of 4 · Open a case</p>
+  <form id="case-form">
     <fieldset>
-      <legend><h2 id="t1" tabindex="-1">¿Qué quieres investigar?</h2></legend>
-      <ul class="rejilla" id="variables"></ul>
+      <legend><h2 id="t1" tabindex="-1">What do you want to investigate?</h2></legend>
+      <ul class="grid" id="variables"></ul>
     </fieldset>
     <fieldset>
-      <legend><h2>¿Dónde?</h2></legend>
-      <p class="nota">Haz clic en el globo, elige un lugar o escribe coordenadas.</p>
-      <label for="lugar">Lugar</label>
-      <select id="lugar"></select>
+      <legend><h2>Where?</h2></legend>
+      <p class="note">Click the globe, pick a place or type coordinates.</p>
+      <label for="place">Place</label>
+      <select id="place"></select>
       <div>
-        <label for="lat">Latitud</label> <input id="lat" type="number" step="0.01" min="-90" max="90" required>
-        <label for="lon">Longitud</label> <input id="lon" type="number" step="0.01" min="-180" max="180" required>
+        <label for="lat">Latitude</label> <input id="lat" type="number" step="0.01" min="-90" max="90" required>
+        <label for="lon">Longitude</label> <input id="lon" type="number" step="0.01" min="-180" max="180" required>
       </div>
-      <p class="nota">Los datos de NASA POWER promedian una celda de unos 50 × 60 km alrededor del punto.</p>
+      <p class="note">NASA POWER data average a cell of roughly 50 × 60 km around the point.</p>
     </fieldset>
-    <button class="btn" type="submit">Investigar</button>
-    <p id="estado" role="status" aria-live="polite"></p>
+    <button class="btn" type="submit">Investigate</button>
+    <p id="status" role="status" aria-live="polite"></p>
   </form>
 </section>
 
-<section class="vista lateral" id="vista-evidencia" aria-labelledby="t2">
-  <p class="paso">Paso 2 de 4 · La evidencia y los testigos</p>
+<section class="view side" id="view-evidence" aria-labelledby="t2">
+  <p class="step">Step 2 of 4 · Evidence and witnesses</p>
   <h2 id="t2" tabindex="-1"></h2>
   <figure>
-    <div id="grafico"></div>
-    <figcaption class="nota" id="pie-grafico"></figcaption>
+    <div id="chart"></div>
+    <figcaption class="note" id="chart-caption"></figcaption>
   </figure>
-  <details><summary>Ver los datos en una tabla</summary><div id="tabla"></div></details>
-  <h3>Los testigos</h3>
-  <p id="testigos"></p>
-  <a class="btn sec" href="#/caso">Atrás</a>
-  <a class="btn" href="#/veredicto">Ver el veredicto</a>
+  <details><summary>See the data as a table</summary><div id="table"></div></details>
+  <h3>Witnesses</h3>
+  <p id="witnesses"></p>
+  <a class="btn sec" href="#/case">Back</a>
+  <a class="btn" href="#/verdict">See the verdict</a>
 </section>
 
-<section class="vista lateral" id="vista-veredicto" aria-labelledby="t3">
-  <p class="paso">Paso 3 de 4 · El veredicto</p>
-  <h2 id="t3" tabindex="-1">Veredicto del caso</h2>
-  <p class="veredicto" id="veredicto"></p>
-  <p id="explicacion"></p>
-  <p><strong id="reloj"></strong></p>
+<section class="view side" id="view-verdict" aria-labelledby="t3">
+  <p class="step">Step 3 of 4 · The verdict</p>
+  <h2 id="t3" tabindex="-1">Case verdict</h2>
+  <p class="verdict" id="verdict"></p>
+  <p id="explanation"></p>
+  <p><strong id="clock"></strong></p>
   <details>
-    <summary>Ver detalle (para quien quiera la estadística)</summary>
-    <ul id="detalle"></ul>
+    <summary>See the statistics</summary>
+    <ul id="details"></ul>
   </details>
-  <a class="btn sec" href="#/evidencia">Atrás</a>
-  <a class="btn" href="#/expediente">Ver el expediente</a>
+  <a class="btn sec" href="#/evidence">Back</a>
+  <a class="btn" href="#/record">See the case file</a>
 </section>
 
-<section class="vista lateral" id="vista-expediente" aria-labelledby="t4">
-  <p class="paso">Paso 4 de 4 · Expediente</p>
-  <h2 id="t4" tabindex="-1">Expediente del caso</h2>
-  <table><tbody id="expediente"></tbody></table>
-  <button class="btn" type="button" id="descargar">Descargar expediente</button>
-  <a class="btn sec" href="#/caso">Abrir otro caso</a>
+<section class="view side" id="view-record" aria-labelledby="t4">
+  <p class="step">Step 4 of 4 · Case file</p>
+  <h2 id="t4" tabindex="-1">Case file</h2>
+  <table><tbody id="record"></tbody></table>
+  <button class="btn" type="button" id="download">Download case file</button>
+  <a class="btn sec" href="#/case">Open another case</a>
 </section>
 </main>
 

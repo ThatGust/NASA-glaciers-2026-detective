@@ -1,5 +1,5 @@
-"""Valores de referencia con pymannkendall para comparar con engine.js.
-Uso: python reference.py  (requiere pymannkendall)"""
+"""Reference values from pymannkendall to compare with engine.js.
+Usage: python reference.py  (requires pymannkendall)"""
 import json
 import pathlib
 

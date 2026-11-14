@@ -1,9 +1,8 @@
-// Motor estadístico del detective de tendencias. Contrato: context/CONTRATO_DATOS.md.
-// Funciones puras: corren igual en el navegador y en Node (pruebas).
+// Trend Detective statistics engine. Pure functions: they run the same in the browser and in Node (tests).
 
 const Z95 = 1.959963984540054;
 
-// Función de error (Abramowitz y Stegun 7.1.26, error < 1.5e-7) para la normal estándar.
+// Error function (Abramowitz & Stegun 7.1.26, error < 1.5e-7) for the standard normal CDF.
 function erf(x) {
   const s = Math.sign(x); x = Math.abs(x);
   const t = 1 / (1 + 0.3275911 * x);
@@ -17,7 +16,7 @@ const median = (a) => {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 };
 
-// Rangos con empates promediados (como scipy.stats.rankdata).
+// Ranks with averaged ties (like scipy.stats.rankdata).
 function ranks(a) {
   const idx = a.map((v, i) => [v, i]).sort((p, q) => p[0] - q[0]);
   const r = new Array(a.length);
@@ -30,7 +29,7 @@ function ranks(a) {
   return r;
 }
 
-// Pendiente de Sen sobre el índice temporal t (años), con IC del 95 % (Gilbert, 1987).
+// Sen's slope over time index t (years), with a 95% confidence interval (Gilbert, 1987).
 export function senSlope(t, x) {
   const s = [];
   for (let i = 0; i < x.length; i++)
@@ -45,7 +44,7 @@ export function senSlope(t, x) {
   return { slope, ci: [lo, hi], intercept };
 }
 
-// Varianza de S con corrección por empates.
+// Variance of S with tie correction.
 function varS(x) {
   const n = x.length, counts = new Map();
   for (const v of x) counts.set(v, (counts.get(v) || 0) + 1);
@@ -54,7 +53,7 @@ function varS(x) {
   return (n * (n - 1) * (2 * n + 5) - ties) / 18;
 }
 
-// Mann-Kendall con la modificación de Hamed y Rao (1998), como pymannkendall.hamed_rao_modification_test.
+// Mann-Kendall with the Hamed & Rao (1998) modification, matching pymannkendall.hamed_rao_modification_test.
 export function mannKendallHR(x) {
   const n = x.length;
   let S = 0;
@@ -62,7 +61,7 @@ export function mannKendallHR(x) {
     for (let j = i + 1; j < n; j++) S += Math.sign(x[j] - x[i]);
   let v = varS(x);
 
-  // Autocorrelación de los rangos de la serie sin tendencia (pendiente de Sen sobre el índice 0..n-1).
+  // Autocorrelation of the ranks of the detrended series (Sen's slope over index 0..n-1).
   const idx = x.map((_, i) => i);
   const { slope } = senSlope(idx, x);
   const r = ranks(x.map((val, i) => val - slope * (i + 1)));
@@ -87,7 +86,7 @@ export function mannKendallHR(x) {
 
 const verdictOf = (p) => (p < 0.05 ? 'confirmed' : p < 0.1 ? 'likely' : 'unknown');
 
-// Años adicionales para detectar la pendiente actual (potencia 0,9, α 0,05, ruido AR(1)). Ver contrato §4.
+// Extra years needed to detect the current slope (power 0.9, alpha 0.05, AR(1) noise).
 export function yearsNeeded(t, x, slope, intercept) {
   const n = x.length;
   if (slope === 0) return Infinity;
@@ -101,21 +100,22 @@ export function yearsNeeded(t, x, slope, intercept) {
   return Math.max(0, Math.ceil(detectionYears(sd, phi, slope) - n));
 }
 
-// Años totales para detectar una pendiente (por año) con ruido AR(1) de desviación sd y autocorrelación phi.
+// Total years needed to detect a per-year slope under AR(1) noise with standard deviation sd and lag-1 autocorrelation phi.
+// Derived from the slope's standard error, following the approach of Weatherhead et al. (1998), doi:10.1029/98JD00995.
 export const detectionYears = (sd, phi, slope) =>
   Math.pow(3.24 * Math.sqrt(12) * (sd / Math.abs(slope)) * Math.sqrt((1 + phi) / (1 - phi)), 2 / 3);
 
 const MIN_YEARS = 8;
 
-// Análisis completo de una serie anual {years, values, units}.
+// Full analysis of an annual series {years, values, units}.
 export function analyze({ years, values, units = '' }) {
-  if (years.length !== values.length) throw new Error('years y values deben tener la misma longitud');
-  if (years.length < MIN_YEARS) throw new Error(`Se necesitan al menos ${MIN_YEARS} años de datos`);
+  if (years.length !== values.length) throw new Error('years and values must have the same length');
+  if (years.length < MIN_YEARS) throw new Error(`At least ${MIN_YEARS} years of data are needed`);
   const { slope, ci, intercept } = senSlope(years, values);
   const { p, tau } = mannKendallHR(values);
   const verdict = verdictOf(p);
 
-  // "Se sabe desde": primer año final desde el que la serie es significativa y lo sigue siendo.
+  // "Known since": first end year from which the series is significant and stays significant.
   let knownSince = null;
   for (let e = years.length - 1; e >= MIN_YEARS - 1; e--) {
     if (mannKendallHR(values.slice(0, e + 1)).p < 0.05) knownSince = years[e];
@@ -131,7 +131,7 @@ export function analyze({ years, values, units = '' }) {
   };
 }
 
-// Compara el resultado principal con un testigo en los años comunes. Contrato §3.
+// Compares the main series with a witness over their common years.
 export function compareWitnesses(principal, testigo) {
   const common = principal.years.filter((y) => testigo.years.includes(y));
   const pick = (s) => common.map((y) => s.values[s.years.indexOf(y)]);
@@ -143,14 +143,14 @@ export function compareWitnesses(principal, testigo) {
   };
 }
 
-// Serie anual desde la respuesta mensual de NASA POWER: media de los meses 1–12, sin años incompletos ni el año en curso.
+// Annual series from a NASA POWER monthly response: mean of months 1-12, dropping incomplete years and the current year.
 export function annualFromPower(json, parameter, currentYear = new Date().getFullYear()) {
   const fill = json.header?.fill_value ?? -999;
   const p = json.properties.parameter[parameter];
   const byYear = new Map();
   for (const [k, v] of Object.entries(p)) {
     const y = +k.slice(0, 4), m = +k.slice(4);
-    if (m < 1 || m > 12) continue; // el mes 13 es la media anual de POWER
+    if (m < 1 || m > 12) continue; // month 13 is POWER's own annual mean
     if (!byYear.has(y)) byYear.set(y, []);
     byYear.get(y).push(v);
   }
@@ -160,13 +160,13 @@ export function annualFromPower(json, parameter, currentYear = new Date().getFul
     years.push(y);
     values.push(vals.reduce((a, b) => a + b, 0) / 12);
   }
-  const src = (json.header?.sources ?? []).filter((s) => s !== 'POWER').join(' + ') || 'desconocida';
+  const src = (json.header?.sources ?? []).filter((s) => s !== 'POWER').join(' + ') || 'unknown';
   return { years, values, units: json.parameters?.[parameter]?.units ?? '', source: `NASA POWER · ${src}`, variable: parameter };
 }
 
 export async function fetchPower(parameter, lat, lon, start = 1981, end = new Date().getFullYear() - 1) {
   const url = `https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=${parameter}&community=AG&longitude=${lon}&latitude=${lat}&start=${start}&end=${end}&format=JSON`;
   const r = await fetch(url);
-  if (!r.ok) throw new Error(`NASA POWER respondió ${r.status}`);
+  if (!r.ok) throw new Error(`NASA POWER answered ${r.status}`);
   return annualFromPower(await r.json(), parameter);
 }
