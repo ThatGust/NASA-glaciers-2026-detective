@@ -1,8 +1,8 @@
-# Trend Detective
+# Signal or Noise
 
-**NASA Space Apps Challenge 2026 · Challenge: "Be An Earth System Trend Detective!" · Arequipa, Peru**
+**An Earth & Moon trend detective** · NASA Space Apps Challenge 2026 · Challenge: "Be An Earth System Trend Detective!" · Arequipa, Peru
 
-Trend Detective lets anyone pick a NASA Earth-science variable and a place on a 3D globe, and get an honest verdict on whether it is really changing: **Confirmed**, **Likely** or **Not yet known**. When a trend is not yet significant, a "clock" estimates how many more years of data would be needed to confirm it. When it is, it says since when it has been known.
+Signal or Noise lets anyone pick a NASA Earth-science variable and a place on a 3D globe, and get an honest verdict on whether it is really changing: **Confirmed**, **Likely** or **Not yet known**. When a trend is not yet significant, a "clock" estimates how many more years of data would be needed to confirm it. When it is, it says since when it has been known.
 
 ## Global monitor
 

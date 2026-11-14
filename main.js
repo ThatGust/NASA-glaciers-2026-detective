@@ -1,4 +1,4 @@
-// Trend Detective UI: ties the form, NASA POWER and the engine together. Data formats: see README.
+// Signal or Noise UI: ties the form, NASA POWER and the engine together. Data formats: see README.
 import { alibiTest, analyze, blockShuffle, lunarIndex, lunarTest, LUNAR_MIN_YEARS, projection, compareWitnesses, fetchPower, fetchPowerMany, predictionTest, scan } from './engine.js';
 
 // Built-in fallback catalog. data/catalog.json (verified sources, more variables and places) replaces it when present.
@@ -1012,7 +1012,7 @@ if (goodRivers.length) {
   addExtra({
     extraVariables: [{ id: 'DISCHARGE', name: 'River discharge', group: 'Water', units: 'm3/s', source: `${rivers.organization}`,
       // Open-Meteo data are CC BY 4.0: credit and a link must sit next to the data wherever they are shown.
-      notice: 'Flood data by <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>), from the GloFAS reanalysis of the Copernicus Emergency Management Service; annual means computed by Trend Detective. GloFAS is a model reconstruction from weather data, not a river gauge, so a trend can also reflect changes in the model.',
+      notice: 'Flood data by <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>), from the GloFAS reanalysis of the Copernicus Emergency Management Service; annual means computed by Signal or Noise. GloFAS is a model reconstruction from weather data, not a river gauge, so a trend can also reflect changes in the model.',
       definition: 'How much water flows down the river each second, averaged over the year.' }],
     extra: Object.fromEntries(goodRivers.map((p) => [p.id, { DISCHARGE: { ...rivers.series[p.id], source: rivers.organization } }])),
   });
