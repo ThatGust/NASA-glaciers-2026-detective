@@ -8,6 +8,8 @@ const evidence = JSON.parse(await readFile(new URL('./demo_checks.json', import.
 const catalogEvidence = JSON.parse(await readFile(new URL('./catalog_checks.json', import.meta.url)));
 assert.equal(new Set(catalog.variables.map(v => v.id)).size, catalog.variables.length);
 assert.equal(new Set(catalog.places.map(p => p.id)).size, catalog.places.length);
+for (const { place } of catalogEvidence.coordinateEvidence)
+  assert.deepEqual(catalog.places.find(p => p.id === place.id), place, `Existing place changed or removed: ${place.id}`);
 for (const v of catalog.variables) {
   for (const key of ['id', 'name', 'group', 'definition', 'power_definition', 'units', 'source', 'notes']) assert.equal(typeof v[key], 'string');
   assert.ok(['Heat', 'Water', 'Sun and clouds', 'Air'].includes(v.group));
@@ -25,9 +27,20 @@ for (const p of catalog.places) {
   assert.ok(Number.isFinite(p.lat) && Math.abs(p.lat) <= 90);
   assert.ok(Number.isFinite(p.lon) && Math.abs(p.lon) <= 180);
   assert.equal(new URL(p.coord_source).protocol, 'https:');
-  assert.deepEqual(p, catalogEvidence.coordinateEvidence.find(row => row.place.id === p.id).place);
+  const citation = catalogEvidence.coordinateEvidence.find(row => row.place.id === p.id) ?? catalog.coordinate_evidence?.[p.id];
+  assert.ok(citation, `Missing coordinate evidence: ${p.id}`);
+  assert.deepEqual(p, citation.place);
+  if (citation.response?.page.coordinates?.length) {
+    const coord = citation.response.page.coordinates[0];
+    assert.equal(p.lat, coord.lat);
+    assert.equal(p.lon, coord.lon);
+  } else if (citation.wikidata) {
+    const coord = citation.wikidata.claim.mainsnak.datavalue.value;
+    assert.equal(p.lat, coord.latitude);
+    assert.equal(p.lon, coord.longitude);
+  } else assert.equal(typeof citation.citation, 'string');
 }
-for (const environment of ['glacier', 'desert', 'rainforest', 'city', 'coast', 'ocean', 'polar']) assert.ok(catalog.places.filter(p => p.environment === environment).length >= 3);
+for (const environment of ['glacier', 'desert', 'rainforest', 'city', 'coast', 'ocean', 'polar', 'lake', 'volcano', 'savanna', 'tundra', 'coral_reef', 'wetland']) assert.ok(catalog.places.filter(p => p.environment === environment).length >= 3, `Missing places: ${environment}`);
 for (const id of ['coropuna', 'quelccaya', 'huascaran', 'zongo', 'chimborazo', 'perito-moreno', 'columbia', 'jakobshavn', 'aletsch', 'kilimanjaro', 'khumbu', 'puncak-jaya']) assert.ok(catalog.places.some(p => p.id === id));
 assert.equal(demos.length, 3);
 for (const demo of demos) {
@@ -62,3 +75,39 @@ for (const demo of demos) {
   } else assert.fail(`Unexpected demo: ${demo.id}`);
 }
 console.log(`Validated ${catalog.variables.length} variables, ${catalog.places.length} cited places, and all ${demos.length} offline demos.`);
+
+const rivers = JSON.parse(await readFile(new URL('../data/rivers.json', import.meta.url)));
+const facts = JSON.parse(await readFile(new URL('../data/place_facts.json', import.meta.url)));
+const places = [...catalog.places, ...rivers.places];
+assert.deepEqual(Object.keys(facts.facts).sort(), places.map(p => p.id).sort());
+assert.ok(Number.isFinite(Date.parse(facts.generated)));
+assert.ok(facts.source.climate.includes('NASA POWER'));
+for (const place of places) {
+  const fact = facts.facts[place.id];
+  assert.ok(fact.country?.length);
+  assert.equal(fact.elevation_label, 'NASA POWER grid elevation');
+  assert.ok(Number.isFinite(fact.elevation_m) || (fact.elevation_m === null && fact.elevation_note));
+  for (const key of ['mean_temp_c', 'mean_precip_mm_day', 'warming_c_per_decade']) assert.ok(Number.isFinite(fact[key]), `${place.id}: invalid ${key}`);
+  assert.ok(fact.mean_temp_c > -100 && fact.mean_temp_c < 65);
+  assert.ok(fact.mean_precip_mm_day >= 0 && fact.mean_precip_mm_day < 100);
+  assert.ok(['confirmed', 'likely', 'unknown'].includes(fact.warming_verdict));
+  assert.deepEqual(fact.climatology_period, [1991, 2020]);
+  assert.deepEqual(fact.warming_period, [1981, new Date().getUTCFullYear() - 1]);
+  assert.ok(fact.one_line.trim().split(/\s+/).length <= 14);
+  assert.equal(new URL(fact.one_line_source).hostname, 'en.wikipedia.org');
+  assert.ok(new URL(fact.one_line_source).searchParams.get('oldid'));
+  assert.equal(new URL(fact.country_source).protocol, 'https:');
+  for (const source of Object.values(fact.power_sources)) {
+    assert.equal(new URL(source.url).hostname, 'power.larc.nasa.gov');
+    assert.ok(Number.isFinite(Date.parse(source.retrieved)));
+  }
+  const image = await readFile(new URL(`../img/places/${place.id}.jpg`, import.meta.url));
+  assert.ok(image.length < 70000 && image[0] === 255 && image[1] === 216, `${place.id}: invalid or oversized JPEG`);
+}
+const credits = await readFile(new URL('../img/places/CREDITS.md', import.meta.url), 'utf8');
+for (const place of places) assert.ok(credits.includes(`](./${place.id}.jpg)`), `${place.id}: missing image credit`);
+if (process.argv.includes('--cache')) {
+  const { generateFacts } = await import('./place_facts.mjs');
+  assert.deepEqual((await generateFacts(true)).facts, facts.facts);
+}
+console.log(`Validated facts, image files, and image credits for all ${places.length} catalog and river places.`);

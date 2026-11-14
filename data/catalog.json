@@ -1156,6 +1156,954 @@
       "lon": 106.8373278,
       "environment": "polar",
       "coord_source": "https://en.wikipedia.org/wiki/Vostok_Station"
+    },
+    {
+      "id": "lake_titicaca",
+      "name": "Lake Titicaca (Peru and Bolivia)",
+      "short": "Titicaca",
+      "lat": -15.825,
+      "lon": -69.325,
+      "environment": "lake",
+      "coord_source": "https://en.wikipedia.org/wiki/Lake_Titicaca"
+    },
+    {
+      "id": "aral_sea",
+      "name": "Aral Sea (Kazakhstan and Uzbekistan)",
+      "short": "Aral Sea",
+      "lat": 45,
+      "lon": 60,
+      "environment": "lake",
+      "coord_source": "https://en.wikipedia.org/wiki/Aral_Sea"
+    },
+    {
+      "id": "lake_chad",
+      "name": "Lake Chad (Central Africa)",
+      "short": "Lake Chad",
+      "lat": 13.099,
+      "lon": 14.533,
+      "environment": "lake",
+      "coord_source": "https://en.wikipedia.org/wiki/Lake_Chad"
+    },
+    {
+      "id": "el_misti",
+      "name": "El Misti (Arequipa, Peru)",
+      "short": "El Misti",
+      "lat": -16.29638889,
+      "lon": -71.41055556,
+      "environment": "volcano",
+      "coord_source": "https://en.wikipedia.org/wiki/Misti"
+    },
+    {
+      "id": "etna",
+      "name": "Mount Etna (Italy)",
+      "short": "Etna",
+      "lat": 37.755,
+      "lon": 14.995,
+      "environment": "volcano",
+      "coord_source": "https://en.wikipedia.org/wiki/Mount_Etna"
+    },
+    {
+      "id": "mauna_loa",
+      "name": "Mauna Loa (Hawaii, USA)",
+      "short": "Mauna Loa",
+      "lat": 19.47944444,
+      "lon": -155.60277778,
+      "environment": "volcano",
+      "coord_source": "https://en.wikipedia.org/wiki/Mauna_Loa"
+    },
+    {
+      "id": "serengeti",
+      "name": "Serengeti (Tanzania and Kenya)",
+      "short": "Serengeti",
+      "lat": -2.33083333,
+      "lon": 34.83333333,
+      "environment": "savanna",
+      "coord_source": "https://en.wikipedia.org/wiki/Serengeti"
+    },
+    {
+      "id": "cerrado",
+      "name": "Cerrado (Brazil)",
+      "short": "Cerrado",
+      "lat": -14.005693888888889,
+      "lon": -47.68461111111111,
+      "environment": "savanna",
+      "coord_source": "https://www.wikidata.org/wiki/Q278512#P625"
+    },
+    {
+      "id": "sahel",
+      "name": "Sahel (Africa)",
+      "short": "Sahel",
+      "lat": 14.474672,
+      "lon": 13.511696,
+      "environment": "savanna",
+      "coord_source": "https://www.wikidata.org/wiki/Q66065#P625"
+    },
+    {
+      "id": "yamal",
+      "name": "Yamal Peninsula (Russia)",
+      "short": "Yamal",
+      "lat": 70.67088,
+      "lon": 70.13672,
+      "environment": "tundra",
+      "coord_source": "https://en.wikipedia.org/wiki/Yamal_Peninsula"
+    },
+    {
+      "id": "alaska_north_slope",
+      "name": "Alaska North Slope (USA)",
+      "short": "North Slope",
+      "lat": 69.0578758,
+      "lon": -152.8628274,
+      "environment": "tundra",
+      "coord_source": "https://en.wikipedia.org/wiki/Alaska_North_Slope"
+    },
+    {
+      "id": "baffin_island",
+      "name": "Baffin Island (Canada)",
+      "short": "Baffin Island",
+      "lat": 68,
+      "lon": -70,
+      "environment": "tundra",
+      "coord_source": "https://en.wikipedia.org/wiki/Baffin_Island"
+    },
+    {
+      "id": "great_barrier_reef",
+      "name": "Great Barrier Reef (Davies Reef, Australia)",
+      "short": "Davies Reef",
+      "lat": -18.816666666666666,
+      "lon": 147.63333333333333,
+      "environment": "coral_reef",
+      "coord_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5971101/"
+    },
+    {
+      "id": "glovers_reef",
+      "name": "Glover's Reef (Belize)",
+      "short": "Glover's Reef",
+      "lat": 16.823,
+      "lon": -87.791,
+      "environment": "coral_reef",
+      "coord_source": "https://en.wikipedia.org/wiki/Glover%27s_Reef"
+    },
+    {
+      "id": "elphinstone_reef",
+      "name": "Elphinstone Reef (Red Sea, Egypt)",
+      "short": "Elphinstone Reef",
+      "lat": 25.30861111,
+      "lon": 34.86027778,
+      "environment": "coral_reef",
+      "coord_source": "https://en.wikipedia.org/wiki/Elphinstone_Reef"
+    },
+    {
+      "id": "pantanal",
+      "name": "Pantanal (South America)",
+      "short": "Pantanal",
+      "lat": -17.4,
+      "lon": -57.5,
+      "environment": "wetland",
+      "coord_source": "https://en.wikipedia.org/wiki/Pantanal"
+    },
+    {
+      "id": "sundarbans",
+      "name": "Sundarbans (Bangladesh and India)",
+      "short": "Sundarbans",
+      "lat": 21.75,
+      "lon": 88.75,
+      "environment": "wetland",
+      "coord_source": "https://en.wikipedia.org/wiki/Sundarbans"
+    },
+    {
+      "id": "okavango",
+      "name": "Okavango Delta (Botswana)",
+      "short": "Okavango",
+      "lat": -19.4,
+      "lon": 22.9,
+      "environment": "wetland",
+      "coord_source": "https://en.wikipedia.org/wiki/Okavango_Delta"
     }
-  ]
+  ],
+  "coordinate_evidence": {
+    "lake_titicaca": {
+      "place": {
+        "id": "lake_titicaca",
+        "name": "Lake Titicaca (Peru and Bolivia)",
+        "short": "Titicaca",
+        "lat": -15.825,
+        "lon": -69.325,
+        "environment": "lake",
+        "coord_source": "https://en.wikipedia.org/wiki/Lake_Titicaca"
+      },
+      "response": {
+        "url": "https://en.wikipedia.org/w/api.php?action=query&prop=coordinates%7Cinfo%7Cpageprops&inprop=url&coprimary=primary&colimit=max&redirects=1&titles=Lake+Titicaca%7CAral+Sea%7CLake+Chad%7CMisti%7CMount+Etna%7CMauna+Loa%7CSerengeti%7CCerrado%7CSahel%7CYamal+Peninsula%7CAlaska+North+Slope%7CBaffin+Island%7CGreat+Barrier+Reef%7CGlover%27s+Reef%7CElphinstone+Reef%7CPantanal%7CSundarbans%7COkavango+Delta&format=json",
+        "retrieved": "2026-11-14T14:51:03.423Z",
+        "page": {
+          "pageid": 159765,
+          "ns": 0,
+          "title": "Lake Titicaca",
+          "coordinates": [
+            {
+              "lat": -15.825,
+              "lon": -69.325,
+              "primary": "",
+              "globe": "earth"
+            }
+          ],
+          "contentmodel": "wikitext",
+          "pagelanguage": "en",
+          "pagelanguagehtmlcode": "en",
+          "pagelanguagedir": "ltr",
+          "touched": "2026-11-14T07:03:13Z",
+          "lastrevid": 1381116398,
+          "length": 52319,
+          "fullurl": "https://en.wikipedia.org/wiki/Lake_Titicaca",
+          "editurl": "https://en.wikipedia.org/w/index.php?title=Lake_Titicaca&action=edit",
+          "canonicalurl": "https://en.wikipedia.org/wiki/Lake_Titicaca",
+          "pageprops": {
+            "defaultsort": "Titicaca",
+            "page_image_free": "Lake_Titicaca_ESA22522896.jpeg",
+            "wikibase-shortdesc": "Large lake on the border of Peru and Bolivia",
+            "wikibase_item": "Q35342"
+          }
+        }
+      }
+    },
+    "aral_sea": {
+      "place": {
+        "id": "aral_sea",
+        "name": "Aral Sea (Kazakhstan and Uzbekistan)",
+        "short": "Aral Sea",
+        "lat": 45,
+        "lon": 60,
+        "environment": "lake",
+        "coord_source": "https://en.wikipedia.org/wiki/Aral_Sea"
+      },
+      "response": {
+        "url": "https://en.wikipedia.org/w/api.php?action=query&prop=coordinates%7Cinfo%7Cpageprops&inprop=url&coprimary=primary&colimit=max&redirects=1&titles=Lake+Titicaca%7CAral+Sea%7CLake+Chad%7CMisti%7CMount+Etna%7CMauna+Loa%7CSerengeti%7CCerrado%7CSahel%7CYamal+Peninsula%7CAlaska+North+Slope%7CBaffin+Island%7CGreat+Barrier+Reef%7CGlover%27s+Reef%7CElphinstone+Reef%7CPantanal%7CSundarbans%7COkavango+Delta&format=json",
+        "retrieved": "2026-11-14T14:51:03.423Z",
+        "page": {
+          "pageid": 68915,
+          "ns": 0,
+          "title": "Aral Sea",
+          "coordinates": [
+            {
+              "lat": 45,
+              "lon": 60,
+              "primary": "",
+              "globe": "earth"
+            }
+          ],
+          "contentmodel": "wikitext",
+          "pagelanguage": "en",
+          "pagelanguagehtmlcode": "en",
+          "pagelanguagedir": "ltr",
+          "touched": "2026-11-14T11:42:36Z",
+          "lastrevid": 1385638883,
+          "length": 87128,
+          "fullurl": "https://en.wikipedia.org/wiki/Aral_Sea",
+          "editurl": "https://en.wikipedia.org/w/index.php?title=Aral_Sea&action=edit",
+          "canonicalurl": "https://en.wikipedia.org/wiki/Aral_Sea",
+          "pageprops": {
+            "page_image_free": "Aral_Sea_1964_vs._August_25,_2026.png",
+            "wikibase-shortdesc": "Lake in Kazakhstan and Uzbekistan",
+            "wikibase_item": "Q35883"
+          }
+        }
+      }
+    },
+    "lake_chad": {
+      "place": {
+        "id": "lake_chad",
+        "name": "Lake Chad (Central Africa)",
+        "short": "Lake Chad",
+        "lat": 13.099,
+        "lon": 14.533,
+        "environment": "lake",
+        "coord_source": "https://en.wikipedia.org/wiki/Lake_Chad"
+      },
+      "response": {
+        "url": "https://en.wikipedia.org/w/api.php?action=query&prop=coordinates%7Cinfo%7Cpageprops&inprop=url&coprimary=primary&colimit=max&redirects=1&titles=Lake+Titicaca%7CAral+Sea%7CLake+Chad%7CMisti%7CMount+Etna%7CMauna+Loa%7CSerengeti%7CCerrado%7CSahel%7CYamal+Peninsula%7CAlaska+North+Slope%7CBaffin+Island%7CGreat+Barrier+Reef%7CGlover%27s+Reef%7CElphinstone+Reef%7CPantanal%7CSundarbans%7COkavango+Delta&format=json",
+        "retrieved": "2026-11-14T14:51:03.423Z",
+        "page": {
+          "pageid": 59314,
+          "ns": 0,
+          "title": "Lake Chad",
+          "coordinates": [
+            {
+              "lat": 13.099,
+              "lon": 14.533,
+              "primary": "",
+              "globe": "earth"
+            }
+          ],
+          "contentmodel": "wikitext",
+          "pagelanguage": "en",
+          "pagelanguagehtmlcode": "en",
+          "pagelanguagedir": "ltr",
+          "touched": "2026-11-14T07:02:49Z",
+          "lastrevid": 1383897363,
+          "length": 48524,
+          "fullurl": "https://en.wikipedia.org/wiki/Lake_Chad",
+          "editurl": "https://en.wikipedia.org/w/index.php?title=Lake_Chad&action=edit",
+          "canonicalurl": "https://en.wikipedia.org/wiki/Lake_Chad",
+          "pageprops": {
+            "defaultsort": "Chad, Lake",
+            "page_image_free": "Lake_Chad_(MODIS_2018-06-07).jpg",
+            "wikibase-badge-Q17437798": "",
+            "wikibase-shortdesc": "Lake in West-Central Africa",
+            "wikibase_item": "Q125309"
+          }
+        }
+      }
+    },
+    "el_misti": {
+      "place": {
+        "id": "el_misti",
+        "name": "El Misti (Arequipa, Peru)",
+        "short": "El Misti",
+        "lat": -16.29638889,
+        "lon": -71.41055556,
+        "environment": "volcano",
+        "coord_source": "https://en.wikipedia.org/wiki/Misti"
+      },
+      "response": {
+        "url": "https://en.wikipedia.org/w/api.php?action=query&prop=coordinates%7Cinfo%7Cpageprops&inprop=url&coprimary=primary&colimit=max&redirects=1&titles=Lake+Titicaca%7CAral+Sea%7CLake+Chad%7CMisti%7CMount+Etna%7CMauna+Loa%7CSerengeti%7CCerrado%7CSahel%7CYamal+Peninsula%7CAlaska+North+Slope%7CBaffin+Island%7CGreat+Barrier+Reef%7CGlover%27s+Reef%7CElphinstone+Reef%7CPantanal%7CSundarbans%7COkavango+Delta&format=json",
+        "retrieved": "2026-11-14T14:51:03.423Z",
+        "page": {
+          "pageid": 297315,
+          "ns": 0,
+          "title": "Misti",
+          "coordinates": [
+            {
+              "lat": -16.29638889,
+              "lon": -71.41055556,
+              "primary": "",
+              "globe": "earth"
+            }
+          ],
+          "contentmodel": "wikitext",
+          "pagelanguage": "en",
+          "pagelanguagehtmlcode": "en",
+          "pagelanguagedir": "ltr",
+          "touched": "2026-11-14T07:03:26Z",
+          "lastrevid": 1384969132,
+          "length": 140531,
+          "fullurl": "https://en.wikipedia.org/wiki/Misti",
+          "editurl": "https://en.wikipedia.org/w/index.php?title=Misti&action=edit",
+          "canonicalurl": "https://en.wikipedia.org/wiki/Misti",
+          "pageprops": {
+            "defaultsort": "Misti",
+            "page_image_free": "Volcano_Misti,_Peru.jpg",
+            "wikibase-badge-Q17437796": "",
+            "wikibase-shortdesc": "Stratovolcano in Peru",
+            "wikibase_item": "Q572865"
+          }
+        }
+      }
+    },
+    "etna": {
+      "place": {
+        "id": "etna",
+        "name": "Mount Etna (Italy)",
+        "short": "Etna",
+        "lat": 37.755,
+        "lon": 14.995,
+        "environment": "volcano",
+        "coord_source": "https://en.wikipedia.org/wiki/Mount_Etna"
+      },
+      "response": {
+        "url": "https://en.wikipedia.org/w/api.php?action=query&prop=coordinates%7Cinfo%7Cpageprops&inprop=url&coprimary=primary&colimit=max&redirects=1&titles=Lake+Titicaca%7CAral+Sea%7CLake+Chad%7CMisti%7CMount+Etna%7CMauna+Loa%7CSerengeti%7CCerrado%7CSahel%7CYamal+Peninsula%7CAlaska+North+Slope%7CBaffin+Island%7CGreat+Barrier+Reef%7CGlover%27s+Reef%7CElphinstone+Reef%7CPantanal%7CSundarbans%7COkavango+Delta&format=json",
+        "retrieved": "2026-11-14T14:51:03.423Z",
+        "page": {
+          "pageid": 169351,
+          "ns": 0,
+          "title": "Mount Etna",
+          "coordinates": [
+            {
+              "lat": 37.755,
+              "lon": 14.995,
+              "primary": "",
+              "globe": "earth"
+            }
+          ],
+          "contentmodel": "wikitext",
+          "pagelanguage": "en",
+          "pagelanguagehtmlcode": "en",
+          "pagelanguagedir": "ltr",
+          "touched": "2026-11-14T07:03:14Z",
+          "lastrevid": 1381555985,
+          "length": 63343,
+          "fullurl": "https://en.wikipedia.org/wiki/Mount_Etna",
+          "editurl": "https://en.wikipedia.org/w/index.php?title=Mount_Etna&action=edit",
+          "canonicalurl": "https://en.wikipedia.org/wiki/Mount_Etna",
+          "pageprops": {
+            "defaultsort": "Etna",
+            "page_image_free": "Mt_Etna_and_Catania1.jpg",
+            "wikibase-shortdesc": "Active volcano on the east coast of Sicily, Italy",
+            "wikibase_item": "Q16990"
+          }
+        }
+      }
+    },
+    "mauna_loa": {
+      "place": {
+        "id": "mauna_loa",
+        "name": "Mauna Loa (Hawaii, USA)",
+        "short": "Mauna Loa",
+        "lat": 19.47944444,
+        "lon": -155.60277778,
+        "environment": "volcano",
+        "coord_source": "https://en.wikipedia.org/wiki/Mauna_Loa"
+      },
+      "response": {
+        "url": "https://en.wikipedia.org/w/api.php?action=query&prop=coordinates%7Cinfo%7Cpageprops&inprop=url&coprimary=primary&colimit=max&redirects=1&titles=Lake+Titicaca%7CAral+Sea%7CLake+Chad%7CMisti%7CMount+Etna%7CMauna+Loa%7CSerengeti%7CCerrado%7CSahel%7CYamal+Peninsula%7CAlaska+North+Slope%7CBaffin+Island%7CGreat+Barrier+Reef%7CGlover%27s+Reef%7CElphinstone+Reef%7CPantanal%7CSundarbans%7COkavango+Delta&format=json",
+        "retrieved": "2026-11-14T14:51:03.423Z",
+        "page": {
+          "pageid": 158835,
+          "ns": 0,
+          "title": "Mauna Loa",
+          "coordinates": [
+            {
+              "lat": 19.47944444,
+              "lon": -155.60277778,
+              "primary": "",
+              "globe": "earth"
+            }
+          ],
+          "contentmodel": "wikitext",
+          "pagelanguage": "en",
+          "pagelanguagehtmlcode": "en",
+          "pagelanguagedir": "ltr",
+          "touched": "2026-11-14T07:03:13Z",
+          "lastrevid": 1379623547,
+          "length": 97711,
+          "fullurl": "https://en.wikipedia.org/wiki/Mauna_Loa",
+          "editurl": "https://en.wikipedia.org/w/index.php?title=Mauna_Loa&action=edit",
+          "canonicalurl": "https://en.wikipedia.org/wiki/Mauna_Loa",
+          "pageprops": {
+            "page_image_free": "Mauna_Loa_Volcano.jpg",
+            "wikibase-badge-Q17437796": "",
+            "wikibase-shortdesc": "Volcano in Hawaii, United States",
+            "wikibase_item": "Q159762"
+          }
+        }
+      }
+    },
+    "serengeti": {
+      "place": {
+        "id": "serengeti",
+        "name": "Serengeti (Tanzania and Kenya)",
+        "short": "Serengeti",
+        "lat": -2.33083333,
+        "lon": 34.83333333,
+        "environment": "savanna",
+        "coord_source": "https://en.wikipedia.org/wiki/Serengeti"
+      },
+      "response": {
+        "url": "https://en.wikipedia.org/w/api.php?action=query&prop=coordinates%7Cinfo%7Cpageprops&inprop=url&coprimary=primary&colimit=max&redirects=1&titles=Lake+Titicaca%7CAral+Sea%7CLake+Chad%7CMisti%7CMount+Etna%7CMauna+Loa%7CSerengeti%7CCerrado%7CSahel%7CYamal+Peninsula%7CAlaska+North+Slope%7CBaffin+Island%7CGreat+Barrier+Reef%7CGlover%27s+Reef%7CElphinstone+Reef%7CPantanal%7CSundarbans%7COkavango+Delta&format=json",
+        "retrieved": "2026-11-14T14:51:03.423Z",
+        "page": {
+          "pageid": 28861,
+          "ns": 0,
+          "title": "Serengeti",
+          "coordinates": [
+            {
+              "lat": -2.33083333,
+              "lon": 34.83333333,
+              "primary": "",
+              "globe": "earth"
+            }
+          ],
+          "contentmodel": "wikitext",
+          "pagelanguage": "en",
+          "pagelanguagehtmlcode": "en",
+          "pagelanguagedir": "ltr",
+          "touched": "2026-11-13T07:06:56Z",
+          "lastrevid": 1378040496,
+          "length": 20599,
+          "fullurl": "https://en.wikipedia.org/wiki/Serengeti",
+          "editurl": "https://en.wikipedia.org/w/index.php?title=Serengeti&action=edit",
+          "canonicalurl": "https://en.wikipedia.org/wiki/Serengeti",
+          "pageprops": {
+            "page_image_free": "Parks_Tanzania.svg",
+            "wikibase-shortdesc": "Geographical region in Tanzania",
+            "wikibase_item": "Q4991540"
+          }
+        }
+      }
+    },
+    "cerrado": {
+      "place": {
+        "id": "cerrado",
+        "name": "Cerrado (Brazil)",
+        "short": "Cerrado",
+        "lat": -14.005693888888889,
+        "lon": -47.68461111111111,
+        "environment": "savanna",
+        "coord_source": "https://www.wikidata.org/wiki/Q278512#P625"
+      },
+      "response": {
+        "url": "https://en.wikipedia.org/w/api.php?action=query&prop=coordinates%7Cinfo%7Cpageprops&inprop=url&coprimary=primary&colimit=max&redirects=1&titles=Lake+Titicaca%7CAral+Sea%7CLake+Chad%7CMisti%7CMount+Etna%7CMauna+Loa%7CSerengeti%7CCerrado%7CSahel%7CYamal+Peninsula%7CAlaska+North+Slope%7CBaffin+Island%7CGreat+Barrier+Reef%7CGlover%27s+Reef%7CElphinstone+Reef%7CPantanal%7CSundarbans%7COkavango+Delta&format=json",
+        "retrieved": "2026-11-14T14:51:03.423Z",
+        "page": {
+          "pageid": 2143658,
+          "ns": 0,
+          "title": "Cerrado",
+          "contentmodel": "wikitext",
+          "pagelanguage": "en",
+          "pagelanguagehtmlcode": "en",
+          "pagelanguagedir": "ltr",
+          "touched": "2026-11-14T07:05:35Z",
+          "lastrevid": 1382044950,
+          "length": 63138,
+          "fullurl": "https://en.wikipedia.org/wiki/Cerrado",
+          "editurl": "https://en.wikipedia.org/w/index.php?title=Cerrado&action=edit",
+          "canonicalurl": "https://en.wikipedia.org/wiki/Cerrado",
+          "pageprops": {
+            "page_image_free": "Morro_cabeludo_-_Parque_dos_Pireneus_-_Pirenópolis_-_Goiás_01.jpg",
+            "wikibase-shortdesc": "Tropical savanna ecoregion of Brazil",
+            "wikibase_item": "Q278512"
+          }
+        }
+      },
+      "wikidata": {
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q278512.json",
+        "retrieved": "2026-11-14T14:51:04.253Z",
+        "claim": {
+          "mainsnak": {
+            "snaktype": "value",
+            "property": "P625",
+            "hash": "b364161c670652959e6da4b3581f87b21f82fb5a",
+            "datavalue": {
+              "value": {
+                "latitude": -14.005693888888889,
+                "longitude": -47.68461111111111,
+                "altitude": null,
+                "precision": 0.0000277778,
+                "globe": "http://www.wikidata.org/entity/Q2"
+              },
+              "type": "globecoordinate"
+            },
+            "datatype": "globe-coordinate"
+          },
+          "type": "statement",
+          "id": "Q278512$434106bf-4dcd-007f-5ebb-e285efba767b",
+          "rank": "normal"
+        }
+      }
+    },
+    "sahel": {
+      "place": {
+        "id": "sahel",
+        "name": "Sahel (Africa)",
+        "short": "Sahel",
+        "lat": 14.474672,
+        "lon": 13.511696,
+        "environment": "savanna",
+        "coord_source": "https://www.wikidata.org/wiki/Q66065#P625"
+      },
+      "response": {
+        "url": "https://en.wikipedia.org/w/api.php?action=query&prop=coordinates%7Cinfo%7Cpageprops&inprop=url&coprimary=primary&colimit=max&redirects=1&titles=Lake+Titicaca%7CAral+Sea%7CLake+Chad%7CMisti%7CMount+Etna%7CMauna+Loa%7CSerengeti%7CCerrado%7CSahel%7CYamal+Peninsula%7CAlaska+North+Slope%7CBaffin+Island%7CGreat+Barrier+Reef%7CGlover%27s+Reef%7CElphinstone+Reef%7CPantanal%7CSundarbans%7COkavango+Delta&format=json",
+        "retrieved": "2026-11-14T14:51:03.423Z",
+        "page": {
+          "pageid": 82595,
+          "ns": 0,
+          "title": "Sahel",
+          "contentmodel": "wikitext",
+          "pagelanguage": "en",
+          "pagelanguagehtmlcode": "en",
+          "pagelanguagedir": "ltr",
+          "touched": "2026-11-14T07:02:52Z",
+          "lastrevid": 1383645456,
+          "length": 54366,
+          "fullurl": "https://en.wikipedia.org/wiki/Sahel",
+          "editurl": "https://en.wikipedia.org/w/index.php?title=Sahel&action=edit",
+          "canonicalurl": "https://en.wikipedia.org/wiki/Sahel",
+          "pageprops": {
+            "page_image_free": "Mud_Mosque_-_Bani_-_Sahel_Region_-_Burkina_Faso_-_02.jpg",
+            "wikibase-shortdesc": "Biogeographical region in Africa",
+            "wikibase_item": "Q66065"
+          }
+        }
+      },
+      "wikidata": {
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q66065.json",
+        "retrieved": "2026-11-14T14:51:04.516Z",
+        "claim": {
+          "mainsnak": {
+            "snaktype": "value",
+            "property": "P625",
+            "hash": "d09b0a86f30152b0cfa2eac4861746566277c532",
+            "datavalue": {
+              "value": {
+                "latitude": 14.474672,
+                "longitude": 13.511696,
+                "altitude": null,
+                "precision": 0.000001,
+                "globe": "http://www.wikidata.org/entity/Q2"
+              },
+              "type": "globecoordinate"
+            },
+            "datatype": "globe-coordinate"
+          },
+          "type": "statement",
+          "id": "Q66065$9a586c8f-4e5b-17f5-4d2b-6cec00587a38",
+          "rank": "normal"
+        }
+      }
+    },
+    "yamal": {
+      "place": {
+        "id": "yamal",
+        "name": "Yamal Peninsula (Russia)",
+        "short": "Yamal",
+        "lat": 70.67088,
+        "lon": 70.13672,
+        "environment": "tundra",
+        "coord_source": "https://en.wikipedia.org/wiki/Yamal_Peninsula"
+      },
+      "response": {
+        "url": "https://en.wikipedia.org/w/api.php?action=query&prop=coordinates%7Cinfo%7Cpageprops&inprop=url&coprimary=primary&colimit=max&redirects=1&titles=Lake+Titicaca%7CAral+Sea%7CLake+Chad%7CMisti%7CMount+Etna%7CMauna+Loa%7CSerengeti%7CCerrado%7CSahel%7CYamal+Peninsula%7CAlaska+North+Slope%7CBaffin+Island%7CGreat+Barrier+Reef%7CGlover%27s+Reef%7CElphinstone+Reef%7CPantanal%7CSundarbans%7COkavango+Delta&format=json",
+        "retrieved": "2026-11-14T14:51:03.423Z",
+        "page": {
+          "pageid": 2346741,
+          "ns": 0,
+          "title": "Yamal Peninsula",
+          "coordinates": [
+            {
+              "lat": 70.67088,
+              "lon": 70.13672,
+              "primary": "",
+              "globe": "earth"
+            }
+          ],
+          "contentmodel": "wikitext",
+          "pagelanguage": "en",
+          "pagelanguagehtmlcode": "en",
+          "pagelanguagedir": "ltr",
+          "touched": "2026-11-13T07:10:22Z",
+          "lastrevid": 1378616376,
+          "length": 16525,
+          "fullurl": "https://en.wikipedia.org/wiki/Yamal_Peninsula",
+          "editurl": "https://en.wikipedia.org/w/index.php?title=Yamal_Peninsula&action=edit",
+          "canonicalurl": "https://en.wikipedia.org/wiki/Yamal_Peninsula",
+          "pageprops": {
+            "page_image_free": "Kara_seaYP.PNG",
+            "wikibase-shortdesc": "Peninsula located in the Yamalo-Nenets Autonomous Okrug of Siberia, Russia",
+            "wikibase_item": "Q488266"
+          }
+        }
+      }
+    },
+    "alaska_north_slope": {
+      "place": {
+        "id": "alaska_north_slope",
+        "name": "Alaska North Slope (USA)",
+        "short": "North Slope",
+        "lat": 69.0578758,
+        "lon": -152.8628274,
+        "environment": "tundra",
+        "coord_source": "https://en.wikipedia.org/wiki/Alaska_North_Slope"
+      },
+      "response": {
+        "url": "https://en.wikipedia.org/w/api.php?action=query&prop=coordinates%7Cinfo%7Cpageprops&inprop=url&coprimary=primary&colimit=max&redirects=1&titles=Lake+Titicaca%7CAral+Sea%7CLake+Chad%7CMisti%7CMount+Etna%7CMauna+Loa%7CSerengeti%7CCerrado%7CSahel%7CYamal+Peninsula%7CAlaska+North+Slope%7CBaffin+Island%7CGreat+Barrier+Reef%7CGlover%27s+Reef%7CElphinstone+Reef%7CPantanal%7CSundarbans%7COkavango+Delta&format=json",
+        "retrieved": "2026-11-14T14:51:03.423Z",
+        "page": {
+          "pageid": 500309,
+          "ns": 0,
+          "title": "Alaska North Slope",
+          "coordinates": [
+            {
+              "lat": 69.0578758,
+              "lon": -152.8628274,
+              "primary": "",
+              "globe": "earth"
+            }
+          ],
+          "contentmodel": "wikitext",
+          "pagelanguage": "en",
+          "pagelanguagehtmlcode": "en",
+          "pagelanguagedir": "ltr",
+          "touched": "2026-11-13T07:08:03Z",
+          "lastrevid": 1365956095,
+          "length": 10762,
+          "fullurl": "https://en.wikipedia.org/wiki/Alaska_North_Slope",
+          "editurl": "https://en.wikipedia.org/w/index.php?title=Alaska_North_Slope&action=edit",
+          "canonicalurl": "https://en.wikipedia.org/wiki/Alaska_North_Slope",
+          "pageprops": {
+            "page_image_free": "NPRA_F1lg.gif",
+            "wikibase-shortdesc": "Northern region of Alaska, United States",
+            "wikibase_item": "Q1807196"
+          }
+        }
+      }
+    },
+    "baffin_island": {
+      "place": {
+        "id": "baffin_island",
+        "name": "Baffin Island (Canada)",
+        "short": "Baffin Island",
+        "lat": 68,
+        "lon": -70,
+        "environment": "tundra",
+        "coord_source": "https://en.wikipedia.org/wiki/Baffin_Island"
+      },
+      "response": {
+        "url": "https://en.wikipedia.org/w/api.php?action=query&prop=coordinates%7Cinfo%7Cpageprops&inprop=url&coprimary=primary&colimit=max&redirects=1&titles=Lake+Titicaca%7CAral+Sea%7CLake+Chad%7CMisti%7CMount+Etna%7CMauna+Loa%7CSerengeti%7CCerrado%7CSahel%7CYamal+Peninsula%7CAlaska+North+Slope%7CBaffin+Island%7CGreat+Barrier+Reef%7CGlover%27s+Reef%7CElphinstone+Reef%7CPantanal%7CSundarbans%7COkavango+Delta&format=json",
+        "retrieved": "2026-11-14T14:51:03.423Z",
+        "page": {
+          "pageid": 69024,
+          "ns": 0,
+          "title": "Baffin Island",
+          "coordinates": [
+            {
+              "lat": 68,
+              "lon": -70,
+              "primary": "",
+              "globe": "earth"
+            }
+          ],
+          "contentmodel": "wikitext",
+          "pagelanguage": "en",
+          "pagelanguagehtmlcode": "en",
+          "pagelanguagedir": "ltr",
+          "touched": "2026-11-14T07:02:51Z",
+          "lastrevid": 1384759532,
+          "length": 59153,
+          "fullurl": "https://en.wikipedia.org/wiki/Baffin_Island",
+          "editurl": "https://en.wikipedia.org/w/index.php?title=Baffin_Island&action=edit",
+          "canonicalurl": "https://en.wikipedia.org/wiki/Baffin_Island",
+          "pageprops": {
+            "page_image_free": "Baffin.png",
+            "wikibase-shortdesc": "Largest Arctic island in Nunavut, Canada",
+            "wikibase_item": "Q81178"
+          }
+        }
+      }
+    },
+    "great_barrier_reef": {
+      "place": {
+        "id": "great_barrier_reef",
+        "name": "Great Barrier Reef (Davies Reef, Australia)",
+        "short": "Davies Reef",
+        "lat": -18.816666666666666,
+        "lon": 147.63333333333333,
+        "environment": "coral_reef",
+        "coord_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5971101/"
+      },
+      "citation": "Methods: Davies Reef (18 degrees 49 minutes S, 147 degrees 38 minutes E), a mid-shelf platform reef in the central Great Barrier Reef."
+    },
+    "glovers_reef": {
+      "place": {
+        "id": "glovers_reef",
+        "name": "Glover's Reef (Belize)",
+        "short": "Glover's Reef",
+        "lat": 16.823,
+        "lon": -87.791,
+        "environment": "coral_reef",
+        "coord_source": "https://en.wikipedia.org/wiki/Glover%27s_Reef"
+      },
+      "response": {
+        "url": "https://en.wikipedia.org/w/api.php?action=query&prop=coordinates%7Cinfo%7Cpageprops&inprop=url&coprimary=primary&colimit=max&redirects=1&titles=Lake+Titicaca%7CAral+Sea%7CLake+Chad%7CMisti%7CMount+Etna%7CMauna+Loa%7CSerengeti%7CCerrado%7CSahel%7CYamal+Peninsula%7CAlaska+North+Slope%7CBaffin+Island%7CGreat+Barrier+Reef%7CGlover%27s+Reef%7CElphinstone+Reef%7CPantanal%7CSundarbans%7COkavango+Delta&format=json",
+        "retrieved": "2026-11-14T14:51:03.423Z",
+        "page": {
+          "pageid": 31517662,
+          "ns": 0,
+          "title": "Glover's Reef",
+          "coordinates": [
+            {
+              "lat": 16.823,
+              "lon": -87.791,
+              "primary": "",
+              "globe": "earth"
+            }
+          ],
+          "contentmodel": "wikitext",
+          "pagelanguage": "en",
+          "pagelanguagehtmlcode": "en",
+          "pagelanguagedir": "ltr",
+          "touched": "2026-11-14T07:20:00Z",
+          "lastrevid": 1362736506,
+          "length": 9692,
+          "fullurl": "https://en.wikipedia.org/wiki/Glover%27s_Reef",
+          "editurl": "https://en.wikipedia.org/w/index.php?title=Glover%27s_Reef&action=edit",
+          "canonicalurl": "https://en.wikipedia.org/wiki/Glover%27s_Reef",
+          "pageprops": {
+            "page_image_free": "Belize-Isole.png",
+            "wikibase-shortdesc": "Marine reserve of Belize",
+            "wikibase_item": "Q3772508"
+          }
+        }
+      }
+    },
+    "elphinstone_reef": {
+      "place": {
+        "id": "elphinstone_reef",
+        "name": "Elphinstone Reef (Red Sea, Egypt)",
+        "short": "Elphinstone Reef",
+        "lat": 25.30861111,
+        "lon": 34.86027778,
+        "environment": "coral_reef",
+        "coord_source": "https://en.wikipedia.org/wiki/Elphinstone_Reef"
+      },
+      "response": {
+        "url": "https://en.wikipedia.org/w/api.php?action=query&prop=coordinates%7Cinfo%7Cpageprops&inprop=url&coprimary=primary&colimit=max&redirects=1&titles=Lake+Titicaca%7CAral+Sea%7CLake+Chad%7CMisti%7CMount+Etna%7CMauna+Loa%7CSerengeti%7CCerrado%7CSahel%7CYamal+Peninsula%7CAlaska+North+Slope%7CBaffin+Island%7CGreat+Barrier+Reef%7CGlover%27s+Reef%7CElphinstone+Reef%7CPantanal%7CSundarbans%7COkavango+Delta&format=json",
+        "retrieved": "2026-11-14T14:51:03.423Z",
+        "page": {
+          "pageid": 52405139,
+          "ns": 0,
+          "title": "Elphinstone Reef",
+          "coordinates": [
+            {
+              "lat": 25.30861111,
+              "lon": 34.86027778,
+              "primary": "",
+              "globe": "earth"
+            }
+          ],
+          "contentmodel": "wikitext",
+          "pagelanguage": "en",
+          "pagelanguagehtmlcode": "en",
+          "pagelanguagedir": "ltr",
+          "touched": "2026-11-14T13:39:42Z",
+          "lastrevid": 1384895194,
+          "length": 2028,
+          "fullurl": "https://en.wikipedia.org/wiki/Elphinstone_Reef",
+          "editurl": "https://en.wikipedia.org/w/index.php?title=Elphinstone_Reef&action=edit",
+          "canonicalurl": "https://en.wikipedia.org/wiki/Elphinstone_Reef",
+          "pageprops": {
+            "page_image_free": "Elphinstone_Reef.jpg",
+            "wikibase-shortdesc": "Small reef in the Egyptian Red Sea",
+            "wikibase_item": "Q1333272"
+          }
+        }
+      }
+    },
+    "pantanal": {
+      "place": {
+        "id": "pantanal",
+        "name": "Pantanal (South America)",
+        "short": "Pantanal",
+        "lat": -17.4,
+        "lon": -57.5,
+        "environment": "wetland",
+        "coord_source": "https://en.wikipedia.org/wiki/Pantanal"
+      },
+      "response": {
+        "url": "https://en.wikipedia.org/w/api.php?action=query&prop=coordinates%7Cinfo%7Cpageprops&inprop=url&coprimary=primary&colimit=max&redirects=1&titles=Lake+Titicaca%7CAral+Sea%7CLake+Chad%7CMisti%7CMount+Etna%7CMauna+Loa%7CSerengeti%7CCerrado%7CSahel%7CYamal+Peninsula%7CAlaska+North+Slope%7CBaffin+Island%7CGreat+Barrier+Reef%7CGlover%27s+Reef%7CElphinstone+Reef%7CPantanal%7CSundarbans%7COkavango+Delta&format=json",
+        "retrieved": "2026-11-14T14:51:03.423Z",
+        "page": {
+          "pageid": 1116600,
+          "ns": 0,
+          "title": "Pantanal",
+          "coordinates": [
+            {
+              "lat": -17.4,
+              "lon": -57.5,
+              "primary": "",
+              "globe": "earth"
+            }
+          ],
+          "contentmodel": "wikitext",
+          "pagelanguage": "en",
+          "pagelanguagehtmlcode": "en",
+          "pagelanguagedir": "ltr",
+          "touched": "2026-11-14T07:04:29Z",
+          "lastrevid": 1372487159,
+          "length": 30472,
+          "fullurl": "https://en.wikipedia.org/wiki/Pantanal",
+          "editurl": "https://en.wikipedia.org/w/index.php?title=Pantanal&action=edit",
+          "canonicalurl": "https://en.wikipedia.org/wiki/Pantanal",
+          "pageprops": {
+            "page_image_free": "Pantanal,_south-central_South_America_5170.jpg",
+            "wikibase-shortdesc": "Tropical wetland in Brazil, Bolivia and Paraguay",
+            "wikibase_item": "Q157603"
+          }
+        }
+      }
+    },
+    "sundarbans": {
+      "place": {
+        "id": "sundarbans",
+        "name": "Sundarbans (Bangladesh and India)",
+        "short": "Sundarbans",
+        "lat": 21.75,
+        "lon": 88.75,
+        "environment": "wetland",
+        "coord_source": "https://en.wikipedia.org/wiki/Sundarbans"
+      },
+      "response": {
+        "url": "https://en.wikipedia.org/w/api.php?action=query&prop=coordinates%7Cinfo%7Cpageprops&inprop=url&coprimary=primary&colimit=max&redirects=1&titles=Lake+Titicaca%7CAral+Sea%7CLake+Chad%7CMisti%7CMount+Etna%7CMauna+Loa%7CSerengeti%7CCerrado%7CSahel%7CYamal+Peninsula%7CAlaska+North+Slope%7CBaffin+Island%7CGreat+Barrier+Reef%7CGlover%27s+Reef%7CElphinstone+Reef%7CPantanal%7CSundarbans%7COkavango+Delta&format=json",
+        "retrieved": "2026-11-14T14:51:03.423Z",
+        "page": {
+          "pageid": 1490376,
+          "ns": 0,
+          "title": "Sundarbans",
+          "coordinates": [
+            {
+              "lat": 21.75,
+              "lon": 88.75,
+              "primary": "",
+              "globe": "earth"
+            }
+          ],
+          "contentmodel": "wikitext",
+          "pagelanguage": "en",
+          "pagelanguagehtmlcode": "en",
+          "pagelanguagedir": "ltr",
+          "touched": "2026-11-14T07:04:54Z",
+          "lastrevid": 1382863928,
+          "length": 83087,
+          "fullurl": "https://en.wikipedia.org/wiki/Sundarbans",
+          "editurl": "https://en.wikipedia.org/w/index.php?title=Sundarbans&action=edit",
+          "canonicalurl": "https://en.wikipedia.org/wiki/Sundarbans",
+          "pageprops": {
+            "page_image_free": "Save_the_sundarbans_20.jpg",
+            "wikibase-shortdesc": "Mangrove forest in the Bay of Bengal",
+            "wikibase_item": "Q4526"
+          }
+        }
+      }
+    },
+    "okavango": {
+      "place": {
+        "id": "okavango",
+        "name": "Okavango Delta (Botswana)",
+        "short": "Okavango",
+        "lat": -19.4,
+        "lon": 22.9,
+        "environment": "wetland",
+        "coord_source": "https://en.wikipedia.org/wiki/Okavango_Delta"
+      },
+      "response": {
+        "url": "https://en.wikipedia.org/w/api.php?action=query&prop=coordinates%7Cinfo%7Cpageprops&inprop=url&coprimary=primary&colimit=max&redirects=1&titles=Lake+Titicaca%7CAral+Sea%7CLake+Chad%7CMisti%7CMount+Etna%7CMauna+Loa%7CSerengeti%7CCerrado%7CSahel%7CYamal+Peninsula%7CAlaska+North+Slope%7CBaffin+Island%7CGreat+Barrier+Reef%7CGlover%27s+Reef%7CElphinstone+Reef%7CPantanal%7CSundarbans%7COkavango+Delta&format=json",
+        "retrieved": "2026-11-14T14:51:03.423Z",
+        "page": {
+          "pageid": 514209,
+          "ns": 0,
+          "title": "Okavango Delta",
+          "coordinates": [
+            {
+              "lat": -19.4,
+              "lon": 22.9,
+              "primary": "",
+              "globe": "earth"
+            }
+          ],
+          "contentmodel": "wikitext",
+          "pagelanguage": "en",
+          "pagelanguagehtmlcode": "en",
+          "pagelanguagedir": "ltr",
+          "touched": "2026-11-14T07:03:46Z",
+          "lastrevid": 1382625506,
+          "length": 43603,
+          "fullurl": "https://en.wikipedia.org/wiki/Okavango_Delta",
+          "editurl": "https://en.wikipedia.org/w/index.php?title=Okavango_Delta&action=edit",
+          "canonicalurl": "https://en.wikipedia.org/wiki/Okavango_Delta",
+          "pageprops": {
+            "page_image_free": "Okavango_Delta,_Botswana1.jpg",
+            "wikibase-shortdesc": "River delta in Botswana",
+            "wikibase_item": "Q650872"
+          }
+        }
+      }
+    }
+  }
 }

@@ -1,0 +1,2027 @@
+{
+  "generated": "2026-11-14",
+  "source": {
+    "climate": "NASA POWER / MERRA-2 monthly point API; grid climate, not site measurements or river discharge.",
+    "methods": "Annual values: unweighted means of 12 complete monthly means, using engine.annualSeriesFromPower. Climatology: mean of all 30 annual values, 1991-2020. Warming: engine.analyze T2M, Sen slope per decade and Hamed-Rao Mann-Kendall verdict, 1981 through the last complete calendar year. Each place is tested separately; no multiple-testing adjustment.",
+    "documentation": "https://power.larc.nasa.gov/docs/services/api/temporal/monthly/",
+    "text": "Original paraphrases of the cited Wikipedia revisions; CC BY-SA 4.0. Country lists describe whole features, except river countries explicitly refer to catalog points.",
+    "text_license": "https://creativecommons.org/licenses/by-sa/4.0/"
+  },
+  "facts": {
+    "coropuna": {
+      "country": "Peru",
+      "elevation_m": 4054.88,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 7.247722222222222,
+      "mean_precip_mm_day": 0.6297777777777774,
+      "warming_c_per_decade": 0.23701298701298862,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-15.55&longitude=-72.65&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:04.432Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-15.55&longitude=-72.65&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:04.432Z"
+        }
+      },
+      "one_line": "An ice cap covers this volcano in the Peruvian Andes.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Coropuna&oldid=1368780202",
+      "country_source": "https://en.wikipedia.org/wiki/Coropuna",
+      "wikipedia_retrieved": "2026-11-14T14:58:55.026Z"
+    },
+    "quelccaya": {
+      "country": "Peru",
+      "elevation_m": 4350.06,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 4.484472222222222,
+      "mean_precip_mm_day": 2.58625,
+      "warming_c_per_decade": 0.20471754807692308,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-13.925&longitude=-70.8175&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:04.578Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-13.925&longitude=-70.8175&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:04.578Z"
+        }
+      },
+      "one_line": "This large tropical ice cap lies in the Peruvian Andes.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Quelccaya%20Ice%20Cap&oldid=1384083258",
+      "country_source": "https://en.wikipedia.org/wiki/Quelccaya_Ice_Cap",
+      "wikipedia_retrieved": "2026-11-14T14:58:55.026Z"
+    },
+    "huascaran": {
+      "country": "Peru",
+      "elevation_m": 3843.55,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 8.253638888888892,
+      "mean_precip_mm_day": 1.3723611111111111,
+      "warming_c_per_decade": 0.2738839285714283,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-9.12166667&longitude=-77.60416667&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:04.426Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-9.12166667&longitude=-77.60416667&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:04.426Z"
+        }
+      },
+      "one_line": "This mountain has the highest summit in Peru.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Huascar%C3%A1n&oldid=1382229246",
+      "country_source": "https://en.wikipedia.org/wiki/Huascar%C3%A1n",
+      "wikipedia_retrieved": "2026-11-14T14:58:55.026Z"
+    },
+    "zongo": {
+      "country": "Bolivia",
+      "elevation_m": 3230.76,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 10.456666666666667,
+      "mean_precip_mm_day": 2.0755555555555554,
+      "warming_c_per_decade": 0.16814102564102562,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-16.25&longitude=-68.17&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:06.402Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-16.25&longitude=-68.17&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:06.402Z"
+        }
+      },
+      "one_line": "This glacier lies on the mountain Huayna Potosi in Bolivia.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Huayna%20Potos%C3%AD&oldid=1385332702",
+      "country_source": "https://en.wikipedia.org/wiki/Huayna_Potos%C3%AD",
+      "wikipedia_retrieved": "2026-11-14T14:58:55.026Z"
+    },
+    "chimborazo": {
+      "country": "Ecuador",
+      "elevation_m": 3003.46,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 10.965194444444444,
+      "mean_precip_mm_day": 4.063944444444444,
+      "warming_c_per_decade": 0.2030193236714974,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-1.46916667&longitude=-78.8175&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:07.187Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-1.46916667&longitude=-78.8175&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:07.187Z"
+        }
+      },
+      "one_line": "Its summit is the farthest surface point from Earth's center.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Chimborazo&oldid=1371319665",
+      "country_source": "https://en.wikipedia.org/wiki/Chimborazo",
+      "wikipedia_retrieved": "2026-11-14T14:58:55.026Z"
+    },
+    "perito-moreno": {
+      "country": "Argentina",
+      "elevation_m": 946.77,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": -0.026722222222222265,
+      "mean_precip_mm_day": 3.4843333333333337,
+      "warming_c_per_decade": 0.0029513888888890553,
+      "warming_verdict": "unknown",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-50.5&longitude=-73.13333333&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:07.117Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-50.5&longitude=-73.13333333&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:07.117Z"
+        }
+      },
+      "one_line": "This glacier flows into Lake Argentino in Patagonia.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Perito%20Moreno%20Glacier&oldid=1384200390",
+      "country_source": "https://en.wikipedia.org/wiki/Perito_Moreno_Glacier",
+      "wikipedia_retrieved": "2026-11-14T14:58:55.026Z"
+    },
+    "columbia": {
+      "country": "United States",
+      "elevation_m": 558.59,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 0.7061666666666666,
+      "mean_precip_mm_day": 7.260722222222224,
+      "warming_c_per_decade": 0.26557879704301074,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=61.21972222&longitude=-146.89527778&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:09.210Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=61.21972222&longitude=-146.89527778&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:09.210Z"
+        }
+      },
+      "one_line": "This Alaskan glacier flows into the sea at Prince William Sound.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Columbia%20Glacier%20(Alaska)&oldid=1362417317",
+      "country_source": "https://en.wikipedia.org/wiki/Columbia_Glacier_(Alaska)",
+      "wikipedia_retrieved": "2026-11-14T14:58:55.026Z"
+    },
+    "jakobshavn": {
+      "country": "Greenland (Kingdom of Denmark)",
+      "elevation_m": 539.49,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": -7.69425,
+      "mean_precip_mm_day": 1.3196944444444445,
+      "warming_c_per_decade": 0.5323361823361815,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=69.16666667&longitude=-49.83333333&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:09.495Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=69.16666667&longitude=-49.83333333&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:09.495Z"
+        }
+      },
+      "one_line": "This Greenland glacier sends icebergs into Ilulissat Icefjord.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Jakobshavn%20Glacier&oldid=1380605107",
+      "country_source": "https://en.wikipedia.org/wiki/Jakobshavn_Glacier",
+      "wikipedia_retrieved": "2026-11-14T14:58:55.026Z"
+    },
+    "aletsch": {
+      "country": "Switzerland",
+      "elevation_m": 1853.86,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 1.805,
+      "mean_precip_mm_day": 3.697305555555555,
+      "warming_c_per_decade": 0.4833333333333333,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=46.44222222&longitude=8.07722222&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:09.530Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=46.44222222&longitude=8.07722222&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:09.530Z"
+        }
+      },
+      "one_line": "This is the largest glacier in the Alps.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Aletsch%20Glacier&oldid=1362415166",
+      "country_source": "https://en.wikipedia.org/wiki/Aletsch_Glacier",
+      "wikipedia_retrieved": "2026-11-14T14:58:55.026Z"
+    },
+    "kilimanjaro": {
+      "country": "Tanzania",
+      "elevation_m": 1842.67,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 17.391305555555558,
+      "mean_precip_mm_day": 2.355416666666667,
+      "warming_c_per_decade": 0.029232804232804763,
+      "warming_verdict": "unknown",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-3.0666666666667&longitude=37.359166666667&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:11.727Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-3.0666666666667&longitude=37.359166666667&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:11.727Z"
+        }
+      },
+      "one_line": "Africa's highest mountain has glaciers near its summit.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Mount%20Kilimanjaro&oldid=1384642529",
+      "country_source": "https://en.wikipedia.org/wiki/Mount_Kilimanjaro",
+      "wikipedia_retrieved": "2026-11-14T14:58:55.026Z"
+    },
+    "khumbu": {
+      "country": "Nepal",
+      "elevation_m": 4854.74,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": -2.8702222222222216,
+      "mean_precip_mm_day": 1.3287499999999999,
+      "warming_c_per_decade": 0.21531385281385268,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=27.9589&longitude=86.8247&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:11.997Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=27.9589&longitude=86.8247&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:11.997Z"
+        }
+      },
+      "one_line": "This Himalayan glacier lies between Mount Everest and the Lhotse-Nuptse ridge.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Khumbu%20Glacier&oldid=1362421478",
+      "country_source": "https://en.wikipedia.org/wiki/Khumbu_Glacier",
+      "wikipedia_retrieved": "2026-11-14T14:58:55.026Z"
+    },
+    "puncak-jaya": {
+      "country": "Indonesia",
+      "elevation_m": 2391.07,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 14.241527777777778,
+      "mean_precip_mm_day": 10.073472222222222,
+      "warming_c_per_decade": 0.149576118326118,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-4.07888889&longitude=137.15833333&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:12.111Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-4.07888889&longitude=137.15833333&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:12.111Z"
+        }
+      },
+      "one_line": "This mountain is the highest peak on the island of New Guinea.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Puncak%20Jaya&oldid=1384654341",
+      "country_source": "https://en.wikipedia.org/wiki/Puncak_Jaya",
+      "wikipedia_retrieved": "2026-11-14T14:58:55.026Z"
+    },
+    "atacama": {
+      "country": "Chile",
+      "elevation_m": 2367.69,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 14.339249999999998,
+      "mean_precip_mm_day": 0.0341388888888889,
+      "warming_c_per_decade": 0.20712053571428557,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-24.5&longitude=-69.25&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:13.662Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-24.5&longitude=-69.25&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:13.662Z"
+        }
+      },
+      "one_line": "This desert lies between the Andes and the Pacific Ocean.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Atacama%20Desert&oldid=1384515026",
+      "country_source": "https://en.wikipedia.org/wiki/Atacama_Desert",
+      "wikipedia_retrieved": "2026-11-14T14:58:55.026Z"
+    },
+    "sahara": {
+      "country": "Algeria; Chad; Egypt; Libya; Mali; Mauritania; Morocco; Niger; Sudan; Tunisia; Western Sahara",
+      "elevation_m": 766.64,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 22.632999999999996,
+      "mean_precip_mm_day": 0.0583888888888889,
+      "warming_c_per_decade": 0.37821705426356034,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=23&longitude=13&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:14.108Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=23&longitude=13&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:14.108Z"
+        }
+      },
+      "one_line": "This is the largest hot desert on Earth.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Sahara&oldid=1380508422",
+      "country_source": "https://en.wikipedia.org/wiki/Sahara",
+      "wikipedia_retrieved": "2026-11-14T14:58:55.026Z"
+    },
+    "gobi": {
+      "country": "China; Mongolia",
+      "elevation_m": 1204.81,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 7.808166666666667,
+      "mean_precip_mm_day": 0.23033333333333336,
+      "warming_c_per_decade": 0.3291739130434785,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=42.59&longitude=103.43&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:14.503Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=42.59&longitude=103.43&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:14.503Z"
+        }
+      },
+      "one_line": "This cold desert stretches across northern China and southern Mongolia.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Gobi%20Desert&oldid=1381470741",
+      "country_source": "https://en.wikipedia.org/wiki/Gobi_Desert",
+      "wikipedia_retrieved": "2026-11-14T14:58:55.026Z"
+    },
+    "amazon": {
+      "country": "Brazil; Bolivia; Peru; Ecuador; Colombia; Venezuela; Guyana; Suriname; French Guiana",
+      "elevation_m": 51.37,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 26.887999999999998,
+      "mean_precip_mm_day": 5.747916666666667,
+      "warming_c_per_decade": 0.2827380952380929,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-3.16&longitude=-60.03&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:16.182Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-3.16&longitude=-60.03&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:16.182Z"
+        }
+      },
+      "one_line": "This rainforest covers much of the Amazon basin in South America.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Amazon%20rainforest&oldid=1385615536",
+      "country_source": "https://en.wikipedia.org/wiki/Amazon_rainforest",
+      "wikipedia_retrieved": "2026-11-14T14:58:55.026Z"
+    },
+    "congo": {
+      "country": "Democratic Republic of the Congo",
+      "elevation_m": 424.98,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 25.020083333333332,
+      "mean_precip_mm_day": 5.0406666666666675,
+      "warming_c_per_decade": 0.35833333333333545,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-2&longitude=21&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:16.661Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-2&longitude=21&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:16.661Z"
+        }
+      },
+      "one_line": "This national park protects a large area of Africa's tropical rainforest.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Salonga%20National%20Park&oldid=1379969311",
+      "country_source": "https://en.wikipedia.org/wiki/Salonga_National_Park",
+      "wikipedia_retrieved": "2026-11-14T14:58:55.026Z"
+    },
+    "daintree": {
+      "country": "Australia",
+      "elevation_m": 44.47,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 25.37105555555556,
+      "mean_precip_mm_day": 5.342027777777776,
+      "warming_c_per_decade": 0.21357638888888952,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-16.2&longitude=145.4&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:16.700Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-16.2&longitude=145.4&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:16.700Z"
+        }
+      },
+      "one_line": "This tropical rainforest grows on the northeastern coast of Australia.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Daintree%20Rainforest&oldid=1385431928",
+      "country_source": "https://en.wikipedia.org/wiki/Daintree_Rainforest",
+      "wikipedia_retrieved": "2026-11-14T14:58:55.026Z"
+    },
+    "arequipa": {
+      "country": "Peru",
+      "elevation_m": 3330.29,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 10.888000000000002,
+      "mean_precip_mm_day": 0.3810833333333333,
+      "warming_c_per_decade": 0.2740039281705944,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-16.39888889&longitude=-71.53694444&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:18.677Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-16.39888889&longitude=-71.53694444&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:18.677Z"
+        }
+      },
+      "one_line": "This Peruvian city lies near the volcano El Misti.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Arequipa&oldid=1384211775",
+      "country_source": "https://en.wikipedia.org/wiki/Arequipa",
+      "wikipedia_retrieved": "2026-11-14T14:58:55.026Z"
+    },
+    "tokyo": {
+      "country": "Japan",
+      "elevation_m": 38.67,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 15.498944444444447,
+      "mean_precip_mm_day": 4.470027777777778,
+      "warming_c_per_decade": 0.3174702380952389,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=35.68972222&longitude=139.69222222&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:19.134Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=35.68972222&longitude=139.69222222&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:19.134Z"
+        }
+      },
+      "one_line": "This city is Japan's capital on the island of Honshu.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Tokyo&oldid=1384493530",
+      "country_source": "https://en.wikipedia.org/wiki/Tokyo",
+      "wikipedia_retrieved": "2026-11-14T14:58:55.026Z"
+    },
+    "london": {
+      "country": "United Kingdom",
+      "elevation_m": 73.15,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 10.215944444444442,
+      "mean_precip_mm_day": 1.9534722222222223,
+      "warming_c_per_decade": 0.38830459770114895,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=51.50722222&longitude=-0.1275&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:19.218Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=51.50722222&longitude=-0.1275&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:19.218Z"
+        }
+      },
+      "one_line": "This capital city stands on the River Thames.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=London&oldid=1385649122",
+      "country_source": "https://en.wikipedia.org/wiki/London",
+      "wikipedia_retrieved": "2026-11-14T14:55:38.320Z"
+    },
+    "cape_good_hope": {
+      "country": "South Africa",
+      "elevation_m": 73.22,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 16.951694444444446,
+      "mean_precip_mm_day": 1.6928333333333325,
+      "warming_c_per_decade": 0.10457157784744021,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-34.35805556&longitude=18.47555556&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:20.681Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-34.35805556&longitude=18.47555556&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:20.681Z"
+        }
+      },
+      "one_line": "This rocky headland lies at the southern end of the Cape Peninsula.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Cape%20of%20Good%20Hope&oldid=1383787636",
+      "country_source": "https://en.wikipedia.org/wiki/Cape_of_Good_Hope",
+      "wikipedia_retrieved": "2026-11-14T14:55:38.320Z"
+    },
+    "cape_horn": {
+      "country": "Chile",
+      "elevation_m": 5.86,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 5.862388888888886,
+      "mean_precip_mm_day": 3.0807500000000005,
+      "warming_c_per_decade": 0.004450483091787305,
+      "warming_verdict": "unknown",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-55.98&longitude=-67.28916667&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:21.616Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-55.98&longitude=-67.28916667&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:21.616Z"
+        }
+      },
+      "one_line": "This headland marks the northern edge of the Drake Passage.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Cape%20Horn&oldid=1380343764",
+      "country_source": "https://en.wikipedia.org/wiki/Cape_Horn",
+      "wikipedia_retrieved": "2026-11-14T14:55:38.320Z"
+    },
+    "cape_byron": {
+      "country": "Australia",
+      "elevation_m": 45.84,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 21.468055555555555,
+      "mean_precip_mm_day": 3.3728888888888893,
+      "warming_c_per_decade": 0.2357638888888886,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-28.632778&longitude=153.638889&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:21.317Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-28.632778&longitude=153.638889&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:21.317Z"
+        }
+      },
+      "one_line": "This headland is the easternmost point of mainland Australia.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Cape%20Byron&oldid=1376214440",
+      "country_source": "https://en.wikipedia.org/wiki/Cape_Byron",
+      "wikipedia_retrieved": "2026-11-14T14:55:38.320Z"
+    },
+    "pacific": {
+      "country": "International waters",
+      "elevation_m": 0,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 26.698388888888886,
+      "mean_precip_mm_day": 1.4353333333333331,
+      "warming_c_per_decade": 0.058943965517241625,
+      "warming_verdict": "unknown",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=0&longitude=-160&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:23.373Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=0&longitude=-160&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:23.373Z"
+        }
+      },
+      "one_line": "This is the largest and deepest ocean on Earth.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Pacific%20Ocean&oldid=1385569006",
+      "country_source": "https://en.wikipedia.org/wiki/Pacific_Ocean",
+      "wikipedia_retrieved": "2026-11-14T14:55:38.320Z"
+    },
+    "atlantic": {
+      "country": "International waters",
+      "elevation_m": 0,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 26.167722222222217,
+      "mean_precip_mm_day": 2.5259722222222227,
+      "warming_c_per_decade": 0.1477078477078495,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=0&longitude=-25&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:23.282Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=0&longitude=-25&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:23.282Z"
+        }
+      },
+      "one_line": "This ocean lies between the Americas, Europe, and Africa.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Atlantic%20Ocean&oldid=1384664363",
+      "country_source": "https://en.wikipedia.org/wiki/Atlantic_Ocean",
+      "wikipedia_retrieved": "2026-11-14T14:55:38.320Z"
+    },
+    "indian": {
+      "country": "International waters",
+      "elevation_m": 0,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 23.933861111111113,
+      "mean_precip_mm_day": 1.3448888888888888,
+      "warming_c_per_decade": 0.2465696839080454,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-20&longitude=80&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:23.630Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-20&longitude=80&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:23.630Z"
+        }
+      },
+      "one_line": "This ocean lies between Africa, Asia, Australia, and Antarctica.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Indian%20Ocean&oldid=1384659942",
+      "country_source": "https://en.wikipedia.org/wiki/Indian_Ocean",
+      "wikipedia_retrieved": "2026-11-14T14:55:38.320Z"
+    },
+    "north_pole": {
+      "country": "International waters",
+      "elevation_m": 0,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": -13.762499999999998,
+      "mean_precip_mm_day": 0.7479722222222223,
+      "warming_c_per_decade": 0.6449526515151516,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=90&longitude=0&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:25.732Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=90&longitude=0&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:25.732Z"
+        }
+      },
+      "one_line": "This point lies on floating sea ice in the Arctic Ocean.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=North%20Pole&oldid=1384857520",
+      "country_source": "https://en.wikipedia.org/wiki/North_Pole",
+      "wikipedia_retrieved": "2026-11-14T14:55:38.320Z"
+    },
+    "south_pole": {
+      "country": "Antarctica (no sovereign country)",
+      "elevation_m": 2811.04,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": -49.495388888888904,
+      "mean_precip_mm_day": 0.17099999999999999,
+      "warming_c_per_decade": 0.4542410714285706,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-90&longitude=0&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:26.389Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-90&longitude=0&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:26.389Z"
+        }
+      },
+      "one_line": "This point lies on the Antarctic ice sheet.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=South%20Pole&oldid=1384857740",
+      "country_source": "https://en.wikipedia.org/wiki/South_Pole",
+      "wikipedia_retrieved": "2026-11-14T14:55:38.320Z"
+    },
+    "vostok": {
+      "country": "Antarctica (no sovereign country)",
+      "elevation_m": 3452.79,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": -53.063194444444434,
+      "mean_precip_mm_day": 0.05186111111111112,
+      "warming_c_per_decade": 0.35900173611110775,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-78.4644222&longitude=106.8373278&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:26.567Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CT2M_MAX%2CT2M_MIN%2CTS%2CPRECTOTCORR%2CEVLAND%2CGWETTOP%2CGWETROOT%2CSNODP%2CRH2M&community=AG&latitude=-78.4644222&longitude=106.8373278&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T05:11:26.567Z"
+        }
+      },
+      "one_line": "This research station stands above a lake buried beneath Antarctic ice.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Vostok%20Station&oldid=1383326208",
+      "country_source": "https://en.wikipedia.org/wiki/Vostok_Station",
+      "wikipedia_retrieved": "2026-11-14T14:55:38.320Z"
+    },
+    "lake_titicaca": {
+      "country": "Peru; Bolivia",
+      "elevation_m": 3904.46,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 8.976166666666666,
+      "mean_precip_mm_day": 1.4856944444444444,
+      "warming_c_per_decade": 0.23696778711484617,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=-15.825&longitude=-69.325&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:03.264Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=-15.825&longitude=-69.325&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:03.264Z"
+        }
+      },
+      "one_line": "This large Andean lake lies on the border between Peru and Bolivia.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Lake%20Titicaca&oldid=1381116398",
+      "country_source": "https://en.wikipedia.org/wiki/Lake_Titicaca",
+      "wikipedia_retrieved": "2026-11-14T14:55:38.320Z"
+    },
+    "aral_sea": {
+      "country": "Kazakhstan; Uzbekistan",
+      "elevation_m": 29.8,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 9.979055555555558,
+      "mean_precip_mm_day": 0.28225000000000006,
+      "warming_c_per_decade": 0.12628609475749997,
+      "warming_verdict": "unknown",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=45&longitude=60&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:04.880Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=45&longitude=60&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:04.880Z"
+        }
+      },
+      "one_line": "This lake shrank after rivers feeding it were diverted for irrigation.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Aral%20Sea&oldid=1385638883",
+      "country_source": "https://en.wikipedia.org/wiki/Aral_Sea",
+      "wikipedia_retrieved": "2026-11-14T14:55:38.320Z"
+    },
+    "lake_chad": {
+      "country": "Chad; Cameroon; Niger; Nigeria",
+      "elevation_m": 283.35,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 29.308583333333328,
+      "mean_precip_mm_day": 1.1375,
+      "warming_c_per_decade": 0.029527027027026052,
+      "warming_verdict": "unknown",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=13.099&longitude=14.533&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:06.516Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=13.099&longitude=14.533&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:06.516Z"
+        }
+      },
+      "one_line": "This shallow lake changes size as its water level rises and falls.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Lake%20Chad&oldid=1383897363",
+      "country_source": "https://en.wikipedia.org/wiki/Lake_Chad",
+      "wikipedia_retrieved": "2026-11-14T14:55:38.320Z"
+    },
+    "el_misti": {
+      "country": "Peru",
+      "elevation_m": 3330.29,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 10.888000000000002,
+      "mean_precip_mm_day": 0.3810833333333333,
+      "warming_c_per_decade": 0.2740039281705944,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=-16.29638889&longitude=-71.41055556&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:08.475Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=-16.29638889&longitude=-71.41055556&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:08.475Z"
+        }
+      },
+      "one_line": "This volcano rises above Arequipa and has two nested summit craters.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Misti&oldid=1384969132",
+      "country_source": "https://en.wikipedia.org/wiki/Misti",
+      "wikipedia_retrieved": "2026-11-14T14:55:38.320Z"
+    },
+    "etna": {
+      "country": "Italy",
+      "elevation_m": 460.68,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 16.367583333333332,
+      "mean_precip_mm_day": 1.7280000000000002,
+      "warming_c_per_decade": 0.23313008130081225,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=37.755&longitude=14.995&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:10.541Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=37.755&longitude=14.995&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:10.541Z"
+        }
+      },
+      "one_line": "This active volcano stands on the island of Sicily.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Mount%20Etna&oldid=1381555985",
+      "country_source": "https://en.wikipedia.org/wiki/Mount_Etna",
+      "wikipedia_retrieved": "2026-11-14T14:55:38.320Z"
+    },
+    "mauna_loa": {
+      "country": "United States",
+      "elevation_m": 1144.66,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 18.317638888888887,
+      "mean_precip_mm_day": 3.5688888888888894,
+      "warming_c_per_decade": 0.03981879606879539,
+      "warming_verdict": "unknown",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=19.47944444&longitude=-155.60277778&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:14.076Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=19.47944444&longitude=-155.60277778&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:14.076Z"
+        }
+      },
+      "one_line": "This Hawaiian volcano has broad, gently sloping sides built by lava.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Mauna%20Loa&oldid=1379623547",
+      "country_source": "https://en.wikipedia.org/wiki/Mauna_Loa",
+      "wikipedia_retrieved": "2026-11-14T14:55:38.320Z"
+    },
+    "serengeti": {
+      "country": "Tanzania; Kenya",
+      "elevation_m": 1663.62,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 20.40636111111111,
+      "mean_precip_mm_day": 2.381638888888889,
+      "warming_c_per_decade": 0.041506410256409824,
+      "warming_verdict": "unknown",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=-2.33083333&longitude=34.83333333&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:15.408Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=-2.33083333&longitude=34.83333333&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:15.408Z"
+        }
+      },
+      "one_line": "These grasslands host large seasonal migrations of wildebeest and other animals.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Serengeti&oldid=1378040496",
+      "country_source": "https://en.wikipedia.org/wiki/Serengeti",
+      "wikipedia_retrieved": "2026-11-14T14:55:38.320Z"
+    },
+    "cerrado": {
+      "country": "Brazil; Bolivia; Paraguay",
+      "elevation_m": 901.99,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 23.106861111111115,
+      "mean_precip_mm_day": 3.4235555555555552,
+      "warming_c_per_decade": 0.43853174603174505,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=-14.005693888888889&longitude=-47.68461111111111&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:18.237Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=-14.005693888888889&longitude=-47.68461111111111&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:18.237Z"
+        }
+      },
+      "one_line": "This tropical savanna covers much of central Brazil.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Cerrado&oldid=1382044950",
+      "country_source": "https://en.wikipedia.org/wiki/Cerrado",
+      "wikipedia_retrieved": "2026-11-14T14:55:38.320Z"
+    },
+    "sahel": {
+      "country": "Senegal; Mauritania; Mali; Burkina Faso; Niger; Nigeria; Cameroon; Chad; Sudan; Eritrea",
+      "elevation_m": 305.3,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 28.419055555555563,
+      "mean_precip_mm_day": 0.58125,
+      "warming_c_per_decade": 0.11685167310167262,
+      "warming_verdict": "unknown",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=14.474672&longitude=13.511696&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:20.525Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=14.474672&longitude=13.511696&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:20.525Z"
+        }
+      },
+      "one_line": "This dry savanna forms a transition between the Sahara and wetter grasslands.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Sahel&oldid=1383645456",
+      "country_source": "https://en.wikipedia.org/wiki/Sahel",
+      "wikipedia_retrieved": "2026-11-14T14:55:38.320Z"
+    },
+    "yamal": {
+      "country": "Russia",
+      "elevation_m": 36.76,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": -7.548111111111112,
+      "mean_precip_mm_day": 1.5864999999999996,
+      "warming_c_per_decade": 0.3747176434676427,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=70.67088&longitude=70.13672&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:22.061Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=70.67088&longitude=70.13672&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:22.061Z"
+        }
+      },
+      "one_line": "This Siberian peninsula extends into the Kara Sea.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Yamal%20Peninsula&oldid=1378616376",
+      "country_source": "https://en.wikipedia.org/wiki/Yamal_Peninsula",
+      "wikipedia_retrieved": "2026-11-14T14:55:38.320Z"
+    },
+    "alaska_north_slope": {
+      "country": "United States",
+      "elevation_m": 304.58,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": -8.615194444444443,
+      "mean_precip_mm_day": 1.4028611111111113,
+      "warming_c_per_decade": 0.6073142135642131,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=69.0578758&longitude=-152.8628274&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:24.983Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=69.0578758&longitude=-152.8628274&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:24.983Z"
+        }
+      },
+      "one_line": "This Arctic region lies north of the Brooks Range in Alaska.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Alaska%20North%20Slope&oldid=1365956095",
+      "country_source": "https://en.wikipedia.org/wiki/Alaska_North_Slope",
+      "wikipedia_retrieved": "2026-11-14T14:55:39.230Z"
+    },
+    "baffin_island": {
+      "country": "Canada",
+      "elevation_m": 353.99,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": -12.95877777777778,
+      "mean_precip_mm_day": 1.5532777777777775,
+      "warming_c_per_decade": 0.38738636363636286,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=68&longitude=-70&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:26.296Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=68&longitude=-70&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:26.296Z"
+        }
+      },
+      "one_line": "This is the largest island in Canada.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Baffin%20Island&oldid=1384759532",
+      "country_source": "https://en.wikipedia.org/wiki/Baffin_Island",
+      "wikipedia_retrieved": "2026-11-14T14:55:39.230Z"
+    },
+    "great_barrier_reef": {
+      "country": "Australia",
+      "elevation_m": 1.74,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 25.134500000000006,
+      "mean_precip_mm_day": 2.0953888888888894,
+      "warming_c_per_decade": 0.15686887254901846,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=-18.816666666666666&longitude=147.63333333333333&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:27.806Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=-18.816666666666666&longitude=147.63333333333333&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:27.806Z"
+        }
+      },
+      "one_line": "Coral animals built this reef system off the coast of Queensland.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Great%20Barrier%20Reef&oldid=1381928932",
+      "country_source": "https://en.wikipedia.org/wiki/Great_Barrier_Reef",
+      "wikipedia_retrieved": "2026-11-14T14:55:39.230Z"
+    },
+    "glovers_reef": {
+      "country": "Belize",
+      "elevation_m": 0.02,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 27.384749999999997,
+      "mean_precip_mm_day": 4.861611111111111,
+      "warming_c_per_decade": 0.20091765873015965,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=16.823&longitude=-87.791&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:30.451Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=16.823&longitude=-87.791&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:30.451Z"
+        }
+      },
+      "one_line": "This partly submerged coral atoll lies off the coast of Belize.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Glover's%20Reef&oldid=1362736506",
+      "country_source": "https://en.wikipedia.org/wiki/Glover%27s_Reef",
+      "wikipedia_retrieved": "2026-11-14T14:55:39.230Z"
+    },
+    "elphinstone_reef": {
+      "country": "Egypt",
+      "elevation_m": 11.82,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 25.548250000000003,
+      "mean_precip_mm_day": 0.040194444444444435,
+      "warming_c_per_decade": 0.34385428253615,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=25.30861111&longitude=34.86027778&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:31.868Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=25.30861111&longitude=34.86027778&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:31.868Z"
+        }
+      },
+      "one_line": "This Red Sea reef has many soft corals.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Elphinstone%20Reef&oldid=1384895194",
+      "country_source": "https://en.wikipedia.org/wiki/Elphinstone_Reef",
+      "wikipedia_retrieved": "2026-11-14T14:55:39.230Z"
+    },
+    "pantanal": {
+      "country": "Brazil; Bolivia; Paraguay",
+      "elevation_m": 108.88,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 27.845638888888892,
+      "mean_precip_mm_day": 3.0754444444444435,
+      "warming_c_per_decade": 0.5267625661375653,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=-17.4&longitude=-57.5&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:34.488Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=-17.4&longitude=-57.5&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:34.488Z"
+        }
+      },
+      "one_line": "Seasonal floods cover much of this large tropical wetland.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Pantanal&oldid=1372487159",
+      "country_source": "https://en.wikipedia.org/wiki/Pantanal",
+      "wikipedia_retrieved": "2026-11-14T14:55:39.230Z"
+    },
+    "sundarbans": {
+      "country": "Bangladesh; India",
+      "elevation_m": 2.81,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 26.235972222222223,
+      "mean_precip_mm_day": 4.792083333333333,
+      "warming_c_per_decade": -0.007500000000000284,
+      "warming_verdict": "unknown",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=21.75&longitude=88.75&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:36.682Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=21.75&longitude=88.75&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:36.682Z"
+        }
+      },
+      "one_line": "Tidal channels wind through this mangrove forest in the Ganges Delta.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Sundarbans&oldid=1382863928",
+      "country_source": "https://en.wikipedia.org/wiki/Sundarbans",
+      "wikipedia_retrieved": "2026-11-14T14:55:39.230Z"
+    },
+    "okavango": {
+      "country": "Botswana",
+      "elevation_m": 952.65,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 24.264416666666666,
+      "mean_precip_mm_day": 1.3797222222222223,
+      "warming_c_per_decade": 0.03311494252873513,
+      "warming_verdict": "unknown",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=-19.4&longitude=22.9&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:38.800Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=-19.4&longitude=22.9&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:38.800Z"
+        }
+      },
+      "one_line": "This river delta spreads inland instead of flowing into the sea.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Okavango%20Delta&oldid=1382625506",
+      "country_source": "https://en.wikipedia.org/wiki/Okavango_Delta",
+      "wikipedia_retrieved": "2026-11-14T14:55:39.230Z"
+    },
+    "amazon_river": {
+      "country": "Brazil (catalog point)",
+      "elevation_m": 31.53,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 27.410944444444436,
+      "mean_precip_mm_day": 5.622722222222222,
+      "warming_c_per_decade": 0.3300347222222204,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=-1.9472&longitude=-55.5111&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:40.940Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=-1.9472&longitude=-55.5111&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:40.940Z"
+        }
+      },
+      "one_line": "This river carries more water than any other river.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Amazon%20River&oldid=1383931063",
+      "country_source": "https://en.wikipedia.org/wiki/Amazon_River",
+      "wikipedia_retrieved": "2026-11-14T14:55:39.230Z"
+    },
+    "congo_river": {
+      "country": "Democratic Republic of the Congo; Angola (catalog point)",
+      "elevation_m": 55.03,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 25.595000000000006,
+      "mean_precip_mm_day": 2.579416666666667,
+      "warming_c_per_decade": 0.44849837662337805,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=-6.075&longitude=12.45&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:43.049Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=-6.075&longitude=12.45&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:43.049Z"
+        }
+      },
+      "one_line": "This river crosses the equator twice before reaching the Atlantic Ocean.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Congo%20River&oldid=1368990427",
+      "country_source": "https://en.wikipedia.org/wiki/Congo_River",
+      "wikipedia_retrieved": "2026-11-14T14:55:39.230Z"
+    },
+    "yangtze_river": {
+      "country": "China (catalog point)",
+      "elevation_m": 48.06,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 16.26597222222222,
+      "mean_precip_mm_day": 4.06786111111111,
+      "warming_c_per_decade": 0.36600877192982467,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=30.77&longitude=117.62&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:45.007Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=30.77&longitude=117.62&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:45.007Z"
+        }
+      },
+      "one_line": "This is the longest river in Asia.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Yangtze&oldid=1384248967",
+      "country_source": "https://en.wikipedia.org/wiki/Yangtze",
+      "wikipedia_retrieved": "2026-11-14T14:55:39.230Z"
+    },
+    "mississippi_river": {
+      "country": "United States (catalog point)",
+      "elevation_m": 62.39,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 18.21561111111111,
+      "mean_precip_mm_day": 3.937666666666666,
+      "warming_c_per_decade": 0.3061979166666666,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=32.315&longitude=-90.9058&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:47.033Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=32.315&longitude=-90.9058&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:47.033Z"
+        }
+      },
+      "one_line": "This river flows south through the United States to the Gulf of Mexico.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Mississippi%20River&oldid=1385369731",
+      "country_source": "https://en.wikipedia.org/wiki/Mississippi_River",
+      "wikipedia_retrieved": "2026-11-14T14:55:39.230Z"
+    },
+    "niger_river": {
+      "country": "Nigeria (catalog point)",
+      "elevation_m": 21.32,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 25.94211111111111,
+      "mean_precip_mm_day": 5.690833333333334,
+      "warming_c_per_decade": 0.26924603174603357,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=5.322222222222222&longitude=6.469166666666667&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:49.703Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=5.322222222222222&longitude=6.469166666666667&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:49.703Z"
+        }
+      },
+      "one_line": "This river bends through West Africa before reaching the Gulf of Guinea.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Niger%20River&oldid=1384403078",
+      "country_source": "https://en.wikipedia.org/wiki/Niger_River",
+      "wikipedia_retrieved": "2026-11-14T14:55:39.230Z"
+    },
+    "yenisei_river": {
+      "country": "Russia (catalog point)",
+      "elevation_m": 71.78,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": -8.370611111111112,
+      "mean_precip_mm_day": 1.9937499999999995,
+      "warming_c_per_decade": 0.3751157407407413,
+      "warming_verdict": "likely",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=67.43&longitude=86.48&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:51.146Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=67.43&longitude=86.48&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:51.146Z"
+        }
+      },
+      "one_line": "This Siberian river flows north into the Arctic Ocean.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Yenisei&oldid=1384821068",
+      "country_source": "https://en.wikipedia.org/wiki/Yenisei",
+      "wikipedia_retrieved": "2026-11-14T14:55:39.230Z"
+    },
+    "lena_river": {
+      "country": "Russia (catalog point)",
+      "elevation_m": 22.71,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": -12.872444444444445,
+      "mean_precip_mm_day": 1.0380833333333337,
+      "warming_c_per_decade": 0.444834087481146,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=72.4087&longitude=126.6847&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:54.842Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=72.4087&longitude=126.6847&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:54.842Z"
+        }
+      },
+      "one_line": "This Siberian river forms a large delta at the Laptev Sea.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Lena%20River&oldid=1385378494",
+      "country_source": "https://en.wikipedia.org/wiki/Lena_River",
+      "wikipedia_retrieved": "2026-11-14T14:55:39.230Z"
+    },
+    "ob_river": {
+      "country": "Russia (catalog point)",
+      "elevation_m": 28.06,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": -6.015277777777778,
+      "mean_precip_mm_day": 1.7374722222222225,
+      "warming_c_per_decade": 0.3740568693693694,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=66.63&longitude=66.6&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:56.130Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=66.63&longitude=66.6&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:56.130Z"
+        }
+      },
+      "one_line": "This Siberian river flows into the Gulf of Ob.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Ob&oldid=1370329448",
+      "country_source": "https://en.wikipedia.org/wiki/Ob",
+      "wikipedia_retrieved": "2026-11-14T14:55:39.230Z"
+    },
+    "mackenzie_river": {
+      "country": "Canada (catalog point)",
+      "elevation_m": 68.09,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": -7.414833333333333,
+      "mean_precip_mm_day": 1.0940555555555556,
+      "warming_c_per_decade": 0.49977182539682485,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=67.458336&longitude=-133.74472&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:59.190Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=67.458336&longitude=-133.74472&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:59.190Z"
+        }
+      },
+      "one_line": "This river flows through northwestern Canada into the Arctic Ocean.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Mackenzie%20River&oldid=1384407158",
+      "country_source": "https://en.wikipedia.org/wiki/Mackenzie_River",
+      "wikipedia_retrieved": "2026-11-14T14:55:39.230Z"
+    },
+    "parana_river": {
+      "country": "Argentina (catalog point)",
+      "elevation_m": 34.26,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 17.324888888888896,
+      "mean_precip_mm_day": 3.1535000000000006,
+      "warming_c_per_decade": 0.24363247863247994,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=-34.00138888888889&longitude=-58.39361111111111&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:59.872Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=-34.00138888888889&longitude=-58.39361111111111&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T14:59:59.872Z"
+        }
+      },
+      "one_line": "This river joins the Paraguay River before reaching the Rio de la Plata.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Paran%C3%A1%20River&oldid=1384984019",
+      "country_source": "https://en.wikipedia.org/wiki/Paran%C3%A1_River",
+      "wikipedia_retrieved": "2026-11-14T14:55:39.230Z"
+    },
+    "danube_river": {
+      "country": "Romania (catalog point)",
+      "elevation_m": 56.16,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 12.022583333333332,
+      "mean_precip_mm_day": 1.2123333333333337,
+      "warming_c_per_decade": 0.5586805555555552,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=45.22&longitude=28.73&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T15:00:02.205Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=45.22&longitude=28.73&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T15:00:02.205Z"
+        }
+      },
+      "one_line": "This river flows through central and southeastern Europe to the Black Sea.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Danube&oldid=1381819022",
+      "country_source": "https://en.wikipedia.org/wiki/Danube",
+      "wikipedia_retrieved": "2026-11-14T14:55:39.230Z"
+    },
+    "ganges_river": {
+      "country": "India (catalog point)",
+      "elevation_m": 28.42,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 25.99563888888889,
+      "mean_precip_mm_day": 3.1159166666666662,
+      "warming_c_per_decade": -0.2558479532163752,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=25&longitude=87.92&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T15:00:04.404Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=25&longitude=87.92&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T15:00:04.404Z"
+        }
+      },
+      "one_line": "This river flows from the Himalayas across northern India into Bangladesh.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Ganges&oldid=1383946766",
+      "country_source": "https://en.wikipedia.org/wiki/Ganges",
+      "wikipedia_retrieved": "2026-11-14T14:55:39.230Z"
+    },
+    "mekong_river": {
+      "country": "Thailand; Laos (catalog point)",
+      "elevation_m": 169.56,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 25.92763888888889,
+      "mean_precip_mm_day": 3.6167222222222226,
+      "warming_c_per_decade": 0.17998737373737533,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=16.53&longitude=104.73&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T15:00:06.236Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=16.53&longitude=104.73&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T15:00:06.236Z"
+        }
+      },
+      "one_line": "This river flows through six countries in East and Southeast Asia.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Mekong&oldid=1383712959",
+      "country_source": "https://en.wikipedia.org/wiki/Mekong",
+      "wikipedia_retrieved": "2026-11-14T14:58:59.024Z"
+    },
+    "murray_river": {
+      "country": "Australia (catalog point)",
+      "elevation_m": 86.4,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 15.745638888888886,
+      "mean_precip_mm_day": 1.2990833333333334,
+      "warming_c_per_decade": 0.2146990740740723,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=-35.55888888888889&longitude=138.88&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T15:00:08.434Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=-35.55888888888889&longitude=138.88&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T15:00:08.434Z"
+        }
+      },
+      "one_line": "This river flows through southeastern Australia to the Southern Ocean.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Murray%20River&oldid=1382894448",
+      "country_source": "https://en.wikipedia.org/wiki/Murray_River",
+      "wikipedia_retrieved": "2026-11-14T14:58:59.024Z"
+    },
+    "rhine_river": {
+      "country": "Germany (catalog point)",
+      "elevation_m": 17.99,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 9.867972222222226,
+      "mean_precip_mm_day": 2.110722222222222,
+      "warming_c_per_decade": 0.4731894841269839,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=51.756918&longitude=6.395395&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T15:00:10.369Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=51.756918&longitude=6.395395&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T15:00:10.369Z"
+        }
+      },
+      "one_line": "This river flows from the Swiss Alps toward the North Sea.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Rhine&oldid=1383853229",
+      "country_source": "https://en.wikipedia.org/wiki/Rhine",
+      "wikipedia_retrieved": "2026-11-14T14:58:59.024Z"
+    },
+    "majes_camana": {
+      "country": "Peru (catalog point)",
+      "elevation_m": 835.38,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 17.923583333333333,
+      "mean_precip_mm_day": 0.25613888888888886,
+      "warming_c_per_decade": 0.10045670670670538,
+      "warming_verdict": "unknown",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=-16.63111111111111&longitude=-72.76416666666667&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T15:00:12.882Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=-16.63111111111111&longitude=-72.76416666666667&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T15:00:12.882Z"
+        }
+      },
+      "one_line": "This Andean river is called Camana near the Pacific Ocean.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Colca%20River&oldid=1367394003",
+      "country_source": "https://en.wikipedia.org/wiki/Colca_River",
+      "wikipedia_retrieved": "2026-11-14T14:58:59.024Z"
+    },
+    "chili": {
+      "country": "Peru (catalog point)",
+      "elevation_m": 1940.88,
+      "elevation_label": "NASA POWER grid elevation",
+      "mean_temp_c": 15.950222222222225,
+      "mean_precip_mm_day": 0.2586944444444444,
+      "warming_c_per_decade": 0.22795608108108106,
+      "warming_verdict": "confirmed",
+      "climatology_period": [
+        1991,
+        2020
+      ],
+      "warming_period": [
+        1981,
+        2025
+      ],
+      "power_sources": {
+        "T2M": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=-16.37666&longitude=-71.80317&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T15:00:15.049Z"
+        },
+        "PRECTOTCORR": {
+          "url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M%2CPRECTOTCORR&community=AG&latitude=-16.37666&longitude=-71.80317&start=1981&end=2025&format=JSON",
+          "retrieved": "2026-11-14T15:00:15.049Z"
+        }
+      },
+      "one_line": "This river flows through the city of Arequipa.",
+      "one_line_source": "https://en.wikipedia.org/w/index.php?title=Arequipa&oldid=1384211775",
+      "country_source": "https://en.wikipedia.org/wiki/Arequipa",
+      "wikipedia_retrieved": "2026-11-14T14:58:55.026Z"
+    }
+  }
+}

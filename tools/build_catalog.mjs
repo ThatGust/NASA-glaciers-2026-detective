@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
-import { writeFile } from 'node:fs/promises';
-import { getJson, pointUrl, mapLimited } from './power_api.mjs';
+import { readFile, writeFile } from 'node:fs/promises';
+import { getJson as cachedJson, pointUrl, mapLimited } from './power_api.mjs';
+import { getPowerJson } from './place_facts.mjs';
+const getJson = url => url.startsWith('https://power.larc.nasa.gov/') ? getPowerJson(url) : cachedJson(url);
+
+const placesOnly = process.argv.includes('--places-only');
+const existingCatalog = JSON.parse(await readFile(new URL('../data/catalog.json', import.meta.url)));
+const existingEvidence = JSON.parse(await readFile(new URL('./catalog_checks.json', import.meta.url)));
 
 const candidates = [
   ['T2M', 'Air temperature', 'Heat', 'The average air temperature two meters above the ground.'],
@@ -19,14 +25,14 @@ const candidates = [
   ['WS2M', 'Wind speed', 'Air', 'How fast the wind blows two meters above the ground.'],
   ['AOD_55', 'Aerosol optical depth', 'Air', 'How much airborne dust, smoke, and other particles weaken light at a wavelength of 550 nanometers.'],
 ];
-const list = await getJson('https://power.larc.nasa.gov/api/system/manager/parameters?user=x&community=AG&temporal=MONTHLY');
+const list = placesOnly ? { status: 200, body: {} } : await getJson('https://power.larc.nasa.gov/api/system/manager/parameters?user=x&community=AG&temporal=MONTHLY');
 assert.equal(list.status, 200);
 const imerg = Object.entries(list.body).filter(([id, meta]) =>
   /GPM|IMERG/i.test(id + ' ' + meta.definition) && /precipitation/i.test(meta.name + ' ' + meta.definition));
 for (const [id] of imerg) candidates.push([id, 'Satellite precipitation', 'Water', 'The average rain and snow falling each day, estimated from the IMERG satellite product.']);
 
 const periods = [[1981, 1982], [1999, 2000], [2001, 2002], [2023, 2024]];
-const checks = await mapLimited(candidates, async ([id]) => {
+const checks = placesOnly ? [] : await mapLimited(candidates, async ([id]) => {
   const metadata = await getJson(`https://power.larc.nasa.gov/api/system/manager/parameters/${id}`);
   const probes = [];
   for (const [start, end] of periods) probes.push(await getJson(pointUrl(id, -15.55, -72.65, start, end)));
@@ -66,12 +72,39 @@ const locations = [
   ['south_pole', 'South Pole', 'South Pole', 'polar', 'South Pole'],
   ['vostok', 'Vostok Station (Antarctica)', 'Vostok', 'polar', 'Vostok Station'],
 ];
-const coordinateBatch = await getJson(`https://en.wikipedia.org/w/api.php?${new URLSearchParams({
+locations.push(
+  ["lake_titicaca","Lake Titicaca (Peru and Bolivia)","Titicaca","lake","Lake Titicaca"],
+  ["aral_sea","Aral Sea (Kazakhstan and Uzbekistan)","Aral Sea","lake","Aral Sea"],
+  ["lake_chad","Lake Chad (Central Africa)","Lake Chad","lake","Lake Chad"],
+  ["el_misti","El Misti (Arequipa, Peru)","El Misti","volcano","Misti"],
+  ["etna","Mount Etna (Italy)","Etna","volcano","Mount Etna"],
+  ["mauna_loa","Mauna Loa (Hawaii, USA)","Mauna Loa","volcano","Mauna Loa"],
+  ["serengeti","Serengeti (Tanzania and Kenya)","Serengeti","savanna","Serengeti"],
+  ["cerrado","Cerrado (Brazil)","Cerrado","savanna","Cerrado"],
+  ["sahel","Sahel (Africa)","Sahel","savanna","Sahel"],
+  ["yamal","Yamal Peninsula (Russia)","Yamal","tundra","Yamal Peninsula"],
+  ["alaska_north_slope","Alaska North Slope (USA)","North Slope","tundra","Alaska North Slope"],
+  ["baffin_island","Baffin Island (Canada)","Baffin Island","tundra","Baffin Island"],
+  ["great_barrier_reef","Great Barrier Reef (Davies Reef, Australia)","Davies Reef","coral_reef","Great Barrier Reef"],
+  ["glovers_reef","Glover's Reef (Belize)","Glover's Reef","coral_reef","Glover's Reef"],
+  ["elphinstone_reef","Elphinstone Reef (Red Sea, Egypt)","Elphinstone Reef","coral_reef","Elphinstone Reef"],
+  ["pantanal","Pantanal (South America)","Pantanal","wetland","Pantanal"],
+  ["sundarbans","Sundarbans (Bangladesh and India)","Sundarbans","wetland","Sundarbans"],
+  ["okavango","Okavango Delta (Botswana)","Okavango","wetland","Okavango Delta"]
+);
+const uncited = locations.filter(p => p[0] !== 'zongo' && !existingCatalog.places.some(old => old.id === p[0]));
+const coordinateBatch = !uncited.length ? { status: 200, body: { query: { pages: {} } } } : await getJson(`https://en.wikipedia.org/w/api.php?${new URLSearchParams({
   action: 'query', prop: 'coordinates|info|pageprops', inprop: 'url', coprimary: 'primary',
-  colimit: 'max', redirects: '1', titles: locations.filter(p => p[0] !== 'zongo').map(p => p[4]).join('|'), format: 'json',
+  colimit: 'max', redirects: '1', titles: uncited.map(p => p[4]).join('|'), format: 'json',
 })}`);
 assert.equal(coordinateBatch.status, 200);
 const coordinateEvidence = await mapLimited(locations, async ([id, name, short, environment, title]) => {
+  const original = existingCatalog.places.find(p => p.id === id);
+  if (original) return existingCatalog.coordinate_evidence?.[id] ?? existingEvidence.coordinateEvidence.find(row => row.place.id === id);
+  if (id === 'great_barrier_reef') return {
+    place: { id, name, short, lat: -(18 + 49 / 60), lon: 147 + 38 / 60, environment, coord_source: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC5971101/' },
+    citation: 'Methods: Davies Reef (18 degrees 49 minutes S, 147 degrees 38 minutes E), a mid-shelf platform reef in the central Great Barrier Reef.',
+  };
   if (id === 'zongo') return {
     place: { id, name, short, lat: -16.25, lon: -68.17, environment, coord_source: 'https://user.geo.uzh.ch/mzemp/Docs/WGMS_GGCB_05.pdf' },
     citation: 'WGMS Global Glacier Change Bulletin No. 5 (2020-2021), section 4.5, printed page 66: 16.25 degrees S / 68.17 degrees W.',
@@ -97,8 +130,8 @@ const coordinateEvidence = await mapLimited(locations, async ([id, name, short, 
   return { place: { id, name, short, lat: coord.lat, lon: coord.lon, environment, coord_source }, response, wikidata };
 });
 
-const variables = [];
-for (const [id, name, group, definition] of candidates) {
+const variables = placesOnly ? existingCatalog.variables : [];
+for (const [id, name, group, definition] of (placesOnly ? [] : candidates)) {
   const check = checks.find(c => c.id === id);
   const current = check.probes.at(-1);
   assert.equal(current.status, 200, `${id}: current probe failed`);
@@ -130,11 +163,13 @@ for (const [id, name, group, definition] of candidates) {
 }
 const limits = [];
 const limitParameters = [...candidates.map(c => c[0]), 'PS', 'T2MDEW', 'PRECSNO', 'WS10M', 'GWETPROF', 'T2MWET', 'TO3', 'TQV', 'TROPPB', 'U10M', 'V10M'];
-for (const count of [10, 11, 20, 21, 25, 26]) limits.push(await getJson(pointUrl(limitParameters.slice(0, count).join(','), -15.55, -72.65, 2023, 2024)));
-const catalog = { generated: new Date().toISOString().slice(0, 10), variables, places: coordinateEvidence.map(c => c.place) };
-assert.equal(catalog.places.length, 30);
+for (const count of (placesOnly ? [] : [10, 11, 20, 21, 25, 26])) limits.push(await getJson(pointUrl(limitParameters.slice(0, count).join(','), -15.55, -72.65, 2023, 2024)));
+const catalog = { generated: new Date().toISOString().slice(0, 10), variables, places: coordinateEvidence.map(c => c.place),
+  coordinate_evidence: Object.fromEntries(coordinateEvidence.filter(c => !existingEvidence.coordinateEvidence.some(old => old.place.id === c.place.id)).map(c => [c.place.id, c])) };
+assert.equal(catalog.places.length, 48);
 for (const environment of new Set(catalog.places.map(p => p.environment))) assert.ok(catalog.places.filter(p => p.environment === environment).length >= 3);
 await writeFile(new URL('../data/catalog.json', import.meta.url), JSON.stringify(catalog, null, 2) + '\n');
+if (placesOnly) { console.log(`Catalog: ${variables.length} variables, ${catalog.places.length} cited places (existing places preserved).`); process.exit(0); }
 const suppliedListEndpoint = await getJson('https://power.larc.nasa.gov/api/system/manager/parameters?user=x');
 await writeFile(new URL('./catalog_checks.json', import.meta.url), JSON.stringify({
   list: { url: list.url, retrieved: list.retrieved, status: list.status, parameter_count: Object.keys(list.body).length, precipitation_candidates: Object.fromEntries(imerg) },
