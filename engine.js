@@ -170,3 +170,54 @@ export async function fetchPower(parameter, lat, lon, start = 1981, end = new Da
   if (!r.ok) throw new Error(`NASA POWER answered ${r.status}`);
   return annualFromPower(await r.json(), parameter);
 }
+
+// Benjamini-Hochberg adjusted p-values (q), in the input order. Controls the false discovery rate when testing many variables.
+export function benjaminiHochberg(ps) {
+  const m = ps.length;
+  const order = ps.map((p, i) => [p, i]).sort((a, b) => a[0] - b[0]);
+  const q = new Array(m);
+  let min = 1;
+  for (let k = m - 1; k >= 0; k--) {
+    min = Math.min(min, (order[k][0] * m) / (k + 1));
+    q[order[k][1]] = min;
+  }
+  return q;
+}
+
+// Annual series for several parameters from one NASA POWER response, each starting at its own first valid year.
+export function annualSeriesFromPower(json, params, currentYear = new Date().getFullYear()) {
+  return Object.fromEntries(params.map(({ id, start = 0 }) => {
+    const s = annualFromPower(json, id, currentYear);
+    const keep = s.years.map((y) => y >= start);
+    return [id, { ...s, years: s.years.filter((_, i) => keep[i]), values: s.values.filter((_, i) => keep[i]) }];
+  }));
+}
+
+// Analyzes many variables at one place. Verdicts use the BH-adjusted q, so testing many variables does not inflate "confirmed".
+export function scan(seriesById) {
+  const leads = Object.entries(seriesById).map(([variable, s]) => {
+    if (s.years.length < MIN_YEARS) return { variable, series: s, status: 'no-data' };
+    if (Math.max(...s.values) - Math.min(...s.values) < 1e-9) return { variable, series: s, status: 'flat' };
+    return { variable, series: s, status: 'ok', result: analyze(s) };
+  });
+  const ok = leads.filter((l) => l.status === 'ok');
+  benjaminiHochberg(ok.map((l) => l.result.p)).forEach((q, i) => {
+    ok[i].q = q;
+    ok[i].verdict = verdictOf(q);
+  });
+  const rank = { confirmed: 0, likely: 1, unknown: 2 };
+  return leads.sort((a, b) => (rank[a.verdict] ?? 3) - (rank[b.verdict] ?? 3) || (a.q ?? 1) - (b.q ?? 1));
+}
+
+export async function fetchPowerMany(params, lat, lon, end = new Date().getFullYear() - 1) {
+  const start = Math.min(...params.map((p) => p.start ?? 1981));
+  const out = {};
+  for (let i = 0; i < params.length; i += 10) { // POWER accepts up to 10 parameters per request
+    const chunk = params.slice(i, i + 10);
+    const url = `https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=${chunk.map((p) => p.id).join(',')}&community=AG&longitude=${lon}&latitude=${lat}&start=${start}&end=${end}&format=JSON`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`NASA POWER answered ${r.status}`);
+    Object.assign(out, annualSeriesFromPower(await r.json(), chunk));
+  }
+  return out;
+}

@@ -80,3 +80,26 @@ test('annualFromPower drops incomplete years, the current year and month 13', ()
 test('analyze rejects series that are too short', () => {
   assert.throws(() => analyze({ years: [1, 2, 3], values: [1, 2, 3] }), /At least/);
 });
+
+test('Benjamini-Hochberg matches known values', async () => {
+  const { benjaminiHochberg } = await import('../engine.js');
+  const q = benjaminiHochberg([0.01, 0.04, 0.03, 0.2]);
+  const expected = [0.04, 0.05333333333333334, 0.05333333333333334, 0.2];
+  q.forEach((v, i) => assert.ok(Math.abs(v - expected[i]) < 1e-12, `q[${i}]=${v}`));
+});
+
+test('scan flags missing and flat series and ranks confirmed first', async () => {
+  const { scan } = await import('../engine.js');
+  const years = Array.from({ length: 30 }, (_, i) => 1990 + i);
+  const leads = scan({
+    TREND: { years, values: years.map((y, i) => 0.05 * i + (((i * 7) % 5) - 2) * 0.05) },
+    FLAT: { years, values: years.map(() => 0) },
+    NONE: { years: [], values: [] },
+    NOISE: { years, values: years.map((_, i) => (Math.sin(i * 12.9898) * 43758.5453) % 1) },
+  });
+  assert.equal(leads[0].variable, 'TREND');
+  assert.equal(leads[0].verdict, 'confirmed');
+  assert.equal(leads.find((l) => l.variable === 'FLAT').status, 'flat');
+  assert.equal(leads.find((l) => l.variable === 'NONE').status, 'no-data');
+  assert.ok(leads.find((l) => l.variable === 'TREND').q >= leads.find((l) => l.variable === 'TREND').result.p);
+});

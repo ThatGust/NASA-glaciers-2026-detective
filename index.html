@@ -65,6 +65,19 @@
   details { border:1px solid var(--glass-border); border-radius:var(--btn-radius); padding:10px 12px; margin-top:12px; }
   summary { cursor:pointer; font-weight:600; }
   figure { margin:12px 0; }
+  .groups { list-style:none; padding:0; margin:0; }
+  .leads { list-style:none; padding:0; margin:8px 0; }
+  .lead { margin:0 0 6px; }
+  .lead.muted { color:var(--text-secondary); font-size:14px; padding:4px 12px; }
+  .lead-btn { width:100%; text-align:left; font:inherit; color:inherit; cursor:pointer; padding:10px 12px;
+              border:1px solid var(--glass-border); border-radius:var(--btn-radius); background:rgba(255,255,255,.03); }
+  .lead-btn:hover { border-color:var(--accent); }
+  .lead-verdict { display:block; font:13px var(--font-mono); color:var(--accent); }
+  .banner { border:1px solid var(--accent); background:var(--accent-dim); border-radius:var(--btn-radius); padding:10px 12px; margin:0 0 12px; }
+  .banner button { font:inherit; background:none; border:0; color:var(--accent); text-decoration:underline; cursor:pointer; padding:0; }
+  .demos { list-style:none; padding:0; margin:8px 0 0; display:flex; flex-wrap:wrap; justify-content:center; }
+  #view-compare { width:min(760px, calc(100vw - 32px)); }
+  .compare { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:8px; }
   [hidden] { display:none !important; }
 </style>
 </head>
@@ -80,18 +93,25 @@
   <h1 id="t0" tabindex="-1">The Earth is changing. What do we know for sure?</h1>
   <p>Investigate a change with NASA data and get an honest verdict.</p>
   <a class="btn" href="#/case">Open a case</a>
+  <div id="demos" hidden>
+    <p class="note">Or watch a solved case first:</p>
+    <ul class="demos" id="demo-list"></ul>
+  </div>
 </section>
 
 <section class="view side" id="view-case" aria-labelledby="t1">
   <p class="step">Step 1 of 4 · Open a case</p>
+  <p class="banner" id="compare-banner" hidden><span id="compare-banner-text"></span> <button type="button" id="compare-cancel">Cancel</button></p>
   <form id="case-form">
     <fieldset>
       <legend><h2 id="t1" tabindex="-1">What do you want to investigate?</h2></legend>
-      <ul class="grid" id="variables"></ul>
+      <ul class="groups" id="variables"></ul>
     </fieldset>
     <fieldset>
       <legend><h2>Where?</h2></legend>
-      <p class="note">Click a white dot (a glacier) or any point on the globe, choose from the list, or type coordinates.</p>
+      <p class="note">Click a white dot or any point on the globe, choose from the list, or type coordinates.</p>
+      <label for="environment">Kind of place</label>
+      <select id="environment"></select>
       <label for="place">Place</label>
       <select id="place"></select>
       <div>
@@ -101,6 +121,7 @@
       <p class="note">NASA POWER data average a cell of roughly 50 × 60 km around the point.</p>
     </fieldset>
     <button class="btn" type="submit">Investigate</button>
+    <button class="btn sec" type="button" id="scan">Scan every variable here</button>
     <p id="status" role="status" aria-live="polite"></p>
   </form>
 </section>
@@ -131,6 +152,24 @@
   </details>
   <a class="btn sec" href="#/evidence">Back</a>
   <a class="btn" href="#/record">See the case file</a>
+  <button class="btn sec" type="button" id="compare-start">Compare with another place</button>
+</section>
+
+<section class="view side" id="view-leads" aria-labelledby="t-leads">
+  <p class="step">Leads · Which variables are changing here?</p>
+  <h2 id="t-leads" tabindex="-1"></h2>
+  <p class="note" id="leads-intro"></p>
+  <ul class="leads" id="leads-list"></ul>
+  <p class="note">Choose a lead to see its evidence and verdict.</p>
+  <a class="btn sec" href="#/case">Back</a>
+</section>
+
+<section class="view side" id="view-compare" aria-labelledby="t-compare">
+  <p class="step">Compare · Same variable, two places</p>
+  <h2 id="t-compare" tabindex="-1"></h2>
+  <div class="compare" id="compare-grid"></div>
+  <p id="compare-summary"></p>
+  <a class="btn sec" href="#/case">Open another case</a>
 </section>
 
 <section class="view side" id="view-record" aria-labelledby="t4">
