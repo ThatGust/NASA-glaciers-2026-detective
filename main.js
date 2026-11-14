@@ -1,5 +1,5 @@
 // Trend Detective UI: ties the form, NASA POWER and the engine together. Data formats: see README.
-import { analyze, compareWitnesses, fetchPower, fetchPowerMany, predictionTest, scan } from './engine.js';
+import { analyze, blockShuffle, compareWitnesses, fetchPower, fetchPowerMany, predictionTest, scan } from './engine.js';
 
 // Built-in fallback catalog. data/catalog.json (verified sources, more variables and places) replaces it when present.
 let VARIABLES = [
@@ -143,11 +143,11 @@ function selectPlace(id) {
 const placeName = (lat, lon) => PLACES.find((p) => p.lat === lat && p.lon === lon)?.name ?? `${fmt(lat)}°, ${fmt(lon)}°`;
 
 // --- Views: one at a time, each with its own address so the Back button works. ---
-const VIEWS = ['home', 'global', 'case', 'leads', 'evidence', 'verdict', 'compare', 'record'];
+const VIEWS = ['home', 'global', 'case', 'leads', 'evidence', 'verdict', 'lineup', 'compare', 'record'];
 function route() {
   let v = location.hash.replace('#/', '') || 'home';
   if (!VIEWS.includes(v)) v = 'home';
-  const needs = { evidence: current, verdict: current, record: current, leads, compare: current?.other, global: GRID };
+  const needs = { evidence: current, verdict: current, record: current, lineup: current, leads, compare: current?.other, global: GRID };
   if (v in needs && !needs[v]) { location.replace('#/case'); return; }
   for (const n of VIEWS) $(`view-${n}`).classList.toggle('active', n === v);
   $('skip').hidden = v !== 'home';
@@ -399,6 +399,33 @@ $('download').addEventListener('click', () => {
   const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `case_${variable.id}_${lat}_${lon}.json` });
   a.click();
   URL.revokeObjectURL(a.href);
+});
+
+// --- Line-up (placebo test from the thesis): can you spot the real series among 8 block-shuffled copies? ---
+let lineupAnswer = -1;
+function sparkline(values) {
+  const W = 220, H = 90, lo = Math.min(...values), hi = Math.max(...values);
+  const pts = values.map((v, i) => `${(i / (values.length - 1)) * W},${H - 6 - ((v - lo) / (hi - lo || 1)) * (H - 12)}`).join(' ');
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="var(--text-primary)" stroke-width="2"/></svg>`;
+}
+$('lineup-start').addEventListener('click', () => {
+  const real = current.series.values;
+  lineupAnswer = Math.floor(Math.random() * 9);
+  const panels = Array.from({ length: 9 }, (_, i) => (i === lineupAnswer ? real : blockShuffle(real)));
+  $('lineup-grid').innerHTML = panels.map((p, i) => `<button type="button" class="lineup-cell" data-i="${i}" aria-label="Series ${i + 1}">${sparkline(p)}<span>${i + 1}</span></button>`).join('');
+  $('lineup-result').textContent = '';
+  location.hash = '#/lineup';
+});
+$('lineup-grid').addEventListener('click', (e) => {
+  const b = e.target.closest('.lineup-cell');
+  if (!b || $('lineup-result').textContent) return;
+  const hit = +b.dataset.i === lineupAnswer;
+  document.querySelectorAll('.lineup-cell')[lineupAnswer].classList.add('real');
+  $('lineup-result').textContent = hit
+    ? 'You found it. The real series stands out from series where chance alone shapes the ups and downs: that is what a significant trend looks like.'
+    : current.r.verdict === 'confirmed'
+      ? `The real one was number ${lineupAnswer + 1}. Look again: it keeps one direction over the decades, while the shuffled ones wander without one. The test sees that difference even when the eye misses it.`
+      : `The real one was number ${lineupAnswer + 1}. It hides easily among the shuffled ones: its trend is hard to tell from chance, which is exactly what a "${VERDICTS[current.r.verdict].label.slice(2)}" verdict means.`;
 });
 
 // --- Demos: precomputed cases that play without the network. ---

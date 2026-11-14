@@ -182,3 +182,16 @@ test('prediction test: a real trend beats "nothing changes", pure noise does not
   assert.ok(flat.skill < 0.2, `skill ${flat.skill}`);
   assert.equal(predictionTest({ years: years.slice(0, 20), values: years.slice(0, 20) }), null);
 });
+
+test('block shuffle keeps the values but removes a strong trend', async () => {
+  const { blockShuffle } = await import('../engine.js');
+  const values = Array.from({ length: 45 }, (_, i) => i + (((i * 7) % 5) - 2) * 0.1);
+  const u = rng(3);
+  let trendless = 0;
+  for (let k = 0; k < 50; k++) {
+    const s = blockShuffle(values, u);
+    assert.deepEqual([...s].sort((a, b) => a - b), [...values].sort((a, b) => a - b));
+    if (Math.abs(mannKendallHR(s).tau) < 0.5) trendless++;
+  }
+  assert.ok(trendless > 40, `only ${trendless}/50 shuffles lost the trend`);
+});

@@ -321,3 +321,13 @@ export function predictionTest({ years, values }, holdout = 15) {
   }
   return { trainYears: [ty[0], ty.at(-1)], testYears: [years[cut], years.at(-1)], skill: errFlat ? 1 - errTrend / errFlat : 0 };
 }
+
+// Placebo series for the visual line-up (Buja et al. 2009): cut the series into blocks and shuffle the blocks.
+// This keeps short-range autocorrelation (neighbouring years stay together) but destroys any long-term trend.
+export function blockShuffle(values, random = Math.random) {
+  const n = values.length, len = Math.max(2, Math.round(Math.cbrt(n)));
+  const blocks = [];
+  for (let i = 0; i < n; i += len) blocks.push(values.slice(i, i + len));
+  for (let i = blocks.length - 1; i > 0; i--) { const j = Math.floor(random() * (i + 1)); [blocks[i], blocks[j]] = [blocks[j], blocks[i]]; }
+  return blocks.flat();
+}

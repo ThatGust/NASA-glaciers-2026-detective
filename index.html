@@ -90,6 +90,11 @@
           border:1px solid var(--accent); border-radius:var(--panel-radius); padding:14px 16px; }
   .tour p { margin:0 0 4px; }
   @media (max-width:640px) { .tour { top:64px; bottom:auto; } }
+  .lineup { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:8px 0; }
+  .lineup-cell { position:relative; padding:4px; border:1px solid var(--glass-border); border-radius:var(--btn-radius); background:rgba(255,255,255,.03); color:inherit; cursor:pointer; }
+  .lineup-cell span { position:absolute; top:2px; left:6px; font:12px var(--font-mono); color:var(--text-secondary); }
+  .lineup-cell:hover { border-color:var(--accent); }
+  .lineup-cell.real { border:2px solid var(--accent); background:var(--accent-dim); }
   [hidden] { display:none !important; }
 </style>
 </head>
@@ -199,7 +204,17 @@
   </details>
   <a class="btn sec" href="#/evidence">Back</a>
   <a class="btn" href="#/record">See the case file</a>
+  <button class="btn sec" type="button" id="lineup-start">Can you spot the real one?</button>
   <button class="btn sec" type="button" id="compare-start">Compare with another place</button>
+</section>
+
+<section class="view side" id="view-lineup" aria-labelledby="t-lineup">
+  <p class="step">Placebo test · Is it just chance?</p>
+  <h2 id="t-lineup" tabindex="-1">Can you spot the real one?</h2>
+  <p class="note">One of these nine series is the real data. The other eight are the same values cut into short blocks and shuffled, so any trend in them is pure chance. Pick the one you think is real.</p>
+  <div class="lineup" id="lineup-grid"></div>
+  <p id="lineup-result" role="status" aria-live="polite"></p>
+  <a class="btn sec" href="#/verdict">Back to the verdict</a>
 </section>
 
 <section class="view side" id="view-leads" aria-labelledby="t-leads">
