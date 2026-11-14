@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Detective de tendencias · NASA Space Apps 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/cesium@1.124.0/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+<style>
+  /* Variables de estilo tomadas de Gods Eye View (MIT, (c) 2026 Bilawal Sidhu), src/ui/styles/foundation.css */
+  :root {
+    --bg-dark:#0a0a0f; --glass-bg:rgba(12,12,20,.72); --glass-border:rgba(255,255,255,.08);
+    --accent:#00d4ff; --accent-dim:rgba(0,212,255,.15);
+    --text-primary:#e8eaed;
+    --text-secondary:rgba(232,234,237,.72); /* GEV usa .5; subido para contraste AA (D-14) */
+    --font-mono:'JetBrains Mono','SF Mono',monospace; --font-sans:'Inter',-apple-system,sans-serif;
+    --panel-radius:16px; --btn-radius:10px; --transition-fast:150ms cubic-bezier(.4,0,.2,1);
+    /* alias de la maqueta */
+    --tinta:var(--text-primary); --gris:var(--text-secondary); --linea:var(--glass-border);
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font:16px/1.5 var(--font-sans); color:var(--text-primary); background:var(--bg-dark); -webkit-font-smoothing:antialiased; }
+  .aviso { background:var(--accent-dim); color:var(--text-primary); padding:8px 16px; font-size:14px; text-align:center; }
+  section { background:var(--glass-bg); backdrop-filter:blur(12px); max-width:860px; margin:24px auto; padding:32px 24px; border:1px solid var(--glass-border); border-radius:var(--panel-radius); }
+  .paso { font:13px var(--font-mono); letter-spacing:.08em; text-transform:uppercase; color:var(--accent); margin:0 0 8px; }
+  h1,h2 { margin:0 0 12px; line-height:1.2; }
+  h1 { font-size:30px; } h2 { font-size:24px; }
+  p { margin:0 0 12px; max-width:62ch; }
+  .nota { color:var(--gris); font-size:14px; }
+  .btn { display:inline-block; padding:12px 20px; margin:8px 8px 0 0; border:1px solid var(--accent); border-radius:var(--btn-radius); background:var(--accent); color:var(--bg-dark); font:600 16px var(--font-sans); text-decoration:none; cursor:pointer; transition:background var(--transition-fast); }
+  .btn.sec { background:transparent; color:var(--text-primary); border-color:rgba(255,255,255,.3); }
+  .btn:focus-visible, a:focus-visible, button:focus-visible { outline:2px solid var(--text-primary); outline-offset:2px; }
+  .caja { border:1px dashed rgba(255,255,255,.3); border-radius:var(--panel-radius); padding:24px; text-align:center; color:var(--gris); margin:16px 0; }
+  .globo { height:360px; padding:0; position:relative; overflow:hidden; border-style:solid; border-color:var(--glass-border); }
+  #globo { position:absolute; inset:0; }
+  #globo .cesium-viewer-bottom { display:none; } /* créditos de GIBS van en el pie de la sección */
+  .globo .sin3d { position:absolute; inset:0; display:grid; place-items:center; }
+  .saltar { position:absolute; right:12px; bottom:12px; z-index:2; margin:0; }
+  input { background:rgba(255,255,255,.06); color:var(--text-primary); border:1px solid rgba(255,255,255,.3); border-radius:var(--btn-radius); }
+  .rejilla { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin:16px 0; padding:0; list-style:none; }
+  .tarjeta { border:1px solid var(--linea); border-radius:var(--btn-radius); background:rgba(255,255,255,.03); padding:12px; }
+  .tarjeta strong { display:block; }
+  .dos { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; }
+  .veredicto { font-size:44px; font-weight:700; margin:8px 0; }
+  table { border-collapse:collapse; width:100%; margin:12px 0; }
+  th,td { border:1px solid var(--linea); padding:8px; text-align:left; }
+  details { border:1px solid var(--linea); padding:12px; margin-top:12px; }
+  summary { cursor:pointer; font-weight:600; }
+  .ej { font-size:12px; border:1px solid var(--linea); padding:1px 6px; color:var(--gris); white-space:nowrap; }
+  fieldset { border:0; padding:0; margin:0 0 16px; }
+  legend { padding:0; }
+  .tarjeta label { display:block; cursor:pointer; }
+  .tarjeta input[type=radio] { margin-right:6px; accent-color:var(--accent); }
+  .tarjeta:has(input:checked) { border-color:var(--accent); background:var(--accent-dim); }
+  select, input[type=number] { font:inherit; padding:8px; margin:4px 12px 4px 0; background:rgba(255,255,255,.06); color:var(--text-primary); border:1px solid rgba(255,255,255,.3); border-radius:var(--btn-radius); }
+  select option { background:var(--bg-dark); }
+  figure { margin:16px 0; }
+  [hidden] { display:none !important; }
+</style>
+</head>
+<body>
+<div class="aviso">Prototipo · datos reales de la NASA consultados en vivo</div>
+
+<main>
+<section aria-labelledby="t0">
+  
+  <div class="caja globo" role="img" aria-label="Globo 3D que se acerca desde el espacio al nevado Coropuna, en Arequipa">
+    <div class="sin3d">Tu navegador no puede mostrar el globo 3D.</div>
+    <div id="globo"></div>
+    <a class="btn sec saltar" href="#t1" id="saltar">Saltar</a>
+  </div>
+  <p class="nota">Imágenes: NASA Blue Marble vía NASA GIBS. Globo: CesiumJS (Apache 2.0).</p>
+  <h1 id="t0">La Tierra está cambiando. ¿Qué es seguro y qué no?</h1>
+  <p>Investiga un cambio con datos de la NASA y recibe un veredicto honesto.</p>
+  <a class="btn" href="#t1">Abrir un caso</a>
+  
+</section>
+
+<section aria-labelledby="t1">
+  <p class="paso">Paso 1 · Abrir caso</p>
+  <form id="caso">
+    <fieldset>
+      <legend><h2 id="t1">1. ¿Qué quieres investigar?</h2></legend>
+      <ul class="rejilla" id="variables"></ul>
+    </fieldset>
+    <fieldset>
+      <legend><h2>2. ¿Dónde?</h2></legend>
+      <label for="lugar">Elige un lugar</label>
+      <select id="lugar"></select>
+      <p class="nota">O escribe coordenadas:</p>
+      <label for="lat">Latitud</label> <input id="lat" type="number" step="0.01" min="-90" max="90" required>
+      <label for="lon">Longitud</label> <input id="lon" type="number" step="0.01" min="-180" max="180" required>
+      <p class="nota">Los datos de NASA POWER promedian una celda de unos 50 × 60 km alrededor de ese punto.</p>
+    </fieldset>
+    <button class="btn" type="submit">Investigar</button>
+    <p id="estado" role="status" aria-live="polite"></p>
+  </form>
+</section>
+
+<div id="resultado" hidden>
+<section aria-labelledby="t2">
+  <p class="paso">Paso 2 · La evidencia y los testigos</p>
+  <h2 id="t2"></h2>
+  <figure>
+    <div id="grafico"></div>
+    <figcaption class="nota" id="pie-grafico"></figcaption>
+  </figure>
+  <details><summary>Ver los datos en una tabla</summary><div id="tabla"></div></details>
+  <h3>Los testigos</h3>
+  <p id="testigos"></p>
+  <a class="btn" href="#t3">Ver el veredicto</a>
+</section>
+
+<section aria-labelledby="t3">
+  <p class="paso">Paso 3 · El veredicto</p>
+  <h2 id="t3">Veredicto del caso</h2>
+  <div class="tarjeta">
+    <p class="veredicto" id="veredicto"></p>
+    <p id="explicacion"></p>
+    <p><strong id="reloj"></strong></p>
+  </div>
+  <details>
+    <summary>Ver detalle (para quien quiera la estadística)</summary>
+    <ul id="detalle"></ul>
+  </details>
+  <a class="btn" href="#t4">Ver el expediente</a>
+</section>
+
+<section aria-labelledby="t4">
+  <p class="paso">Paso 4 · Expediente</p>
+  <h2 id="t4">Expediente del caso</h2>
+  <table><tbody id="expediente"></tbody></table>
+  <button class="btn" type="button" id="descargar">Descargar expediente</button>
+  <a class="btn sec" href="#t1">Abrir otro caso</a>
+</section>
+</div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/cesium@1.124.0/Build/Cesium/Cesium.js"></script>
+<script>
+// Globo sin claves: imágenes de NASA GIBS (sin Cesium ion ni Google, D-21).
+(function () {
+  if (!window.Cesium) return;
+  try {
+    const gibs = new Cesium.WebMapTileServiceImageryProvider({
+      // shortcut: Blue Marble llega a nivel 8 (~600 m/píxel), el Coropuna se ve borroso de cerca; para el caso real, añadir Landsat o MODIS
+      url: 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/BlueMarble_ShadedRelief_Bathymetry/default/2004-08-01/GoogleMapsCompatible_Level8/{TileMatrix}/{TileRow}/{TileCol}.jpeg',
+      layer: 'BlueMarble_ShadedRelief_Bathymetry', style: 'default', tileMatrixSetID: 'GoogleMapsCompatible_Level8',
+      format: 'image/jpeg', maximumLevel: 8
+    });
+    const viewer = new Cesium.Viewer('globo', {
+      baseLayer: new Cesium.ImageryLayer(gibs), baseLayerPicker: false, geocoder: false,
+      homeButton: false, sceneModePicker: false, navigationHelpButton: false, animation: false,
+      timeline: false, fullscreenButton: false, infoBox: false, selectionIndicator: false
+    });
+    document.querySelector('.sin3d').hidden = true;
+    const coropuna = Cesium.Cartesian3.fromDegrees(-72.65, -15.53, 160000);
+    const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    viewer.camera.setView({ destination: Cesium.Cartesian3.fromDegrees(-60, -10, 22000000) });
+    if (quieto) viewer.camera.setView({ destination: coropuna });
+    else viewer.camera.flyTo({ destination: coropuna, duration: 9 });
+    viewer.entities.add({ position: Cesium.Cartesian3.fromDegrees(-72.65, -15.53),
+      point: { pixelSize: 9, color: Cesium.Color.fromCssColorString('#00d4ff') },
+      label: { text: 'Nevado Coropuna', font: '14px Inter, sans-serif', pixelOffset: new Cesium.Cartesian2(0, -18) } });
+    document.getElementById('saltar').addEventListener('click', () => viewer.camera.cancelFlight());
+  } catch (e) { console.warn('Globo no disponible:', e); }
+})();
+</script>
+<script type="module" src="main.js"></script>
+</body>
+</html>
