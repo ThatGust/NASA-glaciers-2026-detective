@@ -44,6 +44,8 @@ SOFTWARE.
 | [NASA POWER](https://power.larc.nasa.gov/) (NASA Langley Research Center), monthly point API: MERRA-2 (NASA GMAO) meteorology and CERES SYN1deg solar radiation | Live time series for every case | NASA open data; cite NASA POWER |
 | [NASA GIBS](https://www.earthdata.nasa.gov/engage/open-data-services-software/earthdata-developer-portal/gibs-api), Blue Marble Shaded Relief and Bathymetry | Globe imagery | NASA open data |
 
+Place coordinates come from Wikipedia (CC BY-SA 4.0), Wikidata (CC0) and the WGMS Global Glacier Change Bulletin No. 5; each place cites its source in `data/catalog.json`. Details: `tools/THIRD_PARTY_NOTICES.md`.
+
 ## References for the methods
 
 - Sen, P. K. (1968). Estimates of the regression coefficient based on Kendall's tau. *JASA*, 63, 1379–1389. doi:10.1080/01621459.1968.10480934

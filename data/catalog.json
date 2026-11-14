@@ -1,0 +1,1161 @@
+{
+  "generated": "2026-11-14",
+  "variables": [
+    {
+      "id": "T2M",
+      "name": "Air temperature",
+      "group": "Heat",
+      "definition": "The average air temperature two meters above the ground.",
+      "power_definition": "The average air (dry bulb) temperature at 2 meters above the surface of the earth.",
+      "units": "C",
+      "source": "MERRA2",
+      "start": 1981,
+      "land_only": false,
+      "notes": "Annual values are the unweighted mean of 12 complete monthly means; years crossing product boundaries are excluded.",
+      "source_periods": [
+        {
+          "period": [
+            1981,
+            1982
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            1999,
+            2000
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2001,
+            2002
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2023,
+            2024
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        }
+      ]
+    },
+    {
+      "id": "T2M_MAX",
+      "name": "Monthly high temperature",
+      "group": "Heat",
+      "definition": "The highest hourly air temperature in each month, measured two meters above the surface.",
+      "power_definition": "The maximum hourly air (dry bulb) temperature at 2 meters above the surface of the earth in the period of interest.",
+      "units": "C",
+      "source": "MERRA2",
+      "start": 1981,
+      "land_only": false,
+      "notes": "Annual values are the unweighted mean of 12 complete monthly means; years crossing product boundaries are excluded.",
+      "source_periods": [
+        {
+          "period": [
+            1981,
+            1982
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2",
+            "POWER"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            1999,
+            2000
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2",
+            "POWER"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2001,
+            2002
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2",
+            "POWER"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2023,
+            2024
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2",
+            "POWER"
+          ],
+          "messages": []
+        }
+      ]
+    },
+    {
+      "id": "T2M_MIN",
+      "name": "Monthly low temperature",
+      "group": "Heat",
+      "definition": "The lowest hourly air temperature in each month, measured two meters above the surface.",
+      "power_definition": "The minimum hourly air (dry bulb) temperature at 2 meters above the surface of the earth in the period of interest.",
+      "units": "C",
+      "source": "MERRA2",
+      "start": 1981,
+      "land_only": false,
+      "notes": "Annual values are the unweighted mean of 12 complete monthly means; years crossing product boundaries are excluded.",
+      "source_periods": [
+        {
+          "period": [
+            1981,
+            1982
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2",
+            "POWER"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            1999,
+            2000
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2",
+            "POWER"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2001,
+            2002
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2",
+            "POWER"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2023,
+            2024
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2",
+            "POWER"
+          ],
+          "messages": []
+        }
+      ]
+    },
+    {
+      "id": "TS",
+      "name": "Surface temperature",
+      "group": "Heat",
+      "definition": "The temperature of the surface itself, rather than the air above it.",
+      "power_definition": "The average temperature at the earth's surface.",
+      "units": "C",
+      "source": "MERRA2",
+      "start": 1981,
+      "land_only": false,
+      "notes": "Annual values are the unweighted mean of 12 complete monthly means; years crossing product boundaries are excluded.",
+      "source_periods": [
+        {
+          "period": [
+            1981,
+            1982
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            1999,
+            2000
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2001,
+            2002
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2023,
+            2024
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        }
+      ]
+    },
+    {
+      "id": "PRECTOTCORR",
+      "name": "Precipitation",
+      "group": "Water",
+      "definition": "The average water falling as rain and snow each day, with a correction for measurement bias.",
+      "power_definition": "The average MERRA-2 bias corrected total precipitation at the surface of the earth.",
+      "units": "mm/day",
+      "source": "MERRA2",
+      "start": 1981,
+      "land_only": false,
+      "notes": "Annual values are the unweighted mean of 12 complete monthly means; years crossing product boundaries are excluded.",
+      "source_periods": [
+        {
+          "period": [
+            1981,
+            1982
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            1999,
+            2000
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2001,
+            2002
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2023,
+            2024
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        }
+      ]
+    },
+    {
+      "id": "EVLAND",
+      "name": "Land evaporation",
+      "group": "Water",
+      "definition": "The water that returns to the air from land and plants each day.",
+      "power_definition": "The evaporation over land at the surface of the earth.",
+      "units": "mm/day",
+      "source": "MERRA2",
+      "start": 1981,
+      "land_only": true,
+      "notes": "All monthly values at the open-ocean test point are fill. Annual values are the unweighted mean of 12 complete monthly means; years crossing product boundaries are excluded.",
+      "source_periods": [
+        {
+          "period": [
+            1981,
+            1982
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            1999,
+            2000
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2001,
+            2002
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2023,
+            2024
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        }
+      ]
+    },
+    {
+      "id": "GWETTOP",
+      "name": "Topsoil wetness",
+      "group": "Water",
+      "definition": "How wet the upper soil layer is, from zero for dry to one for saturated.",
+      "power_definition": "The amount of water and water vapor present in the soil. Top indicates the upper 5 cm of soil. Values range from 0 for completely dry conditions to 1 for completely saturated soil.",
+      "units": "1",
+      "source": "MERRA2",
+      "start": 1981,
+      "land_only": true,
+      "notes": "The ocean test returns constant 1 rather than fill; this is a soil variable and ocean values must not be interpreted. Annual values are the unweighted mean of 12 complete monthly means; years crossing product boundaries are excluded.",
+      "source_periods": [
+        {
+          "period": [
+            1981,
+            1982
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            1999,
+            2000
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2001,
+            2002
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2023,
+            2024
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        }
+      ]
+    },
+    {
+      "id": "GWETROOT",
+      "name": "Root-zone wetness",
+      "group": "Water",
+      "definition": "How wet the soil around plant roots is, from zero for dry to one for saturated.",
+      "power_definition": "The amount of water and water vapor available to plants in the root zone, generally considered to be the upper 1 m of soil, expressed as the proportion of water present in a given amount of soil. Values range from 0 for completely dry conditions to 1 for completely saturated soil.",
+      "units": "1",
+      "source": "MERRA2",
+      "start": 1981,
+      "land_only": true,
+      "notes": "All monthly values at the open-ocean test point are fill. Annual values are the unweighted mean of 12 complete monthly means; years crossing product boundaries are excluded.",
+      "source_periods": [
+        {
+          "period": [
+            1981,
+            1982
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            1999,
+            2000
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2001,
+            2002
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2023,
+            2024
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        }
+      ]
+    },
+    {
+      "id": "SNODP",
+      "name": "Snow depth",
+      "group": "Water",
+      "definition": "The depth of snow covering the land surface.",
+      "power_definition": "The snow depth on land at surface of the earth.",
+      "units": "cm",
+      "source": "MERRA2",
+      "start": 1981,
+      "land_only": true,
+      "notes": "All monthly values at the open-ocean test point are fill. Annual values are the unweighted mean of 12 complete monthly means; years crossing product boundaries are excluded.",
+      "source_periods": [
+        {
+          "period": [
+            1981,
+            1982
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            1999,
+            2000
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2001,
+            2002
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2023,
+            2024
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        }
+      ]
+    },
+    {
+      "id": "RH2M",
+      "name": "Relative humidity",
+      "group": "Air",
+      "definition": "The water vapor in the air as a percentage of what it could hold at that temperature.",
+      "power_definition": "The ratio of vapor pressure to the saturation vapor pressure with respect to a plane surface of pure water, expressed in percent.",
+      "units": "%",
+      "source": "MERRA2",
+      "start": 1981,
+      "land_only": false,
+      "notes": "Annual values are the unweighted mean of 12 complete monthly means; years crossing product boundaries are excluded.",
+      "source_periods": [
+        {
+          "period": [
+            1981,
+            1982
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2",
+            "POWER"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            1999,
+            2000
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2",
+            "POWER"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2001,
+            2002
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2",
+            "POWER"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2023,
+            2024
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2",
+            "POWER"
+          ],
+          "messages": []
+        }
+      ]
+    },
+    {
+      "id": "QV2M",
+      "name": "Specific humidity",
+      "group": "Air",
+      "definition": "The mass of water vapor in each kilogram of air two meters above the ground.",
+      "power_definition": "The ratio of the mass of water vapor to the total mass of air at 2 meters.",
+      "units": "g/kg",
+      "source": "MERRA2",
+      "start": 1981,
+      "land_only": false,
+      "notes": "Annual values are the unweighted mean of 12 complete monthly means; years crossing product boundaries are excluded.",
+      "source_periods": [
+        {
+          "period": [
+            1981,
+            1982
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            1999,
+            2000
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2001,
+            2002
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2023,
+            2024
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2"
+          ],
+          "messages": []
+        }
+      ]
+    },
+    {
+      "id": "ALLSKY_SFC_SW_DWN",
+      "name": "Sunlight at the surface",
+      "group": "Sun and clouds",
+      "definition": "The solar energy reaching the surface each day, including the effect of clouds.",
+      "power_definition": "The total solar irradiance incident (direct plus diffuse) on a horizontal plane at the surface of the earth under all sky conditions. An alternative term for the total solar irradiance is the \"Global Horizontal Irradiance\" or GHI.",
+      "units": "MJ/m^2/day",
+      "source": "SYN1DEG",
+      "start": 2001,
+      "land_only": false,
+      "notes": "Annual values are the unweighted mean of 12 complete monthly means; years crossing product boundaries are excluded.",
+      "source_periods": [
+        {
+          "period": [
+            1981,
+            1982
+          ],
+          "status": 422,
+          "sources": [],
+          "messages": [
+            "Please provide at least on meteorology parameter for times prior to 1984-1-1; radiation parameters are not available until 1984-1-1. The request would return no data."
+          ]
+        },
+        {
+          "period": [
+            1999,
+            2000
+          ],
+          "status": 200,
+          "sources": [
+            "SRB"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2001,
+            2002
+          ],
+          "status": 200,
+          "sources": [
+            "SYN1DEG"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2023,
+            2024
+          ],
+          "status": 200,
+          "sources": [
+            "SYN1DEG"
+          ],
+          "messages": []
+        }
+      ]
+    },
+    {
+      "id": "CLOUD_AMT",
+      "name": "Cloud cover",
+      "group": "Sun and clouds",
+      "definition": "The percentage of the sky covered by clouds.",
+      "power_definition": "The average percent of cloud amount during the temporal period.",
+      "units": "%",
+      "source": "SYN1DEG",
+      "start": 2001,
+      "land_only": false,
+      "notes": "Annual values are the unweighted mean of 12 complete monthly means; years crossing product boundaries are excluded.",
+      "source_periods": [
+        {
+          "period": [
+            1981,
+            1982
+          ],
+          "status": 422,
+          "sources": [],
+          "messages": [
+            "Please provide at least on meteorology parameter for times prior to 1984-1-1; radiation parameters are not available until 1984-1-1. The request would return no data."
+          ]
+        },
+        {
+          "period": [
+            1999,
+            2000
+          ],
+          "status": 200,
+          "sources": [
+            "SRB"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2001,
+            2002
+          ],
+          "status": 200,
+          "sources": [
+            "SYN1DEG"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2023,
+            2024
+          ],
+          "status": 200,
+          "sources": [
+            "SYN1DEG"
+          ],
+          "messages": []
+        }
+      ]
+    },
+    {
+      "id": "WS2M",
+      "name": "Wind speed",
+      "group": "Air",
+      "definition": "How fast the wind blows two meters above the ground.",
+      "power_definition": "The average of wind speed at 2 meters above the surface of the earth.",
+      "units": "m/s",
+      "source": "MERRA2",
+      "start": 1981,
+      "land_only": false,
+      "notes": "Annual values are the unweighted mean of 12 complete monthly means; years crossing product boundaries are excluded.",
+      "source_periods": [
+        {
+          "period": [
+            1981,
+            1982
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2",
+            "POWER"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            1999,
+            2000
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2",
+            "POWER"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2001,
+            2002
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2",
+            "POWER"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2023,
+            2024
+          ],
+          "status": 200,
+          "sources": [
+            "MERRA2",
+            "POWER"
+          ],
+          "messages": []
+        }
+      ]
+    },
+    {
+      "id": "AOD_55",
+      "name": "Aerosol optical depth",
+      "group": "Air",
+      "definition": "How much airborne dust, smoke, and other particles weaken light at a wavelength of 550 nanometers.",
+      "power_definition": "The optical thickness at 0.55 um measured vertically; the component of the atmosphere to quantify the removal of radiant energy from an incident beam.",
+      "units": "dimensionless",
+      "source": "SYN1DEG",
+      "start": 2001,
+      "land_only": false,
+      "notes": "Annual values are the unweighted mean of 12 complete monthly means; years crossing product boundaries are excluded.",
+      "source_periods": [
+        {
+          "period": [
+            1981,
+            1982
+          ],
+          "status": 422,
+          "sources": [],
+          "messages": [
+            "Please provide at least on meteorology parameter for times prior to 1984-1-1; radiation parameters are not available until 1984-1-1. The request would return no data."
+          ]
+        },
+        {
+          "period": [
+            1999,
+            2000
+          ],
+          "status": 200,
+          "sources": [],
+          "messages": []
+        },
+        {
+          "period": [
+            2001,
+            2002
+          ],
+          "status": 200,
+          "sources": [
+            "SYN1DEG"
+          ],
+          "messages": []
+        },
+        {
+          "period": [
+            2023,
+            2024
+          ],
+          "status": 200,
+          "sources": [
+            "SYN1DEG"
+          ],
+          "messages": []
+        }
+      ]
+    }
+  ],
+  "places": [
+    {
+      "id": "coropuna",
+      "name": "Nevado Coropuna (Peru)",
+      "short": "Coropuna",
+      "lat": -15.55,
+      "lon": -72.65,
+      "environment": "glacier",
+      "coord_source": "https://en.wikipedia.org/wiki/Coropuna"
+    },
+    {
+      "id": "quelccaya",
+      "name": "Quelccaya Ice Cap (Peru)",
+      "short": "Quelccaya",
+      "lat": -13.925,
+      "lon": -70.8175,
+      "environment": "glacier",
+      "coord_source": "https://en.wikipedia.org/wiki/Quelccaya_Ice_Cap"
+    },
+    {
+      "id": "huascaran",
+      "name": "Huascaran (Peru)",
+      "short": "Huascaran",
+      "lat": -9.12166667,
+      "lon": -77.60416667,
+      "environment": "glacier",
+      "coord_source": "https://en.wikipedia.org/wiki/Huascar%C3%A1n"
+    },
+    {
+      "id": "zongo",
+      "name": "Zongo Glacier (Bolivia)",
+      "short": "Zongo",
+      "lat": -16.25,
+      "lon": -68.17,
+      "environment": "glacier",
+      "coord_source": "https://user.geo.uzh.ch/mzemp/Docs/WGMS_GGCB_05.pdf"
+    },
+    {
+      "id": "chimborazo",
+      "name": "Chimborazo (Ecuador)",
+      "short": "Chimborazo",
+      "lat": -1.46916667,
+      "lon": -78.8175,
+      "environment": "glacier",
+      "coord_source": "https://en.wikipedia.org/wiki/Chimborazo"
+    },
+    {
+      "id": "perito-moreno",
+      "name": "Perito Moreno Glacier (Argentina)",
+      "short": "Perito Moreno",
+      "lat": -50.5,
+      "lon": -73.13333333,
+      "environment": "glacier",
+      "coord_source": "https://en.wikipedia.org/wiki/Perito_Moreno_Glacier"
+    },
+    {
+      "id": "columbia",
+      "name": "Columbia Glacier (Alaska, USA)",
+      "short": "Columbia",
+      "lat": 61.21972222,
+      "lon": -146.89527778,
+      "environment": "glacier",
+      "coord_source": "https://en.wikipedia.org/wiki/Columbia_Glacier_(Alaska)"
+    },
+    {
+      "id": "jakobshavn",
+      "name": "Jakobshavn Glacier (Greenland)",
+      "short": "Jakobshavn",
+      "lat": 69.16666667,
+      "lon": -49.83333333,
+      "environment": "glacier",
+      "coord_source": "https://en.wikipedia.org/wiki/Jakobshavn_Glacier"
+    },
+    {
+      "id": "aletsch",
+      "name": "Aletsch Glacier (Switzerland)",
+      "short": "Aletsch",
+      "lat": 46.44222222,
+      "lon": 8.07722222,
+      "environment": "glacier",
+      "coord_source": "https://en.wikipedia.org/wiki/Aletsch_Glacier"
+    },
+    {
+      "id": "kilimanjaro",
+      "name": "Mount Kilimanjaro (Tanzania)",
+      "short": "Kilimanjaro",
+      "lat": -3.0666666666667,
+      "lon": 37.359166666667,
+      "environment": "glacier",
+      "coord_source": "https://www.wikidata.org/wiki/Q7296#P625"
+    },
+    {
+      "id": "khumbu",
+      "name": "Khumbu Glacier (Nepal)",
+      "short": "Khumbu",
+      "lat": 27.9589,
+      "lon": 86.8247,
+      "environment": "glacier",
+      "coord_source": "https://en.wikipedia.org/wiki/Khumbu_Glacier"
+    },
+    {
+      "id": "puncak-jaya",
+      "name": "Puncak Jaya (Indonesia)",
+      "short": "Puncak Jaya",
+      "lat": -4.07888889,
+      "lon": 137.15833333,
+      "environment": "glacier",
+      "coord_source": "https://en.wikipedia.org/wiki/Puncak_Jaya"
+    },
+    {
+      "id": "atacama",
+      "name": "Atacama Desert (Chile)",
+      "short": "Atacama",
+      "lat": -24.5,
+      "lon": -69.25,
+      "environment": "desert",
+      "coord_source": "https://en.wikipedia.org/wiki/Atacama_Desert"
+    },
+    {
+      "id": "sahara",
+      "name": "Sahara (North Africa)",
+      "short": "Sahara",
+      "lat": 23,
+      "lon": 13,
+      "environment": "desert",
+      "coord_source": "https://en.wikipedia.org/wiki/Sahara"
+    },
+    {
+      "id": "gobi",
+      "name": "Gobi Desert (Asia)",
+      "short": "Gobi",
+      "lat": 42.59,
+      "lon": 103.43,
+      "environment": "desert",
+      "coord_source": "https://en.wikipedia.org/wiki/Gobi_Desert"
+    },
+    {
+      "id": "amazon",
+      "name": "Amazon rainforest (South America)",
+      "short": "Amazon",
+      "lat": -3.16,
+      "lon": -60.03,
+      "environment": "rainforest",
+      "coord_source": "https://www.wikidata.org/wiki/Q177567#P625"
+    },
+    {
+      "id": "congo",
+      "name": "Salonga rainforest (DR Congo)",
+      "short": "Salonga",
+      "lat": -2,
+      "lon": 21,
+      "environment": "rainforest",
+      "coord_source": "https://en.wikipedia.org/wiki/Salonga_National_Park"
+    },
+    {
+      "id": "daintree",
+      "name": "Daintree Rainforest (Australia)",
+      "short": "Daintree",
+      "lat": -16.2,
+      "lon": 145.4,
+      "environment": "rainforest",
+      "coord_source": "https://en.wikipedia.org/wiki/Daintree_Rainforest"
+    },
+    {
+      "id": "arequipa",
+      "name": "Arequipa (Peru)",
+      "short": "Arequipa",
+      "lat": -16.39888889,
+      "lon": -71.53694444,
+      "environment": "city",
+      "coord_source": "https://en.wikipedia.org/wiki/Arequipa"
+    },
+    {
+      "id": "tokyo",
+      "name": "Tokyo (Japan)",
+      "short": "Tokyo",
+      "lat": 35.68972222,
+      "lon": 139.69222222,
+      "environment": "city",
+      "coord_source": "https://en.wikipedia.org/wiki/Tokyo"
+    },
+    {
+      "id": "london",
+      "name": "London (United Kingdom)",
+      "short": "London",
+      "lat": 51.50722222,
+      "lon": -0.1275,
+      "environment": "city",
+      "coord_source": "https://en.wikipedia.org/wiki/London"
+    },
+    {
+      "id": "cape_good_hope",
+      "name": "Cape of Good Hope (South Africa)",
+      "short": "Cape of Good Hope",
+      "lat": -34.35805556,
+      "lon": 18.47555556,
+      "environment": "coast",
+      "coord_source": "https://en.wikipedia.org/wiki/Cape_of_Good_Hope"
+    },
+    {
+      "id": "cape_horn",
+      "name": "Cape Horn (Chile)",
+      "short": "Cape Horn",
+      "lat": -55.98,
+      "lon": -67.28916667,
+      "environment": "coast",
+      "coord_source": "https://en.wikipedia.org/wiki/Cape_Horn"
+    },
+    {
+      "id": "cape_byron",
+      "name": "Cape Byron (Australia)",
+      "short": "Cape Byron",
+      "lat": -28.632778,
+      "lon": 153.638889,
+      "environment": "coast",
+      "coord_source": "https://en.wikipedia.org/wiki/Cape_Byron"
+    },
+    {
+      "id": "pacific",
+      "name": "Pacific Ocean",
+      "short": "Pacific",
+      "lat": 0,
+      "lon": -160,
+      "environment": "ocean",
+      "coord_source": "https://en.wikipedia.org/wiki/Pacific_Ocean"
+    },
+    {
+      "id": "atlantic",
+      "name": "Atlantic Ocean",
+      "short": "Atlantic",
+      "lat": 0,
+      "lon": -25,
+      "environment": "ocean",
+      "coord_source": "https://en.wikipedia.org/wiki/Atlantic_Ocean"
+    },
+    {
+      "id": "indian",
+      "name": "Indian Ocean",
+      "short": "Indian",
+      "lat": -20,
+      "lon": 80,
+      "environment": "ocean",
+      "coord_source": "https://en.wikipedia.org/wiki/Indian_Ocean"
+    },
+    {
+      "id": "north_pole",
+      "name": "North Pole",
+      "short": "North Pole",
+      "lat": 90,
+      "lon": 0,
+      "environment": "polar",
+      "coord_source": "https://en.wikipedia.org/wiki/North_Pole"
+    },
+    {
+      "id": "south_pole",
+      "name": "South Pole",
+      "short": "South Pole",
+      "lat": -90,
+      "lon": 0,
+      "environment": "polar",
+      "coord_source": "https://en.wikipedia.org/wiki/South_Pole"
+    },
+    {
+      "id": "vostok",
+      "name": "Vostok Station (Antarctica)",
+      "short": "Vostok",
+      "lat": -78.4644222,
+      "lon": 106.8373278,
+      "environment": "polar",
+      "coord_source": "https://en.wikipedia.org/wiki/Vostok_Station"
+    }
+  ]
+}

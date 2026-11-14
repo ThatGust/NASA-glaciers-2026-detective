@@ -77,6 +77,17 @@ test('annualFromPower drops incomplete years, the current year and month 13', ()
   assert.equal(s.values[0], 6.5);
 });
 
+test('a series whose Hamed-Rao factor is negative still gets a finite, flagged p-value', () => {
+  // Real NASA POWER T2M at Arequipa, 1981-2025: the correction factor is negative (pymannkendall gives NaN).
+  const s = JSON.parse(readFileSync(new URL('./negative_factor.json', import.meta.url)));
+  const mk = mannKendallHR(s.values);
+  assert.equal(mk.corrected, false);
+  assert.ok(Number.isFinite(mk.p) && mk.varS > 0);
+  const r = analyze(s);
+  assert.equal(r.autocorrelationCorrected, false);
+  assert.ok(Number.isFinite(r.p));
+});
+
 test('analyze rejects series that are too short', () => {
   assert.throws(() => analyze({ years: [1, 2, 3], values: [1, 2, 3] }), /At least/);
 });

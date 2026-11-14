@@ -35,13 +35,17 @@ const VERDICTS = {
   likely: { label: '◐ Likely', text: 'This dataset shows signs of a trend, but not enough to be sure yet.' },
   unknown: { label: '○ Not yet known', text: 'With the data available, a trend cannot be told apart from normal variation.' },
 };
-const UNITS = { C: '°C', 'mm/day': 'mm/day', 'MJ/m^2/day': 'MJ/m²/day', 1: '(0–1 index)', 'g/kg': 'g/kg', '%': '%', 'm/s': 'm/s', cm: 'cm', kPa: 'kPa', dimensionless: '' };
+const UNITS = { C: '°C', 'mm/day': 'mm/day', 'MJ/m^2/day': 'MJ/m²/day', 1: '(0–1 index)', 'g/kg': 'g/kg', '%': '%', 'm/s': 'm/s', cm: 'cm', kPa: 'kPa', dimensionless: '(index)' };
 
 const $ = (id) => document.getElementById(id);
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fmt = (x, d = 2) => x.toLocaleString('en-US', { maximumFractionDigits: d, minimumFractionDigits: d });
-const signed = (x) => (x > 0 ? '+' : '') + fmt(x);
+// Slopes can be tiny (aerosols: 0.003 per decade), so show at least two significant digits.
+const fmtSlope = (x) => { const a = Math.abs(x); return a === 0 || a >= 0.1 ? fmt(x) : x.toLocaleString('en-US', { maximumSignificantDigits: 2 }); };
+const signed = (x) => (x > 0 ? '+' : '') + fmtSlope(x);
 const unitOf = (s) => UNITS[s.units] ?? s.units;
+const SOURCES = { MERRA2: 'MERRA-2', SYN1DEG: 'CERES SYN1deg' };
+const sourceOf = (v) => `NASA POWER · ${SOURCES[v.source] ?? v.source}`;
 const varById = (id) => VARIABLES.find((v) => v.id === id);
 let current = null;        // the case being shown: { variable, place, series, r }
 let compareWith = null;    // first case of a comparison, while the user picks the second place
@@ -217,7 +221,7 @@ function renderLeads({ place, list }) {
   $('leads-intro').textContent = `We tested ${ok.length} variables here. Because testing many variables at once raises the chance of a false alarm, these verdicts are adjusted for multiple testing (Benjamini-Hochberg).`;
   $('leads-list').innerHTML = list.map((l, i) => {
     const v = varById(l.variable);
-    if (l.status !== 'ok') return `<li class="lead muted"><strong>${v.name}</strong>: ${l.status === 'no-data' ? 'no data here' : 'does not vary here'}.</li>`;
+    if (l.status !== 'ok') return `<li class="lead muted"><strong>${v.name}</strong>: ${l.status === 'no-data' || v.land_only ? 'no data here' : 'does not vary here'}.</li>`;
     const r = l.result;
     return `<li class="lead"><button type="button" class="lead-btn" data-i="${i}">
       <span class="lead-verdict">${VERDICTS[l.verdict].label}</span>
@@ -237,7 +241,7 @@ $('leads-list').addEventListener('click', (e) => {
 function headline({ variable: v, place, series, r }) {
   if (r.slopePerDecade === 0) return `In ${place}, ${v.name.toLowerCase()} shows no measurable change (${r.firstYear}–${r.lastYear})`;
   const up = r.slopePerDecade > 0;
-  const howMuch = `${fmt(Math.abs(r.slopePerDecade))} ${unitOf(series)} per decade (${r.firstYear}–${r.lastYear})`;
+  const howMuch = `${fmtSlope(Math.abs(r.slopePerDecade))} ${unitOf(series)} per decade (${r.firstYear}–${r.lastYear})`;
   return r.verdict === 'confirmed'
     ? `In ${place}, ${v.name.toLowerCase()} ${up ? 'rose' : 'fell'} ${howMuch}`
     : `In ${place}, ${v.name.toLowerCase()} seems to have ${up ? 'risen' : 'fallen'} ${howMuch}, but it is not certain yet`;
@@ -248,10 +252,10 @@ function render(c) {
   const u = unitOf(series);
   $('t2').textContent = headline(c);
   $('chart').innerHTML = chart(series, r);
-  $('chart-caption').textContent = `Annual mean ${v.name.toLowerCase()}. Dashed line: trend (Sen's slope). Source: NASA POWER · ${v.source}.`;
+  $('chart-caption').textContent = `Annual mean ${v.name.toLowerCase()}. Dashed line: trend (Sen's slope). Source: ${sourceOf(v)}.`;
   $('table').innerHTML = dataTable(series, v, u);
   // shortcut: one witness in live cases; a second source only exists where the catalog lists one.
-  $('witnesses').textContent = `One witness: NASA POWER · ${v.source}. There is no second NASA source measuring the same thing here, so the verdict rests on this one alone.`;
+  $('witnesses').textContent = `One witness: ${sourceOf(v)}. There is no second NASA source measuring the same thing here, so the verdict rests on this one alone.`;
 
   const vd = VERDICTS[r.verdict];
   $('verdict').textContent = vd.label;
@@ -260,7 +264,9 @@ function render(c) {
   $('details').innerHTML = [
     `Years analyzed: ${r.n} (${r.firstYear}–${r.lastYear}), one mean per year to remove the seasonal cycle.`,
     `Sen's slope: ${signed(r.slopePerDecade)} ${u}/decade (95% interval: ${signed(r.slopeCI[0])} to ${signed(r.slopeCI[1])}).`,
-    `Mann-Kendall test with the Hamed & Rao (1998) autocorrelation correction: p = ${r.p < 0.001 ? '< 0.001' : fmt(r.p, 3)}; Kendall's τ = ${fmt(r.tau)}.`,
+    r.autocorrelationCorrected === false
+      ? `Mann-Kendall test: p = ${r.p < 0.001 ? '< 0.001' : fmt(r.p, 3)}; Kendall's τ = ${fmt(r.tau)}. The Hamed & Rao autocorrelation correction could not be applied to this series (its correction factor is negative), so the uncorrected test is shown.`
+      : `Mann-Kendall test with the Hamed & Rao (1998) autocorrelation correction: p = ${r.p < 0.001 ? '< 0.001' : fmt(r.p, 3)}; Kendall's τ = ${fmt(r.tau)}.`,
     r.q == null
       ? 'Verdict: confirmed if p < 0.05; likely if p < 0.10; otherwise not yet known.'
       : `Verdict from a scan of ${r.tested} variables: it uses the Benjamini-Hochberg adjusted q = ${fmt(r.q, 3)} instead of p (confirmed if q < 0.05; likely if q < 0.10), so testing many variables does not create false alarms.`,
@@ -270,7 +276,7 @@ function render(c) {
   $('record').innerHTML = [
     ['What', `${v.name} (${v.id})`], ['Where', `${place} (${fmt(lat)}°, ${fmt(lon)}°)`],
     ['How much', `${signed(r.slopePerDecade)} ${u} per decade`], ['Verdict', `${vd.label}. ${clockText(r)}`],
-    ['Witnesses', `NASA POWER · ${v.source}`], ['Method', "Annual means · Sen's slope · Mann-Kendall (Hamed & Rao)"],
+    ['Witnesses', sourceOf(v)], ['Method', "Annual means · Sen's slope · Mann-Kendall (Hamed & Rao)"],
   ].map(([k, val]) => `<tr><th scope="row">${k}</th><td>${val}</td></tr>`).join('');
 }
 
@@ -296,7 +302,7 @@ function renderCompare(c) {
     ? `We cannot compare directions yet: in ${unsure.map((x) => x.place).join(' and ')} the trend is not yet known.`
     : a.r.slopePerDecade * b.r.slopePerDecade < 0
       ? `Opposite directions: ${name} ${dir(a)} in ${a.place} but ${dir(b)} in ${b.place}. The same variable can trend in opposite ways in different regions.`
-      : `Same direction: ${name} ${dir(a)} in both places, at ${fmt(Math.abs(a.r.slopePerDecade))} and ${fmt(Math.abs(b.r.slopePerDecade))} ${unitOf(a.series)} per decade.`;
+      : `Same direction: ${name} ${dir(a)} in both places, at ${fmtSlope(Math.abs(a.r.slopePerDecade))} and ${fmtSlope(Math.abs(b.r.slopePerDecade))} ${unitOf(a.series)} per decade.`;
 }
 
 const dataTable = (s, v, u) => `<table><thead><tr><th>Year</th><th>${v.name} (${u})</th></tr></thead><tbody>${
@@ -326,7 +332,7 @@ function chart(s, r) {
 $('download').addEventListener('click', () => {
   if (!current) return;
   const { variable, place, lat, lon, series, r } = current;
-  const blob = new Blob([JSON.stringify({ variable: variable.id, place, lat, lon, result: r, series: { ...series, source: `NASA POWER · ${variable.source}` } }, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify({ variable: variable.id, place, lat, lon, result: r, series: { ...series, source: sourceOf(variable) } }, null, 2)], { type: 'application/json' });
   const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `case_${variable.id}_${lat}_${lon}.json` });
   a.click();
   URL.revokeObjectURL(a.href);

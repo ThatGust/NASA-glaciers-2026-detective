@@ -75,13 +75,16 @@ export function mannKendallHR(x) {
     const rk = num / den;
     if (Math.abs(rk) > bound) sum += (n - k) * (n - k - 1) * (n - k - 2) * rk;
   }
-  const factor = 1 + (2 / (n * (n - 1) * (n - 2))) * sum;
-  v *= factor;
+  const raw = 1 + (2 / (n * (n - 1) * (n - 2))) * sum;
+  // A non-positive factor (strong negative autocorrelations) makes the variance negative; pymannkendall returns NaN there.
+  // We fall back to the uncorrected test and flag it, instead of giving no answer.
+  const corrected = raw > 0;
+  v *= corrected ? raw : 1;
 
   const z = S > 0 ? (S - 1) / Math.sqrt(v) : S < 0 ? (S + 1) / Math.sqrt(v) : 0;
   const p = 2 * (1 - normCdf(Math.abs(z)));
   const tau = S / (0.5 * n * (n - 1));
-  return { S, z, p, tau, varS: v };
+  return { S, z, p, tau, varS: v, corrected };
 }
 
 const verdictOf = (p) => (p < 0.05 ? 'confirmed' : p < 0.1 ? 'likely' : 'unknown');
@@ -112,7 +115,7 @@ export function analyze({ years, values, units = '' }) {
   if (years.length !== values.length) throw new Error('years and values must have the same length');
   if (years.length < MIN_YEARS) throw new Error(`At least ${MIN_YEARS} years of data are needed`);
   const { slope, ci, intercept } = senSlope(years, values);
-  const { p, tau } = mannKendallHR(values);
+  const { p, tau, corrected } = mannKendallHR(values);
   const verdict = verdictOf(p);
 
   // "Known since": first end year from which the series is significant and stays significant.
@@ -127,7 +130,7 @@ export function analyze({ years, values, units = '' }) {
     slopePerDecade: slope * 10, slopeCI: [ci[0] * 10, ci[1] * 10],
     p, tau, verdict, knownSince: verdict === 'confirmed' ? knownSince : null,
     yearsNeeded: verdict === 'confirmed' ? null : yearsNeeded(years, values, slope, intercept),
-    units,
+    units, autocorrelationCorrected: corrected,
   };
 }
 
@@ -214,10 +217,11 @@ export function scan(seriesById) {
 }
 
 export async function fetchPowerMany(params, lat, lon, end = new Date().getFullYear() - 1) {
-  const start = Math.min(...params.map((p) => p.start ?? 1981));
   const out = {};
-  for (let i = 0; i < params.length; i += 10) { // POWER accepts up to 10 parameters per request
-    const chunk = params.slice(i, i + 10);
+  // One request per product start year (so each response has one source), at most 10 parameters each.
+  const byStart = Object.values(Object.groupBy(params, (p) => p.start ?? 1981));
+  for (const chunk of byStart.flatMap((g) => Array.from({ length: Math.ceil(g.length / 10) }, (_, i) => g.slice(i * 10, i * 10 + 10)))) {
+    const start = chunk[0].start ?? 1981;
     const url = `https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=${chunk.map((p) => p.id).join(',')}&community=AG&longitude=${lon}&latitude=${lat}&start=${start}&end=${end}&format=JSON`;
     const r = await fetch(url);
     if (!r.ok) throw new Error(`NASA POWER answered ${r.status}`);
