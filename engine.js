@@ -202,8 +202,12 @@ export function scan(seriesById) {
   });
   const ok = leads.filter((l) => l.status === 'ok');
   benjaminiHochberg(ok.map((l) => l.result.p)).forEach((q, i) => {
+    const r = ok[i].result, verdict = verdictOf(q);
     ok[i].q = q;
-    ok[i].verdict = verdictOf(q);
+    ok[i].verdict = verdict;
+    // The adjusted verdict travels with the result, so opening a lead never shows a stronger verdict than the list.
+    ok[i].result = { ...r, q, tested: ok.length, verdict, adjusted: verdict !== r.verdict,
+      knownSince: verdict === 'confirmed' ? r.knownSince : null };
   });
   const rank = { confirmed: 0, likely: 1, unknown: 2 };
   return leads.sort((a, b) => (rank[a.verdict] ?? 3) - (rank[b.verdict] ?? 3) || (a.q ?? 1) - (b.q ?? 1));

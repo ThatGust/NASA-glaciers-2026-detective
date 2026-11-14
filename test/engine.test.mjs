@@ -103,3 +103,23 @@ test('scan flags missing and flat series and ranks confirmed first', async () =>
   assert.equal(leads.find((l) => l.variable === 'NONE').status, 'no-data');
   assert.ok(leads.find((l) => l.variable === 'TREND').q >= leads.find((l) => l.variable === 'TREND').result.p);
 });
+
+test('a scan lead that loses significance after adjustment carries the adjusted verdict', async () => {
+  const { scan } = await import('../engine.js');
+  const u = rng(7);
+  const years = Array.from({ length: 30 }, (_, i) => 1990 + i);
+  // Find a weak trend that is significant alone (0.01 < p < 0.05); next to 5 noise series its q must exceed 0.05.
+  let weak;
+  for (let k = 0; k < 500 && !weak; k++) {
+    const values = years.map((_, i) => 0.03 * i + normal(u));
+    const p = mannKendallHR(values).p;
+    if (p > 0.012 && p < 0.05) weak = values;
+  }
+  assert.ok(weak, 'no weak trend found');
+  const input = { WEAK: { years, values: weak } };
+  for (let j = 0; j < 5; j++) input[`N${j}`] = { years, values: years.map(() => normal(u)) };
+  const lead = scan(input).find((l) => l.variable === 'WEAK');
+  assert.ok(lead.q > lead.result.p);
+  assert.equal(lead.result.verdict, lead.verdict, 'result verdict must match the list verdict');
+  if (lead.verdict !== 'confirmed') { assert.equal(lead.result.adjusted, true); assert.equal(lead.result.knownSince, null); }
+});

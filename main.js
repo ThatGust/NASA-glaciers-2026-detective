@@ -109,8 +109,7 @@ function setPoint(lat, lon) {
 function selectPlace(id) {
   const p = PLACES.find((x) => x.id === id);
   if (!p) return;
-  $('environment').value = p.environment;
-  fillPlaceList();
+  if ($('environment').value && $('environment').value !== p.environment) { $('environment').value = p.environment; fillPlaceList(); }
   $('place').value = p.id;
   setPoint(p.lat, p.lon);
   flyTo(p.lat, p.lon);
@@ -206,6 +205,7 @@ $('scan').addEventListener('click', async () => {
 // --- Leads: every variable at one place, ranked by verdict. ---
 function clockText(r) {
   if (r.verdict === 'confirmed') return r.knownSince ? `Known with confidence since ${r.knownSince}.` : '';
+  if (r.adjusted) return `Significant on its own (p = ${fmt(r.p, 3)}), but not once we account for testing ${r.tested} variables at this place. More years of data would settle it.`;
   if (r.yearsNeeded === Infinity || r.yearsNeeded > 100) return 'No clear signal: not even a century more of data could confirm this trend.';
   if (r.yearsNeeded <= 1) return 'On the edge: one or two more years of data could confirm it.';
   return `If the trend continues, about ${r.yearsNeeded} more years of data would be needed to confirm it.`;
@@ -235,7 +235,8 @@ $('leads-list').addEventListener('click', (e) => {
 
 // --- Evidence, verdict and case file for one case. ---
 function headline({ variable: v, place, series, r }) {
-  const up = r.slopePerDecade >= 0;
+  if (r.slopePerDecade === 0) return `In ${place}, ${v.name.toLowerCase()} shows no measurable change (${r.firstYear}–${r.lastYear})`;
+  const up = r.slopePerDecade > 0;
   const howMuch = `${fmt(Math.abs(r.slopePerDecade))} ${unitOf(series)} per decade (${r.firstYear}–${r.lastYear})`;
   return r.verdict === 'confirmed'
     ? `In ${place}, ${v.name.toLowerCase()} ${up ? 'rose' : 'fell'} ${howMuch}`
@@ -260,7 +261,9 @@ function render(c) {
     `Years analyzed: ${r.n} (${r.firstYear}–${r.lastYear}), one mean per year to remove the seasonal cycle.`,
     `Sen's slope: ${signed(r.slopePerDecade)} ${u}/decade (95% interval: ${signed(r.slopeCI[0])} to ${signed(r.slopeCI[1])}).`,
     `Mann-Kendall test with the Hamed & Rao (1998) autocorrelation correction: p = ${r.p < 0.001 ? '< 0.001' : fmt(r.p, 3)}; Kendall's τ = ${fmt(r.tau)}.`,
-    'Verdict: confirmed if p < 0.05; likely if p < 0.10; otherwise not yet known. (In a scan of many variables, the adjusted q is used instead.)',
+    r.q == null
+      ? 'Verdict: confirmed if p < 0.05; likely if p < 0.10; otherwise not yet known.'
+      : `Verdict from a scan of ${r.tested} variables: it uses the Benjamini-Hochberg adjusted q = ${fmt(r.q, 3)} instead of p (confirmed if q < 0.05; likely if q < 0.10), so testing many variables does not create false alarms.`,
     'Clock: years needed to detect the current slope with 90% probability (α = 0.05) under autocorrelated noise, following the approach of Weatherhead et al. (1998). It is an approximation that assumes the trend and the noise stay the same.',
   ].map((t) => `<li>${t}</li>`).join('');
 
@@ -281,15 +284,19 @@ $('compare-cancel').addEventListener('click', () => { compareWith = null; $('com
 
 function renderCompare(c) {
   const a = c, b = c.other, v = a.variable;
-  const opposite = Math.sign(a.r.slopePerDecade) !== Math.sign(b.r.slopePerDecade);
+  const dir = (x) => (x.r.slopePerDecade > 0 ? 'rises' : x.r.slopePerDecade < 0 ? 'falls' : 'shows no measurable change');
+  const unsure = [a, b].filter((x) => x.r.verdict === 'unknown');
   $('t-compare').textContent = `${v.name}: ${a.place} vs. ${b.place}`;
   $('compare-grid').innerHTML = [a, b].map((x) => `
     <div class="card"><h3>${x.place}</h3>${chart(x.series, x.r)}
     <p><strong>${VERDICTS[x.r.verdict].label}</strong> · ${signed(x.r.slopePerDecade)} ${unitOf(x.series)} per decade</p>
     <p class="note">${clockText(x.r)}</p></div>`).join('');
-  $('compare-summary').textContent = opposite
-    ? `Opposite directions: ${v.name.toLowerCase()} ${a.r.slopePerDecade > 0 ? 'rises' : 'falls'} in ${a.place} but ${b.r.slopePerDecade > 0 ? 'rises' : 'falls'} in ${b.place}. The same variable can trend in opposite ways in different regions.`
-    : `Same direction in both places, at ${fmt(Math.abs(a.r.slopePerDecade))} and ${fmt(Math.abs(b.r.slopePerDecade))} ${unitOf(a.series)} per decade.`;
+  const name = v.name.toLowerCase();
+  $('compare-summary').textContent = unsure.length
+    ? `We cannot compare directions yet: in ${unsure.map((x) => x.place).join(' and ')} the trend is not yet known.`
+    : a.r.slopePerDecade * b.r.slopePerDecade < 0
+      ? `Opposite directions: ${name} ${dir(a)} in ${a.place} but ${dir(b)} in ${b.place}. The same variable can trend in opposite ways in different regions.`
+      : `Same direction: ${name} ${dir(a)} in both places, at ${fmt(Math.abs(a.r.slopePerDecade))} and ${fmt(Math.abs(b.r.slopePerDecade))} ${unitOf(a.series)} per decade.`;
 }
 
 const dataTable = (s, v, u) => `<table><thead><tr><th>Year</th><th>${v.name} (${u})</th></tr></thead><tbody>${
@@ -319,7 +326,7 @@ function chart(s, r) {
 $('download').addEventListener('click', () => {
   if (!current) return;
   const { variable, place, lat, lon, series, r } = current;
-  const blob = new Blob([JSON.stringify({ variable: variable.id, source: variable.source, place, lat, lon, result: r, series }, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify({ variable: variable.id, place, lat, lon, result: r, series: { ...series, source: `NASA POWER · ${variable.source}` } }, null, 2)], { type: 'application/json' });
   const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `case_${variable.id}_${lat}_${lon}.json` });
   a.click();
   URL.revokeObjectURL(a.href);
@@ -341,8 +348,10 @@ $('demo-list').addEventListener('click', (e) => {
     return { variable: v, place: p.name, lat: p.lat, lon: p.lon, series, r: analyze(series) };
   };
   const [a, b2] = d.places;
-  if (b2) { current = { ...make(a), other: make(b2) }; renderCompare(current); $('compare-summary').textContent += ` ${d.why}`; location.hash = '#/compare'; }
-  else { current = make(a); render(current); location.hash = '#/evidence'; }
+  current = { ...make(a), other: b2 ? make(b2) : undefined };
+  render(current);
+  if (b2) { renderCompare(current); $('compare-summary').textContent += ` ${d.why}`; location.hash = '#/compare'; }
+  else { $('chart-caption').textContent += ` ${d.why}`; location.hash = '#/evidence'; }
   const first = PLACES.find((x) => x.id === a);
   if (first) flyTo(first.lat, first.lon, 4000000);
 });
