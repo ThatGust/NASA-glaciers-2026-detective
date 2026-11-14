@@ -305,6 +305,7 @@ function render(c0) {
   $('t2').textContent = headline(c);
   $('chart').innerHTML = chart(series, r);
   $('chart-caption').textContent = `Annual mean ${v.name.toLowerCase()}. Dashed line: trend (Sen's slope). Source: ${sourceOf(v)}.`;
+  if (v.notice) $('chart-caption').insertAdjacentHTML('beforeend', ` ${v.notice}`);
   $('table').innerHTML = dataTable(series, v, u);
   $('witnesses').textContent = witnessText(v, c.witness);
   $('compare-start').hidden = lat == null || !sourceOf(v).startsWith('NASA POWER'); // regions and precomputed variables cannot be fetched live
@@ -621,6 +622,8 @@ if (goodRivers.length) {
   PLACES = [...PLACES, ...goodRivers];
   addExtra({
     extraVariables: [{ id: 'DISCHARGE', name: 'River discharge', group: 'Water', units: 'm3/s', source: `${rivers.organization}`,
+      // Open-Meteo data are CC BY 4.0: credit and a link must sit next to the data wherever they are shown.
+      notice: 'Flood data by <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>), from the GloFAS reanalysis of the Copernicus Emergency Management Service; annual means computed by Trend Detective. GloFAS is a model reconstruction from weather data, not a river gauge, so a trend can also reflect changes in the model.',
       definition: 'How much water flows down the river each second, averaged over the year.' }],
     extra: Object.fromEntries(goodRivers.map((p) => [p.id, { DISCHARGE: { ...rivers.series[p.id], source: rivers.organization } }])),
   });
