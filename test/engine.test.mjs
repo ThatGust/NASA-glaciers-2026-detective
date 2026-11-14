@@ -195,3 +195,17 @@ test('block shuffle keeps the values but removes a strong trend', async () => {
   }
   assert.ok(trendless > 40, `only ${trendless}/50 shuffles lost the trend`);
 });
+
+test('alibi test: removing a pure El Niño signal leaves a real trend standing, and explains a pure El Niño series', async () => {
+  const { alibiTest } = await import('../engine.js');
+  const years = Array.from({ length: 40 }, (_, i) => 1981 + i);
+  const enso = { years, values: years.map((_, i) => Math.sin(i * 1.7) * 1.2) };
+  const trendPlusEnso = { years, values: years.map((_, i) => 0.03 * i + 0.5 * enso.values[i] + (((i * 7) % 5) - 2) * 0.02) };
+  const a = alibiTest(trendPlusEnso, enso);
+  assert.equal(a.after.verdict, 'confirmed');
+  assert.ok(Math.abs(a.coefficient - 0.5) < 0.05, `coef ${a.coefficient}`);
+  const onlyEnso = { years, values: years.map((_, i) => 0.8 * enso.values[i] + (((i * 7) % 5) - 2) * 0.01) };
+  const b = alibiTest(onlyEnso, enso);
+  assert.ok(b.share > 0.9, `share ${b.share}`);
+  assert.notEqual(b.after.verdict, 'confirmed');
+});

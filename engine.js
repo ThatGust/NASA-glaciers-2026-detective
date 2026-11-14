@@ -331,3 +331,34 @@ export function blockShuffle(values, random = Math.random) {
   for (let i = blocks.length - 1; i > 0; i--) { const j = Math.floor(random() * (i + 1)); [blocks[i], blocks[j]] = [blocks[j], blocks[i]]; }
   return blocks.flat();
 }
+
+// The alibi test: remove the same-year linear effect of a climate index (e.g. El Niño) and test the trend again.
+// Index and trend are fitted together (y = a + b·index + c·year), so a trend shared by the index is not removed twice.
+export function alibiTest(series, index) {
+  const years = series.years.filter((y) => index.years.includes(y));
+  if (years.length < MIN_YEARS) return null;
+  const y = years.map((yr) => series.values[series.years.indexOf(yr)]);
+  const x = years.map((yr) => index.values[index.years.indexOf(yr)]);
+  // Least squares for y on [1, x, t] via the 3x3 normal equations.
+  const t = years.map((yr) => yr - years[0]);
+  const cols = [years.map(() => 1), x, t];
+  const A = cols.map((a) => cols.map((b) => a.reduce((s, v, i) => s + v * b[i], 0)));
+  const rhs = cols.map((a) => a.reduce((s, v, i) => s + v * y[i], 0));
+  const [a0, bIdx] = solve3(A, rhs);
+  const adjusted = y.map((v, i) => v - bIdx * (x[i] - x.reduce((s, q) => s + q, 0) / x.length));
+  const my = y.reduce((s, v) => s + v, 0) / y.length;
+  const ssTot = y.reduce((s, v) => s + (v - my) ** 2, 0);
+  const ssIdx = y.reduce((s, v, i) => s + (bIdx * (x[i] - x.reduce((q, w) => q + w, 0) / x.length)) ** 2, 0);
+  return { share: ssTot ? Math.min(1, ssIdx / ssTot) : 0, coefficient: bIdx, intercept: a0, after: analyze({ years, values: adjusted }) };
+}
+function solve3(A, b) { // Gaussian elimination with partial pivoting
+  const M = A.map((r, i) => [...r, b[i]]);
+  for (let c = 0; c < 3; c++) {
+    const p = M.slice(c).reduce((best, r, i) => (Math.abs(r[c]) > Math.abs(M[best][c]) ? i + c : best), c);
+    [M[c], M[p]] = [M[p], M[c]];
+    for (let r = c + 1; r < 3; r++) { const f = M[r][c] / M[c][c]; for (let k = c; k < 4; k++) M[r][k] -= f * M[c][k]; }
+  }
+  const out = [0, 0, 0];
+  for (let r = 2; r >= 0; r--) out[r] = (M[r][3] - M[r].slice(r + 1, 3).reduce((s, v, k) => s + v * out[r + 1 + k], 0)) / M[r][r];
+  return out;
+}

@@ -1,5 +1,5 @@
 // Trend Detective UI: ties the form, NASA POWER and the engine together. Data formats: see README.
-import { analyze, blockShuffle, compareWitnesses, fetchPower, fetchPowerMany, predictionTest, scan } from './engine.js';
+import { alibiTest, analyze, blockShuffle, compareWitnesses, fetchPower, fetchPowerMany, predictionTest, scan } from './engine.js';
 
 // Built-in fallback catalog. data/catalog.json (verified sources, more variables and places) replaces it when present.
 let VARIABLES = [
@@ -28,6 +28,7 @@ let PLACES = [
   ['puncak-jaya', 'Puncak Jaya glaciers (Indonesia)', 'Puncak Jaya', -4.08, 137.18],
 ].map(([id, name, short, lat, lon]) => ({ id, name, short, lat, lon, environment: 'glacier' }));
 let DEMOS = [];
+let INDICES = null; // data/indices.json: NOAA climate indices for the alibi test
 let WITNESSES = null; // data/witnesses.json: second, independent source (ERA5) for catalog places
 
 // Where a detective could start, by kind of place (fixed rules, no AI): what usually changes there and why.
@@ -312,6 +313,17 @@ function render(c0) {
   // Second method named in the challenge: a t-test on the least-squares slope.
   const tt = r.ttest, ttVerdict = tt.p < 0.05 ? 'confirmed' : tt.p < 0.1 ? 'likely' : 'unknown';
   const sameCall = (ttVerdict === 'confirmed') === (r.verdict === 'confirmed') && Math.sign(tt.slopePerDecade) === Math.sign(r.slopePerDecade);
+  // The alibi: could a natural climate swing (El Niño, the PDO) explain the trend instead?
+  $('alibi').innerHTML = !INDICES ? '' : ['ENSO', 'PDO'].map((k) => {
+    const idx = INDICES[k], a = alibiTest(series, idx);
+    if (!a) return '';
+    const after = VERDICTS[a.after.verdict].label.slice(2).toLowerCase();
+    const share = Math.round(a.share * 100);
+    const story = r.verdict === 'confirmed'
+      ? a.after.verdict === 'confirmed' ? 'the trend is still confirmed: this alibi does not hold.' : `the trend is only ${after}: part of it may be this natural swing.`
+      : `the trend is ${after}.`;
+    return `<li><strong>${idx.name}</strong> (${idx.organization}) explains about ${share}% of the year-to-year ups and downs here. After removing its effect, ${story}</li>`;
+  }).join('');
   const pt = predictionTest(series);
   $('prediction').textContent = !pt ? '' : `Prediction test: a trend fitted to ${pt.trainYears[0]}–${pt.trainYears[1]} predicts ${pt.testYears[0]}–${pt.testYears[1]} ${
     pt.skill > 0.1 ? `${Math.round(pt.skill * 100)}% better than` : pt.skill < -0.1 ? `${Math.round(-pt.skill * 100)}% worse than` : 'about as well as'} assuming that nothing changes.`;
@@ -563,8 +575,9 @@ function openCell(position) {
 async function loadJson(url) {
   try { const r = await fetch(url); return r.ok ? await r.json() : null; } catch { return null; }
 }
-const [catalog, demos, witnesses, grid] = await Promise.all([loadJson('data/catalog.json'), loadJson('data/demos.json'),
-  loadJson('data/witnesses.json'), loadJson('data/grid.json')]);
+const [catalog, demos, witnesses, grid, indices] = await Promise.all([loadJson('data/catalog.json'), loadJson('data/demos.json'),
+  loadJson('data/witnesses.json'), loadJson('data/grid.json'), loadJson('data/indices.json')]);
+INDICES = indices;
 WITNESSES = witnesses;
 GRID = grid;
 if (catalog?.variables?.length) VARIABLES = catalog.variables;
