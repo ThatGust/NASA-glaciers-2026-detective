@@ -362,3 +362,16 @@ function solve3(A, b) { // Gaussian elimination with partial pivoting
   for (let r = 2; r >= 0; r--) out[r] = (M[r][3] - M[r].slice(r + 1, 3).reduce((s, v, k) => s + v * out[r + 1 + k], 0)) / M[r][r];
   return out;
 }
+
+// Area-weighted mean series: each cell weighs cos(latitude), because cells shrink toward the poles.
+// Only cells with the same, complete set of years are averaged (no gap filling).
+export function areaWeightedMean(seriesList, lats) {
+  const full = Math.max(...seriesList.map((s) => s.years.length));
+  const keep = seriesList.map((s, i) => i).filter((i) => seriesList[i].years.length === full);
+  const years = seriesList[keep[0]].years;
+  const same = keep.filter((i) => seriesList[i].years.join() === years.join());
+  const w = same.map((i) => Math.cos((lats[i] * Math.PI) / 180));
+  const W = w.reduce((a, b) => a + b, 0);
+  const values = years.map((_, y) => +(same.reduce((a, i, k) => a + w[k] * seriesList[i].values[y], 0) / W).toFixed(4));
+  return { years, values, cells: same.length };
+}

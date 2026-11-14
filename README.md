@@ -4,6 +4,10 @@
 
 Trend Detective lets anyone pick a NASA Earth-science variable and a place on a 3D globe, and get an honest verdict on whether it is really changing: **Confirmed**, **Likely** or **Not yet known**. When a trend is not yet significant, a "clock" estimates how many more years of data would be needed to confirm it. When it is, it says since when it has been known.
 
+## Global monitor
+
+The first screen shows **the whole planet**: 2,592 cells of 5° × 5° (land and ocean), each with its own trend test for 15 NASA POWER variables (1981–2025, or 2001–2025 for CERES products). Cells are colored by how fast the variable rises or falls, and faded where the trend is not confirmed; verdicts are adjusted for testing thousands of cells at once (Benjamini-Hochberg). Eight large regions (the whole planet, land, oceans, tropics, mid-latitudes, Arctic, Antarctic) are area-weighted means that open as cases. Any cell can be investigated in detail. Built with `node tools/build_grid.mjs`.
+
 ## How it works
 
 1. **Open a case.** Choose a variable (temperature, precipitation, soil moisture, humidity, solar radiation, wind…) and a place: click a dot on the globe (glaciers, deserts, rainforests, cities, coasts, ocean, polar regions), any other point, or type coordinates.

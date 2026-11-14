@@ -4,7 +4,7 @@
 // Usage (from app/):  node tools/build_grid.mjs [--step 5] [--limit 20]
 // Responses are cached in tools/.cache/grid/, so an interrupted run resumes where it stopped.
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
-import { analyze, annualSeriesFromPower, benjaminiHochberg } from '../engine.js';
+import { analyze, annualSeriesFromPower, areaWeightedMean, benjaminiHochberg } from '../engine.js';
 
 const here = (p) => new URL(p, import.meta.url);
 const args = process.argv.slice(2);
@@ -92,14 +92,8 @@ for (const [id, name, inRegion] of REGIONS) {
   for (const v of VARS) {
     const members = todo.map((c, i) => i).filter((i) => inRegion(todo[i], i) && usable(results[i][v.id]) && !(v.land_only && ocean[i]));
     if (!members.length) continue;
-    const full = Math.max(...members.map((i) => results[i][v.id].years.length));
-    const keep = members.filter((i) => results[i][v.id].years.length === full);
-    const years = results[keep[0]][v.id].years;
-    if (keep.some((i) => results[i][v.id].years.join() !== years.join())) continue;
-    const w = keep.map((i) => Math.cos((todo[i].lat * Math.PI) / 180));
-    const W = w.reduce((a, b) => a + b, 0);
-    const values = years.map((_, y) => +(keep.reduce((a, i, k) => a + w[k] * results[i][v.id].values[y], 0) / W).toFixed(4));
-    regions[id].series[v.id] = { years, values, units: results[keep[0]][v.id].units, cells: keep.length };
+    const m = areaWeightedMean(members.map((i) => results[i][v.id]), members.map((i) => todo[i].lat));
+    regions[id].series[v.id] = { ...m, units: results[members[0]][v.id].units };
   }
 }
 

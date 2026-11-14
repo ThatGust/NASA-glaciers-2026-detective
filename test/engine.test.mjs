@@ -209,3 +209,15 @@ test('alibi test: removing a pure El Niño signal leaves a real trend standing, 
   assert.ok(b.share > 0.9, `share ${b.share}`);
   assert.notEqual(b.after.verdict, 'confirmed');
 });
+
+test('area-weighted mean gives polar cells less weight and skips incomplete cells', async () => {
+  const { areaWeightedMean } = await import('../engine.js');
+  const years = [2000, 2001];
+  const r = areaWeightedMean([
+    { years, values: [0, 0] },       // equator, weight 1
+    { years, values: [10, 10] },     // 60°, weight 0.5
+    { years: [2000], values: [99] }, // incomplete: skipped
+  ], [0, 60, 0]);
+  assert.equal(r.cells, 2);
+  assert.ok(Math.abs(r.values[0] - 10 * 0.5 / 1.5) < 1e-3, `${r.values[0]}`);
+});
