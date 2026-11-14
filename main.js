@@ -11,12 +11,20 @@ const VARIABLES = [
   { id: 'WS2M', name: 'Wind', def: 'How fast the air moves, 2 m above the ground.' },
   { id: 'GWETROOT', name: 'Soil moisture', def: 'How wet the soil is where roots drink (0 dry, 1 saturated).' },
 ];
+// Glaciers and snow-capped peaks around the world (approximate coordinates; NASA POWER averages a ~50 km cell anyway).
 const PLACES = [
-  { name: 'Nevado Coropuna, Arequipa (Peru)', lat: -15.53, lon: -72.65 },
-  { name: 'Arequipa city (Peru)', lat: -16.4, lon: -71.54 },
-  { name: 'Lima (Peru)', lat: -12.05, lon: -77.04 },
-  { name: 'Cusco (Peru)', lat: -13.53, lon: -71.97 },
-  { name: 'Iquitos, Amazon (Peru)', lat: -3.75, lon: -73.25 },
+  { name: 'Nevado Coropuna (Peru)', short: 'Coropuna', lat: -15.53, lon: -72.65 },
+  { name: 'Quelccaya Ice Cap (Peru)', short: 'Quelccaya', lat: -13.93, lon: -70.82 },
+  { name: 'Huascarán, Cordillera Blanca (Peru)', short: 'Huascarán', lat: -9.12, lon: -77.6 },
+  { name: 'Zongo Glacier (Bolivia)', short: 'Zongo', lat: -16.27, lon: -68.14 },
+  { name: 'Chimborazo (Ecuador)', short: 'Chimborazo', lat: -1.47, lon: -78.82 },
+  { name: 'Perito Moreno, Patagonia (Argentina)', short: 'Perito Moreno', lat: -50.5, lon: -73.05 },
+  { name: 'Columbia Glacier (Alaska, USA)', short: 'Columbia', lat: 61.15, lon: -147.1 },
+  { name: 'Jakobshavn Glacier (Greenland)', short: 'Jakobshavn', lat: 69.17, lon: -49.83 },
+  { name: 'Aletsch Glacier, Alps (Switzerland)', short: 'Aletsch', lat: 46.44, lon: 8.07 },
+  { name: 'Kilimanjaro (Tanzania)', short: 'Kilimanjaro', lat: -3.07, lon: 37.35 },
+  { name: 'Khumbu Glacier, Everest (Nepal)', short: 'Khumbu', lat: 27.98, lon: 86.85 },
+  { name: 'Puncak Jaya glaciers (Indonesia)', short: 'Puncak Jaya', lat: -4.08, lon: 137.18 },
 ];
 const VERDICTS = {
   confirmed: { label: '● Confirmed', text: 'In this dataset the trend is statistically significant: it is very unlikely to be chance.' },
@@ -45,17 +53,27 @@ try {
     navigationHelpButton: false, animation: false, timeline: false, fullscreenButton: false, infoBox: false, selectionIndicator: false,
   });
   viewer.camera.setView({ destination: C.Cartesian3.fromDegrees(-60, -10, 22000000) });
+  // One white dot per glacier; the selected place gets the cyan marker.
+  PLACES.forEach((p, i) => viewer.entities.add({
+    id: `place-${i}`, position: C.Cartesian3.fromDegrees(p.lon, p.lat),
+    point: { pixelSize: 7, color: C.Color.WHITE, outlineColor: C.Color.BLACK, outlineWidth: 1 },
+    label: { text: p.short, font: '12px Inter, sans-serif', pixelOffset: new C.Cartesian2(0, -14), fillColor: C.Color.WHITE,
+             showBackground: true, backgroundColor: C.Color.fromCssColorString('rgba(10,10,15,.7)') },
+  }));
   marker = viewer.entities.add({
     position: C.Cartesian3.fromDegrees(-72.65, -15.53),
-    point: { pixelSize: 10, color: C.Color.fromCssColorString('#00d4ff'), outlineColor: C.Color.BLACK, outlineWidth: 1 },
-    label: { text: 'Coropuna', font: '14px Inter, sans-serif', pixelOffset: new C.Cartesian2(0, -20), showBackground: true },
+    point: { pixelSize: 12, color: C.Color.fromCssColorString('#00d4ff'), outlineColor: C.Color.BLACK, outlineWidth: 1 },
   });
-  // Clicking the globe picks the place for the case.
+  // Clicking a glacier dot selects it; clicking anywhere else on the globe picks that point.
   new C.ScreenSpaceEventHandler(viewer.scene.canvas).setInputAction((e) => {
+    if (!location.hash.startsWith('#/case')) return;
+    const id = viewer.scene.pick(e.position)?.id?.id;
+    if (typeof id === 'string' && id.startsWith('place-')) return selectPlace(+id.slice(6));
     const p = viewer.camera.pickEllipsoid(e.position);
-    if (!p || !location.hash.startsWith('#/case')) return;
+    if (!p) return;
     const g = C.Cartographic.fromCartesian(p);
-    setPoint(+C.Math.toDegrees(g.latitude).toFixed(2), +C.Math.toDegrees(g.longitude).toFixed(2), 'Selected point');
+    $('place').value = '';
+    setPoint(+C.Math.toDegrees(g.latitude).toFixed(2), +C.Math.toDegrees(g.longitude).toFixed(2));
   }, C.ScreenSpaceEventType.LEFT_CLICK);
 } catch (e) {
   console.warn('Globe unavailable:', e);
@@ -69,12 +87,16 @@ function flyTo(lat, lon, height = 900000, seconds = 3) {
   else viewer.camera.flyTo({ destination, duration: seconds });
 }
 
-function setPoint(lat, lon, name) {
+function setPoint(lat, lon) {
   $('lat').value = lat; $('lon').value = lon;
-  if (marker) {
-    marker.position = window.Cesium.Cartesian3.fromDegrees(lon, lat);
-    marker.label.text = name;
-  }
+  if (marker) marker.position = window.Cesium.Cartesian3.fromDegrees(lon, lat);
+}
+
+function selectPlace(i) {
+  const p = PLACES[i];
+  $('place').value = i;
+  setPoint(p.lat, p.lon);
+  flyTo(p.lat, p.lon);
 }
 
 // --- Views: one at a time, each with its own address so the Back button works. ---
@@ -94,9 +116,11 @@ $('skip').addEventListener('click', () => viewer?.camera.cancelFlight());
 $('variables').innerHTML = VARIABLES.map((v, i) => `
   <li class="card"><label><input type="radio" name="variable" value="${v.id}" ${i ? '' : 'checked'}>
   <strong>${v.name}</strong>${v.def}</label></li>`).join('');
-$('place').innerHTML = PLACES.map((p, i) => `<option value="${i}">${p.name}</option>`).join('');
-$('place').addEventListener('change', () => { const p = PLACES[$('place').value]; setPoint(p.lat, p.lon, p.name); flyTo(p.lat, p.lon); });
-setPoint(PLACES[0].lat, PLACES[0].lon, PLACES[0].name);
+$('place').innerHTML = PLACES.map((p, i) => `<option value="${i}">${p.name}</option>`).join('')
+  + '<option value="" disabled>Other point (click the globe)</option>';
+$('place').addEventListener('change', () => selectPlace(+$('place').value));
+$('place').value = 0;
+setPoint(PLACES[0].lat, PLACES[0].lon);
 route();
 
 $('case-form').addEventListener('submit', async (e) => {
