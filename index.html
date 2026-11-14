@@ -155,6 +155,20 @@
   .feedback.good { color:var(--ok); } .feedback.close { color:var(--warn); } .feedback.miss { color:var(--up); }
   .clue { width:100%; text-align:left; font:14px var(--font-sans); color:var(--accent); background:none; border:0; padding:0; cursor:pointer; }
   @media (max-width:640px) { .score { left:auto; right:16px; } }
+  .mission-bar { position:fixed; z-index:3; top:62px; left:50%; transform:translateX(-50%); margin:0; font:600 13px var(--font-sans);
+                 background:var(--accent); color:var(--bg-dark); border-radius:999px; padding:6px 14px; white-space:nowrap; }
+  .side.wide { width:min(760px, calc(100vw - 32px)); }
+  .host-grid { display:grid; grid-template-columns:minmax(220px, 320px) 1fr; gap:16px; align-items:start; }
+  @media (max-width:640px) { .host-grid { grid-template-columns:1fr; } }
+  .qr { background:#fff; border-radius:var(--btn-radius); padding:8px; } .qr svg { width:100%; height:auto; display:block; }
+  .code { font-family:var(--font-mono); color:var(--accent); letter-spacing:.12em; }
+  #t-host { font-size:26px; } #t-player { font-size:28px; }
+  .board { margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:4px; }
+  .board li { display:flex; justify-content:space-between; font-size:16px; padding:6px 10px; border:1px solid var(--glass-border); border-radius:var(--btn-radius); }
+  .board li:first-child:not(.note) { border-color:var(--accent); background:var(--accent-dim); }
+  .mission { margin:0; padding:0; list-style:none; display:flex; gap:6px; flex-wrap:wrap; }
+  .mission li { font:13px var(--font-mono); border:1px solid var(--glass-border); border-radius:999px; padding:4px 10px; }
+  .mission li.done { color:var(--ok); border-color:var(--ok); }
   [hidden] { display:none !important; }
 </style>
 </head>
@@ -167,6 +181,7 @@
 </div>
 <div class="no3d" hidden id="no3d">Your browser cannot display the 3D globe.</div>
 <a class="brand" href="#/home">Signal or Noise</a>
+<p class="mission-bar" id="mission-bar" hidden aria-live="polite"></p>
 <p class="score" id="score" title="Your detective score: right calls earn points" aria-live="polite"></p>
 <p class="credits">Imagery: NASA Blue Marble and Worldview (GIBS) · Globe: CesiumJS (Apache 2.0)</p>
 <a class="btn sec skip" href="#/case" id="skip">Skip</a>
@@ -195,6 +210,7 @@
   <div class="row">
     <a class="btn" href="#/global" id="global-link">See the planet's trends</a>
     <a class="btn sec" href="#/case">Investigate a place</a>
+    <a class="btn sec" href="#/class">Play in class</a>
   </div>
   <div id="demos" hidden>
     <p class="note" style="margin-top:12px">Or watch a solved case:</p>
@@ -214,6 +230,45 @@
   <details><summary>How this map is made</summary><p class="note" id="global-note"></p></details>
   <div class="spacer"></div>
   <div class="row"><a class="btn sec" href="#/home">Back</a><a class="btn" href="#/case">Investigate a place</a></div>
+</section>
+
+<section class="view side" id="view-class" aria-labelledby="t-class">
+  <p class="step">Classroom mode</p>
+  <h2 id="t-class" tabindex="-1">Play together, as anonymous detectives</h2>
+  <p class="note">Everyone plays the same 5-case mission. Nobody types a name: each player is just a number. A live leaderboard shows who reasons best.</p>
+  <p class="note" id="class-mode"></p>
+  <h3>Teacher or speaker</h3>
+  <div class="row"><button class="btn" type="button" id="host-btn">Host a session</button></div>
+  <h3>Player</h3>
+  <div class="row" style="flex-wrap:nowrap">
+    <input id="join-code" maxlength="4" autocomplete="off" placeholder="CODE" aria-label="Session code" style="width:120px;text-transform:uppercase;font:600 20px var(--font-mono);letter-spacing:.2em;padding:6px 10px;background:rgba(255,255,255,.06);color:var(--text-primary);border:1px solid rgba(255,255,255,.3);border-radius:8px">
+    <button class="btn" type="button" id="join-btn">Join</button>
+  </div>
+  <p class="note" id="join-status" role="status" aria-live="polite"></p>
+  <div class="spacer"></div>
+  <div class="row"><a class="btn sec" href="#/home">Back</a></div>
+</section>
+
+<section class="view side wide" id="view-host" aria-labelledby="t-host">
+  <p class="step">Hosting a session</p>
+  <h2 id="t-host" tabindex="-1">Scan to join · code <span class="code" id="host-code"></span></h2>
+  <div class="host-grid">
+    <div><div id="host-qr" class="qr"></div><a class="note" id="host-url" target="_blank" rel="noopener"></a></div>
+    <div><h3 id="host-count"></h3><ol class="board" id="host-board"></ol></div>
+  </div>
+  <div class="spacer"></div>
+  <div class="row"><a class="btn sec" href="#/class">Back</a></div>
+</section>
+
+<section class="view side" id="view-player" aria-labelledby="t-player">
+  <p class="step">Your mission</p>
+  <h2 id="t-player" tabindex="-1">You are Detective <span class="code" id="player-id"></span></h2>
+  <p class="note" id="player-score"></p>
+  <ol class="mission" id="player-cases"></ol>
+  <p class="note">In each case: call the direction, give your verdict, then press "Next case". Right calls earn points.</p>
+  <div class="row"><button class="btn" type="button" id="player-next">Start the next case</button></div>
+  <p id="player-finished" hidden><b>Mission complete!</b> Look at the leaderboard on the big screen.</p>
+  <div class="spacer"></div>
 </section>
 
 <section class="view side" id="view-moon" aria-labelledby="t-moon">
@@ -351,6 +406,7 @@
     <button class="btn sec" type="button" id="lineup-start">Spot the real one</button>
     <button class="btn sec" type="button" id="compare-start">Compare</button>
     <a class="btn" href="#/record">Case file</a>
+    <button class="btn" type="button" id="mission-next" hidden>Next case ▶</button>
   </div>
 </section>
 
@@ -392,6 +448,7 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/cesium@1.124.0/Build/Cesium/Cesium.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <script type="module" src="main.js"></script>
 </body>
 </html>

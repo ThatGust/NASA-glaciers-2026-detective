@@ -1,4 +1,5 @@
 // Signal or Noise UI: ties the form, NASA POWER and the engine together. Data formats: see README.
+import { createClassroom } from './classroom.js';
 import { alibiTest, analyze, blockShuffle, lunarIndex, lunarTest, LUNAR_MIN_YEARS, projection, compareWitnesses, fetchPower, fetchPowerMany, predictionTest, scan } from './engine.js';
 
 // Built-in fallback catalog. data/catalog.json (verified sources, more variables and places) replaces it when present.
@@ -269,12 +270,13 @@ const placeName = (lat, lon) => PLACES.find((p) => p.lat === lat && p.lon === lo
 const shortName = (c) => PLACES.find((p) => p.lat === c.lat && p.lon === c.lon)?.short ?? c.place;
 
 // --- Views: one at a time, each with its own address so the Back button works. ---
-const VIEWS = ['home', 'global', 'moon', 'lunar', 'case', 'leads', 'evidence', 'projection', 'verdict', 'lineup', 'compare', 'record'];
+const VIEWS = ['home', 'class', 'host', 'player', 'global', 'moon', 'lunar', 'case', 'leads', 'evidence', 'projection', 'verdict', 'lineup', 'compare', 'record'];
 function route() {
   let v = location.hash.replace('#/', '') || 'home';
   if (!VIEWS.includes(v)) v = 'home';
   setWorld(v === 'moon' || v === 'lunar');
-  const needs = { lunar: lunarCase, evidence: current, projection: current, verdict: current, record: current, lineup: current, leads, compare: current?.other, global: GRID };
+  if (v === 'player') classroom?.renderPlayer();
+  const needs = { player: classroom?.active, lunar: lunarCase, evidence: current, projection: current, verdict: current, record: current, lineup: current, leads, compare: current?.other, global: GRID };
   if (v in needs && !needs[v]) { location.replace('#/case'); return; }
   for (const n of VIEWS) $(`view-${n}`).classList.toggle('active', n === v);
   $('skip').hidden = v !== 'home';
@@ -513,10 +515,10 @@ function renderCompare(c) {
 
 // --- Detective game: the user makes the calls, can be wrong, and earns points. ---
 const RANKS = [[0, 'Rookie'], [5, 'Junior detective'], [12, 'Inspector'], [25, 'Chief inspector'], [45, 'Legendary detective']];
-let score = 0;
+let score = 0, classroom = null;
 try { score = +localStorage.getItem('td-score') || 0; } catch { score = 0; }
 function showScore() { $('score').textContent = `🕵 ${score} pts · ${RANKS.filter(([p]) => score >= p).at(-1)[1]}`; }
-function award(points) { score += points; try { localStorage.setItem('td-score', String(score)); } catch { /* private mode: keep it in memory */ } showScore(); }
+function award(points) { classroom?.addPoints(points); score += points; try { localStorage.setItem('td-score', String(score)); } catch { /* private mode: keep it in memory */ } showScore(); }
 showScore();
 
 function resetGame(reveal) {
@@ -1025,4 +1027,12 @@ drawPlaceDots();
 selectPlace(PLACES.find((p) => p.id === 'coropuna')?.id ?? PLACES[0].id);
 renderDemos();
 fillGlobal();
+// Classroom mode: mission cases arrive with their NASA series bundled, so a whole class does not hit NASA POWER at once.
+classroom = await createClassroom({ $, esc, loadJson, openCase: ({ place, variable, series }) => {
+  const p = PLACES.find((x) => x.id === place), v = varById(variable);
+  current = { variable: v, place: p.name, lat: p.lat, lon: p.lon, series, r: analyze(series) };
+  render(current);
+  flyTo(p.lat, p.lon);
+  location.hash = '#/evidence';
+} });
 route();
