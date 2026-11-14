@@ -7,6 +7,7 @@ This project's own code is released under the Apache License 2.0 (see `LICENSE`)
 | Component | Use | License |
 |---|---|---|
 | [CesiumJS](https://github.com/CesiumGS/cesium) 1.124.0, loaded from the jsDelivr CDN | 3D globe | Apache License 2.0 |
+| [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) 1.4.4 by Kazuhiko Arase, loaded from the jsDelivr CDN | QR code for classroom sessions | MIT License |
 | [God's Eye View](https://github.com/bilawalsidhu/gods-eye-view) © 2026 Bilawal Sidhu and contributors | Style variables (colors, fonts, glass panels), adapted in `index.html` | MIT License (notice below) |
 | [Inter](https://fonts.google.com/specimen/Inter) and [JetBrains Mono](https://fonts.google.com/specimen/JetBrains+Mono), via Google Fonts | Typography | SIL Open Font License 1.1 |
 | [pymannkendall](https://github.com/mmhs013/pyMannKendall) (test reference only, not shipped) | Cross-check of the statistics engine in `test/reference.py` | MIT License |
