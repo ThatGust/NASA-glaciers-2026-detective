@@ -1,5 +1,5 @@
 // Trend Detective UI: ties the form, NASA POWER and the engine together. Data formats: see README.
-import { alibiTest, analyze, blockShuffle, projection, compareWitnesses, fetchPower, fetchPowerMany, predictionTest, scan } from './engine.js';
+import { alibiTest, analyze, blockShuffle, lunarIndex, lunarTest, LUNAR_MIN_YEARS, projection, compareWitnesses, fetchPower, fetchPowerMany, predictionTest, scan } from './engine.js';
 
 // Built-in fallback catalog. data/catalog.json (verified sources, more variables and places) replaces it when present.
 let VARIABLES = [
@@ -255,11 +255,12 @@ const placeName = (lat, lon) => PLACES.find((p) => p.lat === lat && p.lon === lo
 const shortName = (c) => PLACES.find((p) => p.lat === c.lat && p.lon === c.lon)?.short ?? c.place;
 
 // --- Views: one at a time, each with its own address so the Back button works. ---
-const VIEWS = ['home', 'global', 'case', 'leads', 'evidence', 'projection', 'verdict', 'lineup', 'compare', 'record'];
+const VIEWS = ['home', 'global', 'moon', 'lunar', 'case', 'leads', 'evidence', 'projection', 'verdict', 'lineup', 'compare', 'record'];
 function route() {
   let v = location.hash.replace('#/', '') || 'home';
   if (!VIEWS.includes(v)) v = 'home';
-  const needs = { evidence: current, projection: current, verdict: current, record: current, lineup: current, leads, compare: current?.other, global: GRID };
+  setWorld(v === 'moon' || v === 'lunar');
+  const needs = { lunar: lunarCase, evidence: current, projection: current, verdict: current, record: current, lineup: current, leads, compare: current?.other, global: GRID };
   if (v in needs && !needs[v]) { location.replace('#/case'); return; }
   for (const n of VIEWS) $(`view-${n}`).classList.toggle('active', n === v);
   $('skip').hidden = v !== 'home';
@@ -738,6 +739,142 @@ function openStoredCell(lat, lon) {
   const series = { years: values.map((_, k) => first + k), values, units: v.units, source: v.source };
   render({ variable: v, place: `the ${step}° cell centered at ${fmt(clat, 1)}°, ${fmt(clon, 1)}°`, lat: null, lon: null, series, r: analyze(series) });
   location.hash = '#/evidence';
+}
+
+// --- The Moon (decision D-26): a second globe, lunar places, and cases on how the Moon affects the Earth. ---
+const MOON_TILES = 'https://trek.nasa.gov/tiles/Moon/EQ/LRO_WAC_Mosaic_Global_303ppd_v02/1.0.0/default/default028mm/{TileMatrix}/{TileRow}/{TileCol}.jpg';
+// Coordinates from Wikipedia's lunar coordinate data (globe=moon), retrieved 14 November 2026.
+const MOON_PLACES = [
+  ['Tycho crater', -43.31, -11.36, 'A young, bright crater whose rays of ejecta stretch across the Moon.'],
+  ['Copernicus crater', 9.62, -20.08, 'A large impact crater with terraced walls, easy to see with binoculars.'],
+  ['Tranquility Base', 0.6875, 23.4333, 'Where Apollo 11 landed in 1969: the first humans on the Moon.'],
+  ['Mare Tranquillitatis', 8.5, 31.4, 'A dark plain of ancient lava, the "Sea of Tranquility".'],
+  ['Mare Serenitatis', 28, 17.5, 'A dark lava plain, the "Sea of Serenity".'],
+  ['Mare Imbrium', 32.8, -15.6, 'One of the largest lava plains, filling a giant impact basin.'],
+  ['Mare Crisium', 17, 59.1, 'An isolated dark lava plain near the eastern edge of the near side.'],
+  ['Aristarchus crater', 23.7, -47.4, 'The brightest large crater on the near side.'],
+  ['Shackleton crater', -89.67, 129.78, 'At the south pole; its floor never sees sunlight and may hold ice.'],
+  ["Chang'e 4 landing site", -45.444, 177.599, 'In 2019, the first spacecraft to land on the far side of the Moon.'],
+];
+const MOON_CASES = [
+  { id: 'tides', title: 'Ocean tides', tag: ['proven', 'Proven'],
+    text: 'The Moon\'s pull raises two bulges of ocean water, so most coasts get two high tides a day. Over the 18.6-year cycle, tides grow a few percent bigger or smaller.' },
+  { id: 'corals', title: 'Coral spawning', tag: ['proven', 'Proven'],
+    text: 'On many reefs, corals release their eggs together a few nights after a full moon. Moonlight is one of the clocks they use.' },
+  { id: 'rain', title: 'Rain and air temperature', tag: ['weak', 'Weak effect'], kinds: null,
+    text: 'Studies find tiny lunar effects on rain and air pressure. Can you see the 18.6-year rhythm in the climate of a place?' },
+  { id: 'glaciers', title: '★ Glaciers: the special case', tag: ['open', 'Open question'], kinds: ['glacier'],
+    text: 'Does the Moon\'s 18.6-year rhythm leave a mark on the climate of glaciers? This is an open research question (the author\'s thesis). Test it with NASA data.' },
+];
+const LUNAR_VARS = ['T2M', 'PRECTOTCORR', 'SNODP', 'T2M_MAX', 'T2M_MIN', 'RH2M'];
+let moonViewer = null, lunarCase = null, onMoon = false;
+
+function setWorld(moon) {
+  if (moon === onMoon && (!moon || moonViewer)) return;
+  onMoon = moon;
+  $('globe').hidden = moon; $('moon-globe').hidden = !moon;
+  $('to-earth').setAttribute('aria-pressed', String(!moon)); $('to-moon').setAttribute('aria-pressed', String(moon));
+  document.querySelector('.credits').textContent = moon
+    ? 'Imagery: NASA LRO WAC global mosaic via NASA Moon Trek · Globe: CesiumJS (Apache 2.0)'
+    : 'Imagery: NASA Blue Marble and Worldview (GIBS) · Globe: CesiumJS (Apache 2.0)';
+  if (moon && !moonViewer && C) {
+    try {
+      const M = C.Ellipsoid.MOON;
+      moonViewer = new C.Viewer('moon-globe', {
+        globe: new C.Globe(M), skyAtmosphere: false, baseLayerPicker: false, geocoder: false, homeButton: false, sceneModePicker: false,
+        navigationHelpButton: false, animation: false, timeline: false, fullscreenButton: false, infoBox: false, selectionIndicator: false,
+        baseLayer: new C.ImageryLayer(new C.WebMapTileServiceImageryProvider({ url: MOON_TILES, layer: 'LRO_WAC_Mosaic_Global_303ppd_v02', style: 'default',
+          tileMatrixSetID: 'default028mm', format: 'image/jpeg', maximumLevel: 7, tilingScheme: new C.GeographicTilingScheme({ ellipsoid: M }) })),
+      });
+      moonViewer.scene.globe.enableLighting = false;
+      moonViewer.camera.setView({ destination: C.Cartesian3.fromDegrees(10, 10, 6500000, M) });
+      for (const [name, lat, lon] of MOON_PLACES) moonViewer.entities.add({
+        id: `moon:${name}`, position: C.Cartesian3.fromDegrees(lon, lat, 0, M),
+        point: { pixelSize: 8, color: C.Color.fromCssColorString('#ffd166'), outlineColor: C.Color.BLACK, outlineWidth: 1.5 },
+        label: { text: name, font: '600 13px Inter, sans-serif', verticalOrigin: C.VerticalOrigin.BOTTOM, pixelOffset: new C.Cartesian2(0, -12),
+                 showBackground: true, backgroundColor: C.Color.fromCssColorString('rgba(10,10,15,.88)'), backgroundPadding: new C.Cartesian2(6, 3) },
+      });
+      new C.ScreenSpaceEventHandler(moonViewer.scene.canvas).setInputAction((e) => {
+        const id = moonViewer.scene.pick(e.position)?.id?.id;
+        const f = typeof id === 'string' && MOON_PLACES.find(([n]) => `moon:${n}` === id);
+        if (!f) return;
+        $('place-pop').hidden = false; $('pop-img').hidden = true;
+        $('pop-name').textContent = f[0]; $('pop-country').textContent = `Moon · ${fmt(f[1], 2)}°, ${fmt(f[2], 2)}°`;
+        $('pop-line').textContent = f[3]; $('pop-facts').textContent = '';
+        $('pop-credit').innerHTML = `Coordinates: <a href="https://en.wikipedia.org/wiki/${encodeURIComponent(f[0].replace(/ /g, '_'))}" target="_blank" rel="noopener">Wikipedia</a>`;
+      }, C.ScreenSpaceEventType.LEFT_CLICK);
+    } catch (err) { console.warn('Moon globe unavailable:', err); }
+  }
+  if (moon) $('place-pop').hidden = true;
+}
+$('to-moon').addEventListener('click', () => { location.hash = '#/moon'; });
+$('to-earth').addEventListener('click', () => { location.hash = '#/home'; });
+$('back-earth').addEventListener('click', () => { location.hash = '#/home'; });
+
+$('moon-cases').innerHTML = MOON_CASES.map((c) => `<li><button type="button" class="lead-btn" data-case="${c.id}"><span><strong>${c.title}</strong></span>
+  <span class="tag ${c.tag[0]}">${c.tag[1]}</span></button></li>`).join('');
+$('moon-cases').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-case]');
+  if (!b) return;
+  lunarCase = MOON_CASES.find((c) => c.id === b.dataset.case);
+  openLunarCase();
+  location.hash = '#/lunar';
+});
+
+function openLunarCase() {
+  const c = lunarCase, testable = c.kinds !== undefined;
+  $('lunar-step').innerHTML = `Moon case · <span class="tag ${c.tag[0]}">${c.tag[1]}</span>`;
+  $('t-lunar').textContent = c.title.replace('★ ', '');
+  $('lunar-intro').textContent = c.text;
+  for (const id of ['lunar-controls', 'lunar-how', 'lunar-how-title']) $(id).hidden = !testable;
+  $('lunar-stat').textContent = ''; $('lunar-note').textContent = ''; $('lunar-chart').innerHTML = '';
+  if (!testable) {
+    $('lunar-note').textContent = c.id === 'tides'
+      ? 'This is the textbook lunar effect: no statistics needed to see the tide come in twice a day.'
+      : 'This effect is well documented by marine biologists; it shows that living things keep time with the Moon.';
+    return;
+  }
+  const places = PLACES.filter((p) => !c.kinds || c.kinds.includes(p.environment));
+  $('lunar-place').innerHTML = places.map((p) => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+  if (places.some((p) => p.id === 'coropuna')) $('lunar-place').value = 'coropuna';
+  $('lunar-var').innerHTML = LUNAR_VARS.map((id) => varById(id)).filter(Boolean).map((v) => `<option value="${v.id}">${esc(v.name)}</option>`).join('');
+}
+
+$('lunar-run').addEventListener('click', async () => {
+  const p = PLACES.find((x) => x.id === $('lunar-place').value), v = varById($('lunar-var').value);
+  if (!p || !v) return;
+  $('lunar-stat').textContent = 'Asking NASA POWER…'; $('lunar-note').textContent = ''; $('lunar-chart').innerHTML = '';
+  try {
+    const s = await fetchPower(v.id, p.lat, p.lon, 1981);
+    const t = lunarTest(s);
+    if (t.status === 'too-short') { $('lunar-stat').textContent = 'Record too short'; $('lunar-note').textContent = `The test needs at least ${LUNAR_MIN_YEARS} years (two full 18.6-year cycles); this record has ${t.n}.`; return; }
+    const pv = t.p < 0.001 ? 'p < 0.001' : `p = ${fmt(t.p, 3)}`;
+    $('lunar-stat').textContent = t.verdict === 'signal' ? `Moon-like signal (${pv})` : t.verdict === 'hint' ? `A hint, not convincing (${pv})` : `No lunar signal found (${pv})`;
+    $('lunar-stat').className = `stat ${t.verdict === 'signal' ? 'up' : ''}`;
+    const u = unitOf(s);
+    $('lunar-note').textContent = `${v.name} at ${p.short}, ${s.years[0]}–${s.years.at(-1)}: the Moon's rhythm lines up with ${Math.round(t.share * 100)}% of the year-to-year ups and downs (after removing the trend). From minor to major standstill: ${signed(t.swing)}${u ? ' ' + u : ''}. A signal is not proof of cause.`;
+    $('lunar-chart').innerHTML = lunarChart(s, t);
+  } catch (err) { $('lunar-stat').textContent = 'The test could not run'; $('lunar-note').textContent = err.message; }
+});
+
+function lunarChart(s, t) {
+  const W = 760, H = 210, m = { l: 12, r: 12, t: 16, b: 26 }, n = s.years.length;
+  const tt = s.years.map((y) => y - s.years[0]), mt = tt.reduce((a, b) => a + b, 0) / n;
+  const detr = (x) => { const mx = x.reduce((a, b) => a + b, 0) / n; const b = tt.reduce((q, ti, i) => q + (ti - mt) * (x[i] - mx), 0) / tt.reduce((q, ti) => q + (ti - mt) ** 2, 0); return x.map((xi, i) => xi - mx - b * (tt[i] - mt)); };
+  const r = detr(s.values), l = detr(t.index);
+  const z = (a) => { const sd = Math.sqrt(a.reduce((q, x) => q + x * x, 0) / a.length) || 1; return a.map((x) => x / sd); };
+  const rz = z(r), lz = z(l), lim = Math.max(2.5, ...rz.map(Math.abs));
+  const X = (i) => m.l + (i / (n - 1)) * (W - m.l - m.r), Y = (v) => m.t + ((lim - v) / (2 * lim)) * (H - m.t - m.b);
+  const pts = (a) => a.map((v, i) => `${X(i)},${Y(v)}`).join(' ');
+  const marks = [2006, 2015, 2025].filter((y) => s.years.includes(y)).map((y) => { const i = s.years.indexOf(y);
+    return `<line x1="${X(i)}" y1="${m.t}" x2="${X(i)}" y2="${H - m.b}" stroke="rgba(255,255,255,.15)"/><text x="${X(i)}" y="${m.t - 4}" fill="currentColor" font-size="11" text-anchor="${i > n - 4 ? 'end' : 'middle'}">${y === 2015 ? 'minor' : 'major'} ${y}</text>`; }).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Detrended series compared with the Moon's 18.6-year index" style="max-height:210px">
+    ${marks}<line x1="${m.l}" y1="${Y(0)}" x2="${W - m.r}" y2="${Y(0)}" stroke="rgba(255,255,255,.2)"/>
+    <polyline points="${pts(rz)}" fill="none" stroke="var(--text-primary)" stroke-width="2"/>
+    <polyline points="${pts(lz)}" fill="none" stroke="#ffd166" stroke-width="2.5" stroke-dasharray="8 6"/>
+    <text x="${m.l}" y="${H - 8}" fill="currentColor" font-size="12">${s.years[0]}</text><text x="${W - m.r}" y="${H - 8}" fill="currentColor" font-size="12" text-anchor="end">${s.years.at(-1)}</text>
+    <text x="${W / 2}" y="${H - 8}" fill="currentColor" font-size="11" text-anchor="middle">white: data without its trend · yellow dashed: the Moon's 18.6-year rhythm</text>
+  </svg>`;
 }
 
 // --- Start: load the verified catalog and demos if they exist, then draw. ---
