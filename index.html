@@ -9,16 +9,17 @@
 <style>
   /* Style variables taken from God's Eye View (MIT, (c) 2026 Bilawal Sidhu), src/ui/styles/foundation.css */
   :root {
-    --bg-dark:#0a0a0f; --glass-bg:rgba(12,12,20,.78); --glass-border:rgba(255,255,255,.08);
+    --bg-dark:#0a0a0f; --glass-bg:rgba(12,12,20,.82); --glass-border:rgba(255,255,255,.08);
     --accent:#00d4ff; --accent-dim:rgba(0,212,255,.15);
     --text-primary:#e8eaed;
     --text-secondary:rgba(232,234,237,.72); /* GEV uses .5; raised for WCAG AA contrast */
     --font-mono:'JetBrains Mono','SF Mono',monospace; --font-sans:'Inter',-apple-system,sans-serif;
     --panel-radius:16px; --btn-radius:10px; --transition-fast:150ms cubic-bezier(.4,0,.2,1);
+    --up:#ff8a3d; --down:#4d9bff; --ok:#3ddc97; --warn:#ffc857;
   }
   * { box-sizing:border-box; }
   html, body { margin:0; height:100%; overflow:hidden; background:var(--bg-dark); }
-  body { font:16px/1.5 var(--font-sans); color:var(--text-primary); -webkit-font-smoothing:antialiased; }
+  body { font:15px/1.45 var(--font-sans); color:var(--text-primary); -webkit-font-smoothing:antialiased; }
 
   /* The globe fills the screen; everything else sits on top. */
   #globe { position:fixed; inset:0; }
@@ -29,68 +30,97 @@
            color:var(--accent); background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:var(--btn-radius); padding:8px 12px; text-decoration:none; }
   .credits { position:fixed; bottom:8px; left:16px; z-index:3; margin:0; font-size:12px; color:var(--text-secondary); text-shadow:0 1px 2px #000; }
 
-  /* Views: one visible at a time. */
+  /* Views: one visible at a time; the side panel is sized to fit the screen. */
   .view { position:fixed; z-index:2; overflow:auto; background:var(--glass-bg); backdrop-filter:blur(14px);
-           border:1px solid var(--glass-border); border-radius:var(--panel-radius); padding:24px; }
+          border:1px solid var(--glass-border); border-radius:var(--panel-radius); padding:16px 20px; }
   .view:not(.active) { display:none; }
-  .side { top:72px; right:16px; bottom:40px; width:min(460px, calc(100vw - 32px)); }
-  .cover { left:50%; bottom:56px; transform:translateX(-50%); width:min(680px, calc(100vw - 32px)); text-align:center; }
-  @media (max-width:640px) { .side { top:auto; bottom:0; right:0; left:0; width:auto; max-height:62vh; border-radius:var(--panel-radius) var(--panel-radius) 0 0; } }
+  .side { top:64px; right:16px; bottom:36px; width:min(500px, calc(100vw - 32px)); display:flex; flex-direction:column; gap:10px; }
+  .side > * { margin:0; }
+  .cover { left:50%; bottom:48px; transform:translateX(-50%); width:min(640px, calc(100vw - 32px)); text-align:center; }
+  @media (max-width:640px) { .side { top:auto; bottom:0; right:0; left:0; width:auto; max-height:70vh; border-radius:var(--panel-radius) var(--panel-radius) 0 0; } }
 
-  .step { font:13px var(--font-mono); letter-spacing:.08em; text-transform:uppercase; color:var(--accent); margin:0 0 8px; }
-  h1, h2, h3 { margin:0 0 12px; line-height:1.2; }
-  h1 { font-size:32px; } h2 { font-size:22px; } h3 { font-size:17px; margin-top:16px; }
+  .step { font:12px var(--font-mono); letter-spacing:.08em; text-transform:uppercase; color:var(--accent); }
+  h1, h2, h3 { margin:0; line-height:1.2; }
+  h1 { font-size:30px; margin-bottom:8px; } h2 { font-size:20px; } h3 { font-size:15px; }
   h1:focus, h2:focus { outline:none; }
-  p { margin:0 0 12px; }
-  .note { color:var(--text-secondary); font-size:14px; }
-  .btn { display:inline-block; padding:12px 20px; margin:8px 8px 0 0; border:1px solid var(--accent); border-radius:var(--btn-radius); background:var(--accent);
-         color:var(--bg-dark); font:600 16px var(--font-sans); text-decoration:none; cursor:pointer; transition:background var(--transition-fast); }
+  p { margin:0; }
+  .note { color:var(--text-secondary); font-size:13px; }
+  .row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .btn { display:inline-block; padding:10px 16px; border:1px solid var(--accent); border-radius:var(--btn-radius); background:var(--accent);
+         color:var(--bg-dark); font:600 15px var(--font-sans); text-decoration:none; cursor:pointer; transition:background var(--transition-fast); }
   .btn.sec { background:transparent; color:var(--text-primary); border-color:rgba(255,255,255,.3); }
+  .btn.small { padding:6px 10px; font-size:13px; }
   .btn:focus-visible, a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline:2px solid var(--text-primary); outline-offset:2px; }
+  .cover .row { justify-content:center; margin-top:12px; }
   .skip { position:fixed; right:16px; bottom:16px; z-index:3; margin:0; }
 
-  fieldset { border:0; padding:0; margin:0 0 16px; } legend { padding:0; }
-  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:8px; margin:8px 0; padding:0; list-style:none; }
-  .card { border:1px solid var(--glass-border); border-radius:var(--btn-radius); background:rgba(255,255,255,.03); padding:10px 12px; }
-  .card label { display:block; cursor:pointer; font-size:14px; }
-  .card strong { display:block; font-size:16px; }
-  .card input[type=radio] { margin-right:6px; accent-color:var(--accent); }
-  .card:has(input:checked) { border-color:var(--accent); background:var(--accent-dim); }
-  select, input[type=number] { font:inherit; padding:8px; margin:4px 8px 4px 0; background:rgba(255,255,255,.06); color:var(--text-primary);
-                               border:1px solid rgba(255,255,255,.3); border-radius:var(--btn-radius); width:120px; }
-  select { width:100%; } select option { background:var(--bg-dark); }
-  .verdict { font-size:40px; font-weight:700; margin:4px 0 8px; }
-  table { border-collapse:collapse; width:100%; margin:8px 0; font-size:14px; }
-  th, td { border:1px solid var(--glass-border); padding:6px 8px; text-align:left; }
-  details { border:1px solid var(--glass-border); border-radius:var(--btn-radius); padding:10px 12px; margin-top:12px; }
-  summary { cursor:pointer; font-weight:600; }
-  figure { margin:12px 0; }
-  .groups { list-style:none; padding:0; margin:0; }
-  .leads { list-style:none; padding:0; margin:8px 0; }
-  .lead { margin:0 0 6px; }
-  .lead.muted { color:var(--text-secondary); font-size:14px; padding:4px 12px; }
-  .lead-btn { width:100%; text-align:left; font:inherit; color:inherit; cursor:pointer; padding:10px 12px;
+  /* Chips: filters, variables, hunch. */
+  .chips { display:flex; flex-wrap:wrap; gap:6px; padding:0; margin:0; list-style:none; }
+  .chip { font:13px var(--font-sans); color:var(--text-primary); background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.18);
+          border-radius:999px; padding:4px 10px; cursor:pointer; white-space:nowrap; }
+  #var-def { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .chip[aria-pressed="true"], .chip:has(input:checked) { border-color:var(--accent); background:var(--accent-dim); }
+  .chip input { position:absolute; opacity:0; pointer-events:none; }
+  .chip.suggested::before { content:"★ "; color:var(--accent); }
+  .chip .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; }
+
+  /* Place cards: real NASA satellite image + key facts. */
+  .places { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+  .place { position:relative; display:flex; flex-direction:column; text-align:left; padding:0; overflow:hidden; cursor:pointer; font:inherit; color:inherit;
+           background:rgba(255,255,255,.04); border:1px solid var(--glass-border); border-radius:var(--btn-radius); }
+  .place[aria-pressed="true"] { border:2px solid var(--accent); }
+  .place img, .place .noimg { width:100%; height:64px; object-fit:cover; display:block; background:#1b1f2a; }
+  .place .kind { position:absolute; top:6px; left:6px; font:11px var(--font-mono); background:rgba(10,10,15,.75); border-radius:6px; padding:2px 6px; }
+  .place b { font-size:14px; padding:6px 8px 0; }
+  .place small { font-size:12px; color:var(--text-secondary); padding:0 8px 7px; }
+  .pager { display:flex; justify-content:space-between; align-items:center; font-size:13px; color:var(--text-secondary); }
+  .pager button { font:inherit; color:var(--text-primary); background:none; border:1px solid rgba(255,255,255,.25); border-radius:8px; padding:2px 10px; cursor:pointer; }
+  .pager button:disabled { opacity:.35; cursor:default; }
+  details.more { font-size:13px; } details.more summary { cursor:pointer; color:var(--text-secondary); }
+  input[type=number], select { font:inherit; padding:6px 8px; margin:4px 6px 0 0; background:rgba(255,255,255,.06); color:var(--text-primary);
+               border:1px solid rgba(255,255,255,.3); border-radius:8px; width:110px; }
+  select { width:100%; } select option, select optgroup { background:var(--bg-dark); }
+
+  /* Evidence and verdict. */
+  .stat { font-size:30px; font-weight:700; line-height:1.1; }
+  .stat.up { color:var(--up); } .stat.down { color:var(--down); }
+  .badge { display:inline-block; font:12px var(--font-mono); border:1px solid currentColor; border-radius:999px; padding:2px 8px; }
+  .badge.confirmed { color:var(--ok); } .badge.likely { color:var(--warn); } .badge.unknown { color:var(--text-secondary); }
+  .verdict { font-size:34px; font-weight:700; line-height:1.1; }
+  .checks { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:6px; }
+  .checks li { display:flex; gap:10px; align-items:baseline; font-size:14px; padding:7px 10px; border:1px solid var(--glass-border); border-radius:var(--btn-radius); background:rgba(255,255,255,.03); }
+  .checks .ic { flex:none; width:1.4em; text-align:center; font-weight:700; }
+  .ic.yes { color:var(--ok); } .ic.no { color:var(--up); } .ic.maybe { color:var(--warn); }
+  table { border-collapse:collapse; width:100%; margin:6px 0; font-size:13px; }
+  th, td { border:1px solid var(--glass-border); padding:4px 8px; text-align:left; }
+  details { border:1px solid var(--glass-border); border-radius:var(--btn-radius); padding:8px 10px; }
+  details[open] { max-height:260px; overflow:auto; }
+  summary { cursor:pointer; font-weight:600; font-size:14px; }
+  details ul { padding-left:18px; margin:6px 0 0; font-size:13px; } details li { margin:3px 0; }
+  .spacer { flex:1; }
+
+  /* Lists: leads and regions. */
+  .leads { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:4px; }
+  .lead.muted { color:var(--text-secondary); font-size:13px; padding:2px 10px; }
+  .lead-btn { width:100%; display:flex; justify-content:space-between; gap:8px; text-align:left; font:13px var(--font-sans); color:inherit; cursor:pointer; padding:5px 10px;
               border:1px solid var(--glass-border); border-radius:var(--btn-radius); background:rgba(255,255,255,.03); }
   .lead-btn:hover { border-color:var(--accent); }
-  .lead-verdict { display:block; font:13px var(--font-mono); color:var(--accent); }
-  .banner { border:1px solid var(--accent); background:var(--accent-dim); border-radius:var(--btn-radius); padding:10px 12px; margin:0 0 12px; }
+  .lead-btn span:last-child { white-space:nowrap; color:var(--text-secondary); font-size:13px; }
+  .banner { border:1px solid var(--accent); background:var(--accent-dim); border-radius:var(--btn-radius); padding:8px 10px; font-size:13px; }
   .banner button { font:inherit; background:none; border:0; color:var(--accent); text-decoration:underline; cursor:pointer; padding:0; }
-  .demos { list-style:none; padding:0; margin:8px 0 0; display:flex; flex-wrap:wrap; justify-content:center; }
+  .demos { list-style:none; padding:0; margin:10px 0 0; display:flex; flex-wrap:wrap; gap:6px; justify-content:center; }
   #view-compare { width:min(760px, calc(100vw - 32px)); }
   .compare { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:8px; }
-  .legend { list-style:none; padding:0; margin:8px 0; }
-  .legend li { margin:4px 0; }
-  .swatch { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:6px; vertical-align:-1px; background:rgba(255,255,255,.15); }
-  .swatch.up { background:#ff7a26; } .swatch.down { background:#2678ff; } .swatch.unsure { background:rgba(255,255,255,.3); }
-  .card.suggested { border-color:rgba(0,212,255,.55); }
-  .card.suggested strong::after { content:" · suggested"; font:12px var(--font-mono); color:var(--accent); }
-  .hunch { display:flex; flex-wrap:wrap; gap:6px 14px; }
-  .hunch input { accent-color:var(--accent); }
-  .tour { position:fixed; z-index:4; left:16px; bottom:40px; width:min(520px, calc(100vw - 32px)); background:var(--glass-bg); backdrop-filter:blur(14px);
-          border:1px solid var(--accent); border-radius:var(--panel-radius); padding:14px 16px; }
-  .tour p { margin:0 0 4px; }
+  .compare .card { border:1px solid var(--glass-border); border-radius:var(--btn-radius); padding:8px 10px; }
+  .shares { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; text-align:center; }
+  .shares div { border:1px solid var(--glass-border); border-radius:var(--btn-radius); padding:6px; }
+  .shares b { display:block; font-size:22px; }
+  .shares .up b { color:var(--up); } .shares .down b { color:var(--down); }
+  .tour { position:fixed; z-index:4; left:16px; bottom:40px; width:min(500px, calc(100vw - 32px)); background:var(--glass-bg); backdrop-filter:blur(14px);
+          border:1px solid var(--accent); border-radius:var(--panel-radius); padding:12px 14px; }
+  .tour p { margin:0 0 8px; }
   @media (max-width:640px) { .tour { top:64px; bottom:auto; } }
-  .lineup { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:8px 0; }
+  .lineup { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
   .lineup-cell { position:relative; padding:4px; border:1px solid var(--glass-border); border-radius:var(--btn-radius); background:rgba(255,255,255,.03); color:inherit; cursor:pointer; }
   .lineup-cell span { position:absolute; top:2px; left:6px; font:12px var(--font-mono); color:var(--text-secondary); }
   .lineup-cell:hover { border-color:var(--accent); }
@@ -102,146 +132,137 @@
 <div id="globe" aria-hidden="true"></div>
 <div class="no3d" hidden id="no3d">Your browser cannot display the 3D globe.</div>
 <a class="brand" href="#/home">Trend Detective</a>
-<p class="credits">Imagery: NASA Blue Marble via NASA GIBS · Globe: CesiumJS (Apache 2.0)</p>
+<p class="credits">Imagery: NASA Blue Marble and Worldview (GIBS) · Globe: CesiumJS (Apache 2.0)</p>
 <a class="btn sec skip" href="#/case" id="skip">Skip</a>
 <div class="tour" id="tour" hidden role="status" aria-live="polite">
   <p id="tour-text"></p>
-  <button type="button" class="btn sec" id="tour-pause">Pause</button>
-  <button type="button" class="btn" id="tour-next">Next</button>
-  <button type="button" class="btn sec" id="tour-stop">Exit demo</button>
+  <div class="row">
+    <button type="button" class="btn small sec" id="tour-pause">Pause</button>
+    <button type="button" class="btn small" id="tour-next">Next</button>
+    <button type="button" class="btn small sec" id="tour-stop">Exit demo</button>
+  </div>
 </div>
 
 <main>
 <section class="view cover" id="view-home" aria-labelledby="t0">
-  <h1 id="t0" tabindex="-1">The Earth is changing. What do we know for sure?</h1>
-  <p>Investigate a change with NASA data and get an honest verdict.</p>
-  <a class="btn" href="#/global" id="global-link">See the planet's trends</a>
-  <a class="btn sec" href="#/case">Open a case</a>
+  <h1 id="t0" tabindex="-1">Is the Earth really changing here?</h1>
+  <p>Be a detective: pick a place, test NASA data, get an honest verdict.</p>
+  <div class="row">
+    <a class="btn" href="#/global" id="global-link">See the planet's trends</a>
+    <a class="btn sec" href="#/case">Investigate a place</a>
+  </div>
   <div id="demos" hidden>
-    <p class="note">Or watch a solved case first:</p>
+    <p class="note" style="margin-top:12px">Or watch a solved case:</p>
     <ul class="demos" id="demo-list"></ul>
   </div>
 </section>
 
 <section class="view side" id="view-global" aria-labelledby="t-global">
-  <p class="step">Global monitor · Where is it changing?</p>
-  <label for="global-var">Variable</label>
-  <select id="global-var"></select>
+  <p class="step">Global monitor</p>
   <h2 id="t-global" tabindex="-1"></h2>
-  <ul class="legend" id="global-summary"></ul>
-  <p class="note"><span class="swatch up"></span> rises · <span class="swatch down"></span> falls · stronger color = faster change. <span id="global-scale"></span></p>
-  <h3>Large regions</h3>
+  <label class="note" for="global-var">What to map</label>
+  <select id="global-var"></select>
+  <div class="shares" id="global-summary"></div>
+  <p class="note"><span id="global-scale"></span> Faint cells: not confirmed yet. Click a cell to investigate it.</p>
+  <h3>Big regions</h3>
   <ul class="leads" id="regions"></ul>
-  <p class="note">Click any cell on the globe to investigate it as a case.</p>
-  <p class="note" id="global-note"></p>
-  <a class="btn sec" href="#/case">Open a case</a>
+  <details><summary>How this map is made</summary><p class="note" id="global-note"></p></details>
+  <div class="spacer"></div>
+  <div class="row"><a class="btn sec" href="#/home">Back</a><a class="btn" href="#/case">Investigate a place</a></div>
 </section>
 
 <section class="view side" id="view-case" aria-labelledby="t1">
-  <p class="step">Step 1 of 4 · Open a case</p>
+  <p class="step">Step 1 of 3 · Open a case</p>
   <p class="banner" id="compare-banner" hidden><span id="compare-banner-text"></span> <button type="button" id="compare-cancel">Cancel</button></p>
-  <form id="case-form">
-    <fieldset>
-      <legend><h2 id="t1" tabindex="-1">What do you want to investigate?</h2></legend>
-      <p class="note" id="suggest-note"></p>
-      <ul class="groups" id="variables"></ul>
-    </fieldset>
-    <fieldset>
-      <legend><h2>Where?</h2></legend>
-      <p class="note">Click a white dot or any point on the globe, choose from the list, or type coordinates.</p>
-      <label for="environment">Kind of place</label>
-      <select id="environment"></select>
-      <label for="place">Place</label>
-      <select id="place"></select>
-      <div>
-        <label for="lat">Latitude</label> <input id="lat" type="number" step="any" min="-90" max="90" required>
-        <label for="lon">Longitude</label> <input id="lon" type="number" step="any" min="-180" max="180" required>
-      </div>
-      <p class="note">NASA POWER data average a cell of roughly 50 × 60 km around the point.</p>
-    </fieldset>
-    <fieldset>
-      <legend><h2>Your hunch</h2></legend>
-      <p class="note">Before seeing the data, what do you expect? (Optional: scientists write their hypothesis first.)</p>
-      <div class="hunch">
-        <label><input type="radio" name="hunch" value="up"> It rises</label>
-        <label><input type="radio" name="hunch" value="down"> It falls</label>
-        <label><input type="radio" name="hunch" value="none"> No clear change</label>
-        <label><input type="radio" name="hunch" value="unsure" checked> Not sure</label>
-      </div>
-    </fieldset>
-    <button class="btn" type="submit">Investigate</button>
-    <button class="btn sec" type="button" id="scan">Scan every variable here</button>
-    <p id="status" role="status" aria-live="polite"></p>
+  <form id="case-form" class="side-form" style="display:flex;flex-direction:column;gap:10px">
+    <h2 id="t1" tabindex="-1">Where?</h2>
+    <ul class="chips" id="kinds" aria-label="Kind of place"></ul>
+    <div class="places" id="place-cards"></div>
+    <div class="pager"><button type="button" id="prev-page" aria-label="Previous places">‹</button><span id="page-info"></span><button type="button" id="next-page" aria-label="More places">›</button></div>
+    <details class="more"><summary id="point-summary">Or click anywhere on the globe, or type coordinates</summary>
+      <label>Lat <input id="lat" type="number" step="any" min="-90" max="90" required></label>
+      <label>Lon <input id="lon" type="number" step="any" min="-180" max="180" required></label>
+    </details>
+    <h2>What?</h2>
+    <ul class="chips" id="variables" aria-label="Variable"></ul>
+    <p class="note" id="var-def"></p>
+    <div class="row" role="radiogroup" aria-label="Your hunch">
+      <span class="note">Your hunch:</span>
+      <label class="chip"><input type="radio" name="hunch" value="up">↗ rises</label>
+      <label class="chip"><input type="radio" name="hunch" value="down">↘ falls</label>
+      <label class="chip"><input type="radio" name="hunch" value="none">→ no change</label>
+      <label class="chip"><input type="radio" name="hunch" value="unsure" checked>? not sure</label>
+    </div>
+    <div class="row">
+      <button class="btn" type="submit">Investigate</button>
+      <button class="btn sec" type="button" id="scan">Scan everything here</button>
+    </div>
+    <p class="note" id="status" role="status" aria-live="polite"></p>
   </form>
 </section>
 
 <section class="view side" id="view-evidence" aria-labelledby="t2">
-  <p class="step">Step 2 of 4 · Evidence and witnesses</p>
+  <p class="step">Step 2 of 3 · The evidence</p>
   <h2 id="t2" tabindex="-1"></h2>
-  <figure>
-    <div id="chart"></div>
-    <figcaption class="note" id="chart-caption"></figcaption>
-  </figure>
-  <details><summary>See the data as a table</summary><div id="table"></div></details>
-  <h3>Witnesses</h3>
-  <p id="witnesses"></p>
-  <a class="btn sec" href="#/case">Back</a>
-  <a class="btn" href="#/verdict">See the verdict</a>
+  <div class="row"><span class="stat" id="stat"></span><span class="badge" id="stat-badge"></span></div>
+  <p class="note" id="stat-note"></p>
+  <figure style="margin:0"><div id="chart"></div></figure>
+  <p class="note" id="witnesses"></p>
+  <details><summary>Data and sources</summary><p class="note" id="chart-caption"></p><div id="table"></div></details>
+  <div class="spacer"></div>
+  <div class="row"><a class="btn sec" href="#/case">Back</a><a class="btn" href="#/verdict">See the verdict</a></div>
 </section>
 
 <section class="view side" id="view-verdict" aria-labelledby="t3">
-  <p class="step">Step 3 of 4 · The verdict</p>
-  <h2 id="t3" tabindex="-1">Case verdict</h2>
-  <p class="verdict" id="verdict"></p>
+  <p class="step">Step 3 of 3 · The verdict</p>
+  <h2 id="t3" tabindex="-1" class="verdict"><span id="verdict"></span></h2>
   <p id="explanation"></p>
-  <p><strong id="clock"></strong></p>
-  <p id="hunch-result"></p>
-  <p id="second-method"></p>
-  <p id="prediction"></p>
-  <h3>The alibi: was it a natural climate swing?</h3>
-  <ul id="alibi"></ul>
-  <details>
-    <summary>See the statistics</summary>
-    <ul id="details"></ul>
-  </details>
-  <a class="btn sec" href="#/evidence">Back</a>
-  <a class="btn" href="#/record">See the case file</a>
-  <button class="btn sec" type="button" id="lineup-start">Can you spot the real one?</button>
-  <button class="btn sec" type="button" id="compare-start">Compare with another place</button>
+  <h3>Detective checks</h3>
+  <ul class="checks" id="checks"></ul>
+  <details><summary>The statistics</summary><ul id="details"></ul></details>
+  <div class="spacer"></div>
+  <div class="row">
+    <a class="btn sec" href="#/evidence">Back</a>
+    <button class="btn sec" type="button" id="lineup-start">Spot the real one</button>
+    <button class="btn sec" type="button" id="compare-start">Compare</button>
+    <a class="btn" href="#/record">Case file</a>
+  </div>
 </section>
 
 <section class="view side" id="view-lineup" aria-labelledby="t-lineup">
-  <p class="step">Placebo test · Is it just chance?</p>
-  <h2 id="t-lineup" tabindex="-1">Can you spot the real one?</h2>
-  <p class="note">One of these nine series is the real data. The other eight are the same values cut into short blocks and shuffled, so any trend in them is pure chance. Pick the one you think is real.</p>
+  <p class="step">Placebo test</p>
+  <h2 id="t-lineup" tabindex="-1">Which one is real?</h2>
+  <p class="note">One series is the real data. The other eight are the same values shuffled in blocks, so any trend in them is pure chance.</p>
   <div class="lineup" id="lineup-grid"></div>
   <p id="lineup-result" role="status" aria-live="polite"></p>
-  <a class="btn sec" href="#/verdict">Back to the verdict</a>
+  <div class="spacer"></div>
+  <div class="row"><a class="btn sec" href="#/verdict">Back</a></div>
 </section>
 
 <section class="view side" id="view-leads" aria-labelledby="t-leads">
-  <p class="step">Leads · Which variables are changing here?</p>
+  <p class="step">Scan · What is changing here?</p>
   <h2 id="t-leads" tabindex="-1"></h2>
-  <p class="note" id="leads-intro"></p>
   <ul class="leads" id="leads-list"></ul>
-  <p class="note">Choose a lead to see its evidence and verdict.</p>
-  <a class="btn sec" href="#/case">Back</a>
+  <details><summary>Why some are not "confirmed"</summary><p class="note" id="leads-intro"></p></details>
+  <div class="spacer"></div>
+  <div class="row"><a class="btn sec" href="#/case">Back</a></div>
 </section>
 
 <section class="view side" id="view-compare" aria-labelledby="t-compare">
-  <p class="step">Compare · Same variable, two places</p>
+  <p class="step">Compare two places</p>
   <h2 id="t-compare" tabindex="-1"></h2>
   <div class="compare" id="compare-grid"></div>
   <p id="compare-summary"></p>
-  <a class="btn sec" href="#/case">Open another case</a>
+  <div class="spacer"></div>
+  <div class="row"><a class="btn sec" href="#/case">New case</a></div>
 </section>
 
 <section class="view side" id="view-record" aria-labelledby="t4">
-  <p class="step">Step 4 of 4 · Case file</p>
-  <h2 id="t4" tabindex="-1">Case file</h2>
+  <p class="step">Case file</p>
+  <h2 id="t4" tabindex="-1">Everything needed to check this result</h2>
   <table><tbody id="record"></tbody></table>
-  <button class="btn" type="button" id="download">Download case file</button>
-  <a class="btn sec" href="#/case">Open another case</a>
+  <div class="spacer"></div>
+  <div class="row"><a class="btn sec" href="#/verdict">Back</a><button class="btn" type="button" id="download">Download</button><a class="btn sec" href="#/case">New case</a></div>
 </section>
 </main>
 

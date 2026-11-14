@@ -40,15 +40,31 @@ const SUGGESTIONS = {
   coast: [['T2M', 'WS2M', 'PRECTOTCORR', 'RH2M'], 'coasts feel the sea through wind, humidity and rain'],
   ocean: [['T2M', 'WS2M', 'CLOUD_AMT', 'PRECTOTCORR'], 'over the sea, air temperature, wind and clouds tell the story'],
   polar: [['T2M', 'SNODP', 'CLOUD_AMT', 'ALLSKY_SFC_SW_DWN'], 'the poles warm fastest, and snow and clouds respond'],
-  river: [['PRECTOTCORR', 'EVLAND', 'GWETROOT', 'T2M'], 'rivers carry what rain leaves after evaporation and soil take their share (scan this place to see its river discharge)'],
+  river: [['PRECTOTCORR', 'EVLAND', 'GWETROOT', 'T2M'], 'rivers carry what rain leaves after evaporation and soil take their share'],
+  lake: [['PRECTOTCORR', 'EVLAND', 'T2M', 'RH2M'], 'a lake grows or shrinks with rain, evaporation and heat'],
+  volcano: [['AOD_55', 'T2M', 'PRECTOTCORR', 'CLOUD_AMT'], 'eruptions add haze, and high slopes respond to heat and rain'],
+  savanna: [['PRECTOTCORR', 'GWETROOT', 'T2M_MAX', 'EVLAND'], 'grasslands depend on the rainy season and soil water'],
+  tundra: [['T2M', 'SNODP', 'TS', 'GWETTOP'], 'frozen ground thaws when air and ground warm'],
+  coral_reef: [['T2M', 'ALLSKY_SFC_SW_DWN', 'CLOUD_AMT', 'WS2M'], 'reefs bleach when warm, sunny, calm water lasts too long'],
+  wetland: [['PRECTOTCORR', 'GWETTOP', 'EVLAND', 'T2M'], 'wetlands live on the balance of rain and evaporation'],
 };
-const ENVIRONMENTS = { river: 'Large rivers', glacier: 'Glaciers and snow peaks', desert: 'Deserts', rainforest: 'Rainforests', city: 'Large cities', coast: 'Coasts and estuaries', ocean: 'Open ocean', polar: 'Polar regions' };
+SUGGESTIONS.river ??= SUGGESTIONS.lake;
+// Kinds of place (natural phenomena) with a colour used for the filter dots.
+const ENVIRONMENTS = { glacier: 'Glaciers', polar: 'Polar', tundra: 'Tundra', volcano: 'Volcanoes', desert: 'Deserts', savanna: 'Savannas',
+  rainforest: 'Rainforests', wetland: 'Wetlands', lake: 'Lakes', river: 'Rivers', coast: 'Coasts', coral_reef: 'Coral reefs', ocean: 'Oceans', city: 'Cities' };
+const KIND_COLOR = { glacier: '#cfefff', polar: '#ffffff', tundra: '#9fd3c7', volcano: '#ff6b4a', desert: '#e8c27a', savanna: '#c9b458',
+  rainforest: '#3ddc97', wetland: '#5fc9a0', lake: '#4d9bff', river: '#3aa0ff', coast: '#7fd6ff', coral_reef: '#ff8fb1', ocean: '#2b6cff', city: '#b9b9c9' };
+// Plain-language names for students; the technical name stays in the details.
+const PLAIN = { T2M: 'Air temperature', T2M_MAX: 'Monthly highs', T2M_MIN: 'Monthly lows', TS: 'Ground temperature', PRECTOTCORR: 'Rain and snow',
+  EVLAND: 'Evaporation', GWETTOP: 'Topsoil moisture', GWETROOT: 'Root soil moisture', SNODP: 'Snow depth', RH2M: 'Humidity', QV2M: 'Water vapor',
+  ALLSKY_SFC_SW_DWN: 'Sunlight', CLOUD_AMT: 'Cloud cover', WS2M: 'Wind', AOD_55: 'Haze (dust and smoke)' };
+let FACTS = {};
 const VERDICTS = {
-  confirmed: { label: '● Confirmed', text: 'In this dataset the trend is statistically significant: it is very unlikely to be chance.' },
-  likely: { label: '◐ Likely', text: 'This dataset shows signs of a trend, but not enough to be sure yet.' },
-  unknown: { label: '○ Not yet known', text: 'With the data available, a trend cannot be told apart from normal variation.' },
+  confirmed: { label: '● Confirmed', text: 'A real change: very unlikely to be chance.' },
+  likely: { label: '◐ Likely', text: 'Signs of a change, but not enough to be sure.' },
+  unknown: { label: '○ Not yet known', text: 'Too early to tell this apart from normal ups and downs.' },
 };
-const UNITS = { C: '°C', 'mm/day': 'mm/day', 'MJ/m^2/day': 'MJ/m²/day', 1: '(0–1 index)', 'g/kg': 'g/kg', '%': '%', 'm/s': 'm/s', cm: 'cm', kPa: 'kPa', dimensionless: '(index)', days: 'days', 'm3/s': 'm³/s', 'kg C/m2/yr': 'kg C/m²/yr' };
+const UNITS = { C: '°C', 'mm/day': 'mm/day', 'MJ/m^2/day': 'MJ/m²/day', 1: '', 'g/kg': 'g/kg', '%': '%', 'm/s': 'm/s', cm: 'cm', kPa: 'kPa', dimensionless: '', days: 'days', 'm3/s': 'm³/s', 'kg C/m2/yr': 'kg C/m²/yr' };
 
 const $ = (id) => document.getElementById(id);
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -94,8 +110,9 @@ try {
     const p = viewer.camera.pickEllipsoid(e.position);
     if (!p) return;
     const g = C.Cartographic.fromCartesian(p);
-    $('place').value = '';
+    selectedPlace = null;
     setPoint(+C.Math.toDegrees(g.latitude).toFixed(2), +C.Math.toDegrees(g.longitude).toFixed(2));
+    renderPlaces();
   }, C.ScreenSpaceEventType.LEFT_CLICK);
 } catch (e) {
   console.warn('Globe unavailable:', e);
@@ -127,24 +144,63 @@ function setPoint(lat, lon) {
   if (marker) marker.position = C.Cartesian3.fromDegrees(lon, lat);
 }
 
-function markSuggestions(env) {
-  const [ids, why] = SUGGESTIONS[env] ?? [[], ''];
-  document.querySelectorAll('#variables .card').forEach((c) => c.classList.toggle('suggested', ids.includes(c.querySelector('input').value)));
-  const names = ids.map((id) => varById(id)?.name).filter(Boolean);
-  $('suggest-note').textContent = names.length ? `Suggested for ${ENVIRONMENTS[env].toLowerCase()}: ${names.join(', ')}, because ${why}.` : '';
-}
+let selectedPlace = null, kindFilter = '', page = 0;
+const PER_PAGE = 4;
 
 function selectPlace(id) {
   const p = PLACES.find((x) => x.id === id);
   if (!p) return;
-  markSuggestions(p.environment);
-  if ($('environment').value && $('environment').value !== p.environment) { $('environment').value = p.environment; fillPlaceList(); }
-  $('place').value = p.id;
+  selectedPlace = p.id;
   setPoint(p.lat, p.lon);
   flyTo(p.lat, p.lon);
+  fillVariables(p.environment);
+  renderPlaces();
 }
 
+function renderKinds() {
+  const present = Object.keys(ENVIRONMENTS).filter((k) => PLACES.some((p) => p.environment === k));
+  $('kinds').innerHTML = [['', 'All'], ...present.map((k) => [k, ENVIRONMENTS[k]])].map(([k, label]) =>
+    `<li><button type="button" class="chip" data-kind="${k}" aria-pressed="${k === kindFilter}">${k ? `<span class="dot" style="background:${KIND_COLOR[k]}"></span>` : ''}${label}</button></li>`).join('');
+}
+$('kinds').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-kind]');
+  if (!b) return;
+  kindFilter = b.dataset.kind; page = 0;
+  renderKinds(); renderPlaces();
+});
+
+function factLine(p) {
+  const f = FACTS[p.id];
+  if (!f) return `${fmt(p.lat, 1)}°, ${fmt(p.lon, 1)}°`;
+  const bits = [];
+  if (f.mean_temp_c != null) bits.push(`${Math.round(f.mean_temp_c)} °C`);
+  if (f.mean_precip_mm_day != null) bits.push(`${fmt(f.mean_precip_mm_day * 365 / 1000, 1)} m rain/yr`);
+  if (f.warming_c_per_decade != null) bits.push(`${signed(f.warming_c_per_decade)} °C/decade`);
+  return bits.join(' · ');
+}
+
+function renderPlaces() {
+  const list = PLACES.filter((p) => !kindFilter || p.environment === kindFilter);
+  const pages = Math.max(1, Math.ceil(list.length / PER_PAGE));
+  page = Math.min(page, pages - 1);
+  $('place-cards').innerHTML = list.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE).map((p) => `
+    <button type="button" class="place" data-id="${p.id}" aria-pressed="${p.id === selectedPlace}" title="${FACTS[p.id]?.one_line ?? p.name}">
+      <img src="img/places/${p.id}.jpg" alt="Satellite image of ${p.short}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'noimg'}))">
+      <span class="kind">${ENVIRONMENTS[p.environment] ?? p.environment}</span>
+      <b>${p.short}</b><small>${factLine(p)}</small>
+    </button>`).join('');
+  $('page-info').textContent = `${page + 1} / ${pages} · ${list.length} places`;
+  $('prev-page').disabled = page === 0;
+  $('next-page').disabled = page >= pages - 1;
+  const sel = PLACES.find((p) => p.id === selectedPlace);
+  $('point-summary').textContent = sel ? `${sel.name}${FACTS[sel.id]?.one_line ? ` — ${FACTS[sel.id].one_line}` : ''}` : `Point ${$('lat').value}°, ${$('lon').value}° (or type coordinates)`;
+}
+$('place-cards').addEventListener('click', (e) => { const b = e.target.closest('.place'); if (b) selectPlace(b.dataset.id); });
+$('prev-page').addEventListener('click', () => { page--; renderPlaces(); });
+$('next-page').addEventListener('click', () => { page++; renderPlaces(); });
+
 const placeName = (lat, lon) => PLACES.find((p) => p.lat === lat && p.lon === lon)?.name ?? `${fmt(lat)}°, ${fmt(lon)}°`;
+const shortName = (c) => PLACES.find((p) => p.lat === c.lat && p.lon === c.lon)?.short ?? c.place;
 
 // --- Views: one at a time, each with its own address so the Back button works. ---
 const VIEWS = ['home', 'global', 'case', 'leads', 'evidence', 'verdict', 'lineup', 'compare', 'record'];
@@ -158,6 +214,7 @@ function route() {
   $('compare-banner').hidden = !(v === 'case' && compareWith);
   $(`view-${v}`).querySelector('h1, h2')?.focus();
   if (gridLayer) gridLayer.show = v === 'global';
+  viewer?.entities.values.forEach((e) => { if (String(e.id).startsWith('place:')) e.show = v !== 'global'; });
   if (v === 'global') { drawGrid(); flyTo(10, -40, 22000000, 2); }
   if (v === 'home') flyTo(-15.53, -72.65, 160000, 9);
 }
@@ -165,25 +222,19 @@ addEventListener('hashchange', route);
 $('skip').addEventListener('click', () => viewer?.camera.cancelFlight());
 
 // --- Step 1: what and where. ---
-function fillVariables() {
-  const groups = [...new Set(VARIABLES.map((v) => v.group))];
-  $('variables').innerHTML = groups.map((g) => `<li class="group"><h3>${g}</h3><ul class="grid">${
-    VARIABLES.filter((v) => v.group === g).map((v) => `
-      <li class="card"><label><input type="radio" name="variable" value="${v.id}" ${v.id === 'T2M' ? 'checked' : ''}>
-      <strong>${v.name}</strong>${v.definition}</label></li>`).join('')}</ul></li>`).join('');
+function fillVariables(env) {
+  const [ids] = SUGGESTIONS[env] ?? [[]];
+  const checked = new FormData($('case-form')).get('variable') ?? 'T2M';
+  const order = [...VARIABLES].sort((a, b) => (ids.includes(b.id) ? 1 : 0) - (ids.includes(a.id) ? 1 : 0));
+  $('variables').innerHTML = order.map((v) => `<li><label class="chip${ids.includes(v.id) ? ' suggested' : ''}" title="${v.definition}">
+    <input type="radio" name="variable" value="${v.id}" ${v.id === checked ? 'checked' : ''}>${v.name}</label></li>`).join('');
+  showDefinition();
 }
-function fillPlaceList() {
-  const env = $('environment').value;
-  $('place').innerHTML = PLACES.filter((p) => !env || p.environment === env).map((p) => `<option value="${p.id}">${p.name}</option>`).join('')
-    + '<option value="" disabled>Other point (click the globe)</option>';
+function showDefinition() {
+  const v = varById(new FormData($('case-form')).get('variable'));
+  $('var-def').textContent = v ? `${v.name}: ${v.definition}` : '';
 }
-function fillEnvironments() {
-  const present = [...new Set(PLACES.map((p) => p.environment))];
-  $('environment').innerHTML = '<option value="">All kinds of places</option>'
-    + present.map((e) => `<option value="${e}">${ENVIRONMENTS[e] ?? e}</option>`).join('');
-}
-$('environment').addEventListener('change', () => { fillPlaceList(); selectPlace($('place').value); });
-$('place').addEventListener('change', () => selectPlace($('place').value));
+$('variables').addEventListener('change', showDefinition);
 
 function chosen() {
   const id = new FormData($('case-form')).get('variable');
@@ -245,17 +296,16 @@ function clockText(r) {
 
 function renderLeads({ place, list }) {
   const ok = list.filter((l) => l.status === 'ok');
-  $('t-leads').textContent = `Leads in ${place}`;
-  $('leads-intro').textContent = `We tested ${ok.length} variables here. Because testing many variables at once raises the chance of a false alarm, these verdicts are adjusted for multiple testing (Benjamini-Hochberg).`;
+  $('t-leads').textContent = `What is changing at ${place}?`;
+  $('leads-intro').textContent = `We tested ${ok.length} variables here at once. The more you test, the more likely a false alarm, so the bar for "confirmed" is raised (Benjamini-Hochberg).`;
+  const none = list.filter((l) => l.status !== 'ok').map((l) => varById(l.variable).name);
   $('leads-list').innerHTML = list.map((l, i) => {
-    const v = varById(l.variable);
-    if (l.status !== 'ok') return `<li class="lead muted"><strong>${v.name}</strong>: ${l.status === 'no-data' || v.land_only ? 'no data here' : 'does not vary here'}.</li>`;
-    const r = l.result;
-    return `<li class="lead"><button type="button" class="lead-btn" data-i="${i}">
-      <span class="lead-verdict">${VERDICTS[l.verdict].label}</span>
-      <strong>${v.name}</strong> ${signed(r.slopePerDecade)} ${unitOf(l.series)} per decade (${r.firstYear}–${r.lastYear})${
-        sourceOf(v).startsWith('NASA POWER') ? '' : `<span class="note"> · ${sourceOf(v).split(' via ')[0]}</span>`}</button></li>`;
-  }).join('');
+    if (l.status !== 'ok') return '';
+    const v = varById(l.variable), r = l.result;
+    const arrow = r.slopePerDecade > 0 ? '↗' : r.slopePerDecade < 0 ? '↘' : '→';
+    return `<li><button type="button" class="lead-btn" data-i="${i}"><span><strong>${v.name}</strong> ${arrow} ${signed(r.slopePerDecade)} ${unitOf(l.series)}/decade</span>
+      <span>${VERDICTS[l.verdict].label}</span></button></li>`;
+  }).join('') + (none.length ? `<li class="lead muted">No data or no change here: ${none.join(', ')}.</li>` : '');
 }
 $('leads-list').addEventListener('click', (e) => {
   const b = e.target.closest('.lead-btn');
@@ -267,16 +317,6 @@ $('leads-list').addEventListener('click', (e) => {
 });
 
 // --- Evidence, verdict and case file for one case. ---
-function headline({ variable: v, place, lat, series, r }) {
-  const In = lat === null ? 'Across' : 'In';
-  if (r.slopePerDecade === 0) return `${In} ${place}, ${v.name.toLowerCase()} shows no measurable change (${r.firstYear}–${r.lastYear})`;
-  const up = r.slopePerDecade > 0;
-  const howMuch = `${fmtSlope(Math.abs(r.slopePerDecade))} ${unitOf(series)} per decade (${r.firstYear}–${r.lastYear})`;
-  return r.verdict === 'confirmed'
-    ? `${In} ${place}, ${v.name.toLowerCase()} ${up ? 'rose' : 'fell'} ${howMuch}`
-    : `${In} ${place}, ${v.name.toLowerCase()} seems to have ${up ? 'risen' : 'fallen'} ${howMuch}, but it is not certain yet`;
-}
-
 // Second witness: only for catalog places with a precomputed series. A contradicting witness lowers "confirmed" to "likely".
 function withWitness(c) {
   const p = PLACES.find((x) => x.lat === c.lat && x.lon === c.lon);
@@ -289,12 +329,10 @@ function withWitness(c) {
 }
 
 function witnessText(v, w) {
-  if (!w) return `One witness: ${sourceOf(v)}. There is no second source for this place and variable, so the verdict rests on this one alone.`;
-  const wv = VERDICTS[w.witnessVerdict].label.replace(/^\S+ /, '').toLowerCase();
-  const span = `${w.overlap[0]}–${w.overlap[1]}`;
-  if (w.status === 'corroborated') return `Two witnesses agree: ${sourceOf(v)} and ${w.witness} both see the trend going the same way over ${span} (the second one rates it ${wv}).`;
-  if (w.status === 'contradicted') return `Two witnesses disagree: ${w.witness} sees a ${wv} trend in the opposite direction over ${span}. When witnesses contradict each other, a "confirmed" verdict is lowered to "likely".`;
-  return `Second witness, not conclusive: ${w.witness} shows no clear trend over ${span}, so it neither backs nor contradicts ${sourceOf(v)}. The verdict rests on the first witness.`;
+  if (!w) return `Witness: ${sourceOf(v)} (only one dataset for this place).`;
+  if (w.status === 'corroborated') return `Witnesses: ${sourceOf(v)} and ${w.witness} agree.`;
+  if (w.status === 'contradicted') return `Witnesses disagree: ${w.witness} sees the opposite trend.`;
+  return `Witnesses: ${sourceOf(v)}; ${w.witness} sees no clear trend.`;
 }
 
 function render(c0) {
@@ -302,60 +340,74 @@ function render(c0) {
   current = { ...c0, ...c };
   const { variable: v, place, lat, lon, series, r } = c;
   const u = unitOf(series);
-  $('t2').textContent = headline(c);
+  const dir = r.verdict === 'unknown' || r.slopePerDecade === 0 ? '' : r.slopePerDecade > 0 ? 'up' : 'down';
+  // Evidence: one short title, one big number, the chart.
+  $('t2').textContent = `${v.name} · ${lat == null ? place[0].toUpperCase() + place.slice(1) : shortName(c)}`;
+  $('stat').textContent = `${signed(r.slopePerDecade)}${u ? ' ' + u : ''} per decade`;
+  $('stat').className = `stat ${dir}`;
+  $('stat-badge').textContent = VERDICTS[r.verdict].label;
+  $('stat-badge').className = `badge ${r.verdict}`;
+  $('stat-note').textContent = `${r.firstYear}–${r.lastYear} · one value per year (seasons removed) · dashed line = trend`;
   $('chart').innerHTML = chart(series, r);
-  $('chart-caption').textContent = `Annual mean ${v.name.toLowerCase()}. Dashed line: trend (Sen's slope). Source: ${sourceOf(v)}.`;
+  $('chart-caption').textContent = `${v.name}${v.technical ? ` (${v.technical}, ${v.id})` : ''}: annual mean. Trend: Sen's slope. Source: ${sourceOf(v)}.`;
   if (v.notice) $('chart-caption').insertAdjacentHTML('beforeend', ` ${v.notice}`);
   $('table').innerHTML = dataTable(series, v, u);
   $('witnesses').textContent = witnessText(v, c.witness);
   $('compare-start').hidden = lat == null || !sourceOf(v).startsWith('NASA POWER'); // regions and precomputed variables cannot be fetched live
 
+  // Verdict: the label, one sentence, and one line per detective check.
   const vd = VERDICTS[r.verdict];
   $('verdict').textContent = vd.label;
   $('explanation').textContent = vd.text;
-  $('clock').textContent = clockText(r);
-  // Second method named in the challenge: a t-test on the least-squares slope.
-  const tt = r.ttest, ttVerdict = tt.p < 0.05 ? 'confirmed' : tt.p < 0.1 ? 'likely' : 'unknown';
-  const sameCall = (ttVerdict === 'confirmed') === (r.verdict === 'confirmed') && Math.sign(tt.slopePerDecade) === Math.sign(r.slopePerDecade);
-  // The alibi: could a natural climate swing (El Niño, the PDO) explain the trend instead?
-  $('alibi').innerHTML = !INDICES ? '' : ['ENSO', 'PDO'].map((k) => {
-    const idx = INDICES[k], a = alibiTest(series, idx);
-    if (!a) return '';
-    const after = VERDICTS[a.after.verdict].label.slice(2).toLowerCase();
-    const share = Math.round(a.share * 100);
-    const story = r.verdict === 'confirmed'
-      ? a.after.verdict === 'confirmed' ? 'the trend is still confirmed: this alibi does not hold.' : `the trend is only ${after}: part of it may be this natural swing.`
-      : `the trend is ${after}.`;
-    return `<li><strong>${idx.name}</strong> (${idx.organization}) explains about ${share}% of the year-to-year ups and downs here. After removing its effect, ${story}</li>`;
-  }).join('');
+  const checks = [];
+  if (r.verdict === 'confirmed') checks.push(['yes', r.knownSince ? `Clear since ${r.knownSince}` : 'A clear trend']);
+  else if (r.adjusted) checks.push(['maybe', `Strong alone, but not after testing ${r.tested} things at once`]);
+  else if (r.yearsNeeded === Infinity || r.yearsNeeded > 100) checks.push(['maybe', 'No signal: even 100 more years may not settle it']);
+  else checks.push(['maybe', `About ${Math.max(1, r.yearsNeeded)} more years of data would settle it`]);
+  const tt = r.ttest, ttConfirmed = tt.p < 0.05;
+  const sameCall = ttConfirmed === (r.verdict === 'confirmed') && Math.sign(tt.slopePerDecade) === Math.sign(r.slopePerDecade);
+  checks.push(sameCall ? ['yes', 'A second test agrees'] : ['no', 'A second test disagrees: trust it less']);
   const pt = predictionTest(series);
-  $('prediction').textContent = !pt ? '' : `Prediction test: a trend fitted to ${pt.trainYears[0]}–${pt.trainYears[1]} predicts ${pt.testYears[0]}–${pt.testYears[1]} ${
-    pt.skill > 0.1 ? `${Math.round(pt.skill * 100)}% better than` : pt.skill < -0.1 ? `${Math.round(-pt.skill * 100)}% worse than` : 'about as well as'} assuming that nothing changes.`;
+  if (pt) checks.push(pt.skill > 0.1 ? ['yes', `Predicts ${pt.testYears[0]}–${pt.testYears[1]} better than "no change"`]
+    : pt.skill < -0.1 ? ['no', `Predicts ${pt.testYears[0]}–${pt.testYears[1]} worse than "no change"`]
+      : ['maybe', `Predicts ${pt.testYears[0]}–${pt.testYears[1]} no better than "no change"`]);
+  const alibis = !INDICES ? [] : ['ENSO', 'PDO'].map((k) => ({ idx: INDICES[k], a: alibiTest(series, INDICES[k]) })).filter((x) => x.a);
+  if (alibis.length) {
+    const short = { ENSO: 'El Niño', PDO: 'the PDO' };
+    const weak = alibis.filter((x) => r.verdict === 'confirmed' && x.a.after.verdict !== 'confirmed');
+    checks.push(r.verdict !== 'confirmed' ? ['maybe', `El Niño explains ${Math.round(alibis[0].a.share * 100)}% of the ups and downs`]
+      : weak.length ? ['maybe', `Partly explained by ${weak.map((x) => short[Object.keys(INDICES).find((k) => INDICES[k] === x.idx)]).join(' and ')}`]
+        : ['yes', 'Not explained by El Niño or the PDO']);
+  }
+  checks.push(!c.witness ? ['maybe', 'Only one dataset here'] : c.witness.status === 'corroborated' ? ['yes', 'A second dataset agrees']
+    : c.witness.status === 'contradicted' ? ['no', 'A second dataset disagrees'] : ['maybe', 'A second dataset sees no clear trend']);
   const saw = r.verdict === 'unknown' ? 'none' : r.slopePerDecade > 0 ? 'up' : 'down';
-  const words = { up: 'it rises', down: 'it falls', none: 'no clear change' };
-  $('hunch-result').textContent = !c.hunch || c.hunch === 'unsure' ? ''
-    : c.hunch === saw ? `Your hunch was "${words[c.hunch]}", and the data agree. Good detective work.`
-      : `Your hunch was "${words[c.hunch]}", but the data show ${saw === 'none' ? 'no clear change yet' : `that ${words[saw]}`}. That is how science works: test the hunch, then follow the evidence.`;
-  $('second-method').textContent = sameCall
-    ? `A second method agrees: a linear regression t-test gives ${signed(tt.slopePerDecade)} ${u} per decade (p ${tt.p < 0.001 ? '< 0.001' : '= ' + fmt(tt.p, 3)}).`
-    : `A second method reads it differently: a linear regression t-test gives ${signed(tt.slopePerDecade)} ${u} per decade (p ${tt.p < 0.001 ? '< 0.001' : '= ' + fmt(tt.p, 3)}). When methods disagree, trust the trend less.`;
+  const words = { up: 'rises', down: 'falls', none: 'no change' };
+  if (c.hunch && c.hunch !== 'unsure') checks.push(c.hunch === saw ? ['yes', 'Your hunch was right'] : ['no', `Your hunch (${words[c.hunch]}) did not match: follow the evidence`]);
+  const icon = { yes: '✓', no: '✗', maybe: '?' }, said = { yes: 'passed', no: 'failed', maybe: 'open' };
+  $('checks').innerHTML = checks.map(([k, t]) => `<li><span class="ic ${k}" aria-label="${said[k]}">${icon[k]}</span><span>${t}</span></li>`).join('');
+
   $('details').innerHTML = [
     `Years analyzed: ${r.n} (${r.firstYear}–${r.lastYear}), one mean per year to remove the seasonal cycle.`,
     `Sen's slope: ${signed(r.slopePerDecade)} ${u}/decade (95% interval: ${signed(r.slopeCI[0])} to ${signed(r.slopeCI[1])}).`,
     r.autocorrelationCorrected === false
-      ? `Mann-Kendall test: p = ${r.p < 0.001 ? '< 0.001' : fmt(r.p, 3)}; Kendall's τ = ${fmt(r.tau)}. The Hamed & Rao autocorrelation correction could not be applied to this series (its correction factor is negative), so the uncorrected test is shown.`
+      ? `Mann-Kendall test: p = ${r.p < 0.001 ? '< 0.001' : fmt(r.p, 3)}; Kendall's τ = ${fmt(r.tau)}. The Hamed & Rao autocorrelation correction could not be applied (negative correction factor), so the uncorrected test is shown.`
       : `Mann-Kendall test with the Hamed & Rao (1998) autocorrelation correction: p = ${r.p < 0.001 ? '< 0.001' : fmt(r.p, 3)}; Kendall's τ = ${fmt(r.tau)}.`,
-    `Linear regression t-test (second method), with the effective sample size for autocorrelation (Santer et al. 2000): slope ${signed(r.ttest.slopePerDecade)} ${u}/decade (95% interval: ${signed(r.ttest.slopeCI[0])} to ${signed(r.ttest.slopeCI[1])}), p = ${r.ttest.p < 0.001 ? '< 0.001' : fmt(r.ttest.p, 3)}.`,
+    `Second test: linear regression t-test with the effective sample size for autocorrelation (Santer et al. 2000): ${signed(tt.slopePerDecade)} ${u}/decade (95% interval ${signed(tt.slopeCI[0])} to ${signed(tt.slopeCI[1])}), p = ${tt.p < 0.001 ? '< 0.001' : fmt(tt.p, 3)}.`,
     r.q == null
-      ? 'Verdict (from Mann-Kendall): confirmed if p < 0.05; likely if p < 0.10; otherwise not yet known.'
-      : `Verdict from a scan of ${r.tested} variables: it uses the Benjamini-Hochberg adjusted q = ${fmt(r.q, 3)} instead of p (confirmed if q < 0.05; likely if q < 0.10), so testing many variables does not create false alarms.`,
-    'Clock: years needed to detect the current slope with 90% probability (α = 0.05) under autocorrelated noise, following the approach of Weatherhead et al. (1998). It is an approximation that assumes the trend and the noise stay the same.',
+      ? 'Verdict (Mann-Kendall): confirmed if p < 0.05; likely if p < 0.10; otherwise not yet known.'
+      : `Verdict from a scan of ${r.tested} variables: Benjamini-Hochberg adjusted q = ${fmt(r.q, 3)} instead of p (confirmed if q < 0.05; likely if q < 0.10).`,
+    ...(pt ? [`Prediction test: trend fitted to ${pt.trainYears[0]}–${pt.trainYears[1]}; skill on ${pt.testYears[0]}–${pt.testYears[1]} versus the training mean = ${fmt(pt.skill, 2)} (mean absolute error).`] : []),
+    ...alibis.map(({ idx, a }) => `Alibi, ${idx.name} (${idx.organization}): explains ${Math.round(a.share * 100)}% of the year-to-year variance; after removing it the trend is ${VERDICTS[a.after.verdict].label.slice(2).toLowerCase()} (${signed(a.after.slopePerDecade)} ${u}/decade).`),
+    c.witness ? `Second witness: ${c.witness.witness}, ${c.witness.overlap[0]}–${c.witness.overlap[1]}, rated ${c.witness.witnessVerdict}; status: ${c.witness.status.replace('-', ' ')}. Only a contradicting witness that is at least "likely" lowers a confirmed verdict.` : `Witness: ${sourceOf(v)} only.`,
+    'Clock: years needed to detect the current slope with 90% probability (α = 0.05) under autocorrelated noise, following Weatherhead et al. (1998); it assumes the trend and the noise stay the same.',
   ].map((t) => `<li>${t}</li>`).join('');
 
   $('record').innerHTML = [
-    ['What', `${v.name} (${v.id})`], ['Where', lat == null ? `${place} (area-weighted mean of the grid cells in it)` : `${place} (${fmt(lat)}°, ${fmt(lon)}°)`],
-    ['How much', `${signed(r.slopePerDecade)} ${u} per decade`], ['Verdict', `${vd.label}. ${clockText(r)}`],
-    ['Witnesses', c.witness ? `${sourceOf(v)}; ${c.witness.witness} (${c.witness.status.replace('-', ' ')})` : sourceOf(v)], ['Method', "Annual means · Sen's slope · Mann-Kendall (Hamed & Rao)"],
+    ['What', `${v.name} (${v.technical ?? v.name}, ${v.id})`], ['Where', lat == null ? `${place} (area-weighted mean of the grid cells in it)` : `${place} (${fmt(lat)}°, ${fmt(lon)}°)`],
+    ['How much', `${signed(r.slopePerDecade)} ${u} per decade, ${r.firstYear}–${r.lastYear}`], ['Verdict', `${vd.label}. ${clockText(r)}`],
+    ['Checks', checks.map(([k, t]) => `${icon[k]} ${t}`).join('<br>')],
+    ['Witnesses', c.witness ? `${sourceOf(v)}; ${c.witness.witness} (${c.witness.status.replace('-', ' ')})` : sourceOf(v)], ['Method', "Annual means · Sen's slope · Mann-Kendall (Hamed & Rao) · t-test"],
   ].map(([k, val]) => `<tr><th scope="row">${k}</th><td>${val}</td></tr>`).join('');
 }
 
@@ -384,11 +436,11 @@ function renderCompare(c) {
       : `Same direction: ${name} ${dir(a)} in both places, at ${fmtSlope(Math.abs(a.r.slopePerDecade))} and ${fmtSlope(Math.abs(b.r.slopePerDecade))} ${unitOf(a.series)} per decade.`;
 }
 
-const dataTable = (s, v, u) => `<table><thead><tr><th>Year</th><th>${v.name} (${u})</th></tr></thead><tbody>${
+const dataTable = (s, v, u) => `<table><thead><tr><th>Year</th><th>${v.name}${u ? ` (${u})` : ''}</th></tr></thead><tbody>${
   s.years.map((y, i) => `<tr><td>${y}</td><td>${fmt(s.values[i])}</td></tr>`).join('')}</tbody></table>`;
 
 function chart(s, r) {
-  const W = 760, H = 260, m = { l: 48, r: 12, t: 12, b: 28 };
+  const W = 760, H = 230, m = { l: 48, r: 12, t: 12, b: 28 };
   const x0 = s.years[0], x1 = s.years.at(-1);
   const lo = Math.min(...s.values), hi = Math.max(...s.values), pad = (hi - lo) * 0.1 || 1;
   const X = (y) => m.l + ((y - x0) / (x1 - x0)) * (W - m.l - m.r);
@@ -397,7 +449,7 @@ function chart(s, r) {
   const slope = r.slopePerDecade / 10;
   const median = (a) => { const b = [...a].sort((p, q) => p - q); return b[b.length >> 1]; };
   const b0 = median(s.values.map((v, i) => v - slope * s.years[i]));
-  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Annual series of ${s.years.length} years with its trend line" style="max-height:300px">
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Annual series of ${s.years.length} years with its trend line" style="max-height:260px">
     <line x1="${m.l}" y1="${H - m.b}" x2="${W - m.r}" y2="${H - m.b}" stroke="rgba(255,255,255,.3)"/>
     <text x="${m.l}" y="${H - 8}" fill="currentColor" font-size="12">${x0}</text>
     <text x="${W - m.r}" y="${H - 8}" fill="currentColor" font-size="12" text-anchor="end">${x1}</text>
@@ -468,10 +520,10 @@ $('demo-list').addEventListener('click', (e) => {
   if (first) flyTo(first.lat, first.lon, 4000000);
   playTour([
     ...(b2 ? [['#/compare', `Two places, one variable. ${d.why}`]] : []),
-    ['#/evidence', `The evidence: one value per year from NASA data, so the seasons cancel out. The dashed line is the trend.${b2 ? '' : ' ' + d.why}`],
-    ['#/verdict', 'The verdict: the Mann-Kendall test asks whether a trend this clear could come from chance. A second method (a t-test) double-checks it, and the clock says how long until we would know.'],
-    ['#/record', 'The case file keeps the data, the source and the method, so anyone can check the result.'],
-    ['#/case', 'Your turn: choose what and where, make a hunch, and investigate.'],
+    ['#/evidence', `The evidence: one value per year, so the seasons cancel out. The dashed line is the trend.${b2 ? '' : ' ' + d.why}`],
+    ['#/verdict', 'The verdict: several tests check whether the change could be chance. Each ✓ is a check passed.'],
+    ['#/record', 'The case file keeps the data, the source and the method, so anyone can check it.'],
+    ['#/case', 'Your turn: pick a place and a variable, make a hunch, and investigate.'],
   ]);
 });
 
@@ -508,10 +560,10 @@ function fillGlobal() {
   if (!GRID) return;
   const ids = VARIABLES.filter((v) => GRID.trends[v.id]).map((v) => v.id);
   const more = (GRID2?.variables ?? []).filter((v) => GRID2.trends[v.id]);
-  $('global-var').innerHTML = `<optgroup label="Near the surface · NASA POWER">${ids.map((id) => `<option value="${id}">${varById(id).name}</option>`).join('')}</optgroup>`
+  $('global-var').innerHTML = `<optgroup label="Near the ground · NASA POWER">${ids.map((id) => `<option value="${id}">${varById(id).name}</option>`).join('')}</optgroup>`
     + (more.length ? `<optgroup label="Atmosphere, land and satellites · NASA (precomputed)">${more.map((v) => `<option value="${v.id}">${v.name} (${v.source.split(' (')[0]})</option>`).join('')}</optgroup>` : '');
   $('global-var').value = gridVar;
-  $('global-note').textContent = `${GRID.cells.length} cells of ${GRID.step}° × ${GRID.step}°, each with its own trend test (NASA POWER, value at the cell center). Verdicts are adjusted for testing thousands of cells at once (Benjamini-Hochberg).`;
+  $('global-note').textContent = `${GRID.cells.length} cells of ${GRID.step}° × ${GRID.step}°, each with its own trend test on NASA data (value at the cell centre). With thousands of tests, the bar for "confirmed" is raised (Benjamini-Hochberg). Regions are area-weighted means.`;
 }
 $('global-var').addEventListener('change', () => { gridVar = $('global-var').value; drawGrid(); });
 
@@ -532,31 +584,30 @@ function drawGrid() {
     if (verdict === 'confirmed') share[slope > 0 ? 'up' : 'down'] += w; else share.unsure += w;
     const k = Math.min(1, Math.abs(slope) / top);
     const rgb = slope > 0 ? [1, 0.55 - 0.35 * k, 0.15] : [0.15, 0.55 - 0.15 * k, 1];
-    const alpha = verdict === 'confirmed' ? 0.25 + 0.5 * k : verdict === 'likely' ? 0.18 : 0.06;
+    const alpha = verdict === 'confirmed' ? 0.2 + 0.4 * k : verdict === 'likely' ? 0.14 : 0.04;
     if (viewer) instances.push(new C.GeometryInstance({
-      geometry: new C.RectangleGeometry({ rectangle: C.Rectangle.fromDegrees(lon - step / 2, lat - step / 2, lon + step / 2, lat + step / 2) }),
+      geometry: new C.RectangleGeometry({ rectangle: C.Rectangle.fromDegrees(lon - step / 2, lat - step / 2, lon + step / 2, lat + step / 2), height: 2000 }),
       attributes: { color: C.ColorGeometryInstanceAttribute.fromColor(new C.Color(...rgb, alpha)) },
     }));
   });
   if (viewer) {
     if (gridLayer) viewer.scene.primitives.remove(gridLayer);
-    gridLayer = viewer.scene.primitives.add(new C.GroundPrimitive({
-      geometryInstances: instances, appearance: new C.PerInstanceColorAppearance({ flat: true, translucent: true }),
+    // A plain primitive slightly above the surface: ground-clamped primitives need GPU features some browsers lack.
+    gridLayer = viewer.scene.primitives.add(new C.Primitive({
+      geometryInstances: instances, appearance: new C.PerInstanceColorAppearance({ flat: true, translucent: true }), asynchronous: false,
     }));
   }
   const pct = (x) => `${Math.round((100 * x) / total)}%`;
   const u = unitOf({ units: v.units });
-  $('t-global').textContent = `${v.name} around the planet`;
-  $('global-summary').innerHTML = `
-    <li><span class="swatch up"></span><strong>${pct(share.up)}</strong> of the planet's area: confirmed rise</li>
-    <li><span class="swatch down"></span><strong>${pct(share.down)}</strong>: confirmed fall</li>
-    <li><span class="swatch unsure"></span><strong>${pct(share.unsure)}</strong>: not confirmed yet (faint)</li>
-    ${share.none ? `<li><span class="swatch"></span><strong>${pct(share.none)}</strong>: no data (for example, land-only variables over the ocean)</li>` : ''}`;
-  $('global-scale').textContent = `Full color = ${fmtSlope(top)} ${u} per decade or more.`;
+  $('t-global').textContent = `${v.name}: where is it changing?`;
+  $('global-summary').innerHTML = `<div class="up"><b>${pct(share.up)}</b>of the planet: rising</div>
+    <div class="down"><b>${pct(share.down)}</b>falling</div><div><b>${pct(share.unsure + share.none)}</b>not sure yet${share.none ? ' / no data' : ''}</div>`;
+  $('global-scale').textContent = `Orange: rising · blue: falling · full colour = ${fmtSlope(top)}${u ? ' ' + u : ''}/decade or more.`;
   $('regions').innerHTML = Object.entries(set.regions).filter(([, r]) => r.series[gridVar]).map(([id, r]) => {
     const res = analyze(r.series[gridVar]);
-    return `<li><button type="button" class="lead-btn" data-region="${id}"><span class="lead-verdict">${VERDICTS[res.verdict].label}</span>
-      <strong>${r.name[0].toUpperCase() + r.name.slice(1)}</strong> ${signed(res.slopePerDecade)} ${u} per decade</button></li>`;
+    const label = r.name.replace(/^the /, '').replace(/ \(.*\)$/, '');
+    return `<li><button type="button" class="lead-btn" data-region="${id}" title="${r.name}"><span><strong>${label[0].toUpperCase() + label.slice(1)}</strong> ${signed(res.slopePerDecade)}${u ? ' ' + u : ''}/decade</span>
+      <span>${VERDICTS[res.verdict].label}</span></button></li>`;
   }).join('');
 }
 
@@ -578,7 +629,7 @@ function openCell(position) {
   const g = C.Cartographic.fromCartesian(p);
   if (gridSet(gridVar) === GRID2) return openStoredCell(C.Math.toDegrees(g.latitude), C.Math.toDegrees(g.longitude));
   setPoint(+C.Math.toDegrees(g.latitude).toFixed(2), +C.Math.toDegrees(g.longitude).toFixed(2));
-  $('place').value = '';
+  selectedPlace = null;
   document.querySelector(`input[name="variable"][value="${gridVar}"]`).checked = true;
   location.hash = '#/case';
   $('case-form').requestSubmit();
@@ -608,6 +659,8 @@ GRID = grid;
 GRID2 = await loadJson('data/grid_atmos.json');
 if (GRID2?.variables) EXTRA_VARS.push(...GRID2.variables.filter((v) => !EXTRA_VARS.some((x) => x.id === v.id)));
 if (catalog?.variables?.length) VARIABLES = catalog.variables;
+for (const v of VARIABLES) { v.technical = v.name; v.name = PLAIN[v.id] ?? v.name; }
+FACTS = (await loadJson('data/place_facts.json'))?.facts ?? {};
 if (catalog?.places?.length) PLACES = catalog.places;
 function addExtra(file) {
   if (!file?.extra) return;
@@ -630,8 +683,7 @@ if (goodRivers.length) {
 }
 if (Array.isArray(demos)) DEMOS = demos;
 fillVariables();
-fillEnvironments();
-fillPlaceList();
+renderKinds();
 drawPlaceDots();
 selectPlace(PLACES.find((p) => p.id === 'coropuna')?.id ?? PLACES[0].id);
 renderDemos();
