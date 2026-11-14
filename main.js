@@ -1,5 +1,5 @@
 // Trend Detective UI: ties the form, NASA POWER and the engine together. Data formats: see README.
-import { alibiTest, analyze, blockShuffle, compareWitnesses, fetchPower, fetchPowerMany, predictionTest, scan } from './engine.js';
+import { alibiTest, analyze, blockShuffle, projection, compareWitnesses, fetchPower, fetchPowerMany, predictionTest, scan } from './engine.js';
 
 // Built-in fallback catalog. data/catalog.json (verified sources, more variables and places) replaces it when present.
 let VARIABLES = [
@@ -130,11 +130,11 @@ function drawPlaceDots() {
   viewer.entities.values.filter((e) => String(e.id).startsWith('place:')).forEach((e) => viewer.entities.remove(e));
   for (const p of PLACES) viewer.entities.add({
     id: `place:${p.id}`, position: C.Cartesian3.fromDegrees(p.lon, p.lat),
-    point: { pixelSize: 8, color: C.Color.fromCssColorString(KIND_COLOR[p.environment] ?? '#ffffff'), outlineColor: C.Color.BLACK, outlineWidth: 1.5 },
+    point: { pixelSize: 7, color: C.Color.fromCssColorString(KIND_COLOR[p.environment] ?? '#ffffff'), outlineColor: C.Color.BLACK, outlineWidth: 1.5 },
     // The label sits above the dot (bottom-anchored with a gap) and only appears when the camera is close enough.
     label: { text: p.short, font: '600 13px Inter, sans-serif', verticalOrigin: C.VerticalOrigin.BOTTOM, pixelOffset: new C.Cartesian2(0, -12),
              fillColor: C.Color.WHITE, showBackground: true, backgroundColor: C.Color.fromCssColorString('rgba(10,10,15,.88)'),
-             backgroundPadding: new C.Cartesian2(6, 3), distanceDisplayCondition: new C.DistanceDisplayCondition(0, 4500000) },
+             backgroundPadding: new C.Cartesian2(6, 3), distanceDisplayCondition: new C.DistanceDisplayCondition(0, 1200000) },
   });
 }
 
@@ -255,11 +255,11 @@ const placeName = (lat, lon) => PLACES.find((p) => p.lat === lat && p.lon === lo
 const shortName = (c) => PLACES.find((p) => p.lat === c.lat && p.lon === c.lon)?.short ?? c.place;
 
 // --- Views: one at a time, each with its own address so the Back button works. ---
-const VIEWS = ['home', 'global', 'case', 'leads', 'evidence', 'verdict', 'lineup', 'compare', 'record'];
+const VIEWS = ['home', 'global', 'case', 'leads', 'evidence', 'projection', 'verdict', 'lineup', 'compare', 'record'];
 function route() {
   let v = location.hash.replace('#/', '') || 'home';
   if (!VIEWS.includes(v)) v = 'home';
-  const needs = { evidence: current, verdict: current, record: current, lineup: current, leads, compare: current?.other, global: GRID };
+  const needs = { evidence: current, projection: current, verdict: current, record: current, lineup: current, leads, compare: current?.other, global: GRID };
   if (v in needs && !needs[v]) { location.replace('#/case'); return; }
   for (const n of VIEWS) $(`view-${n}`).classList.toggle('active', n === v);
   $('skip').hidden = v !== 'home';
@@ -408,6 +408,8 @@ function render(c0) {
   $('witnesses').textContent = witnessText(v, c.witness);
   $('compare-start').hidden = lat == null || !sourceOf(v).startsWith('NASA POWER'); // regions and precomputed variables cannot be fetched live
 
+  renderProjection(v, series, r, u, c);
+
   // Verdict: the label, one sentence, and one line per detective check.
   const vd = VERDICTS[r.verdict];
   $('verdict').textContent = vd.label;
@@ -487,6 +489,45 @@ function renderCompare(c) {
     : a.r.slopePerDecade * b.r.slopePerDecade < 0
       ? `Opposite directions: ${name} ${dir(a)} in ${a.place} but ${dir(b)} in ${b.place}. The same variable can trend in opposite ways in different regions.`
       : `Same direction: ${name} ${dir(a)} in both places, at ${fmtSlope(Math.abs(a.r.slopePerDecade))} and ${fmtSlope(Math.abs(b.r.slopePerDecade))} ${unitOf(a.series)} per decade.`;
+}
+
+// Projection: shown only when the trend beat "no change" on held-out years (prediction test), never otherwise.
+const TO_YEAR = 2040;
+function renderProjection(v, series, r, u, c) {
+  const pt = predictionTest(series), p = projection(series, TO_YEAR), end = p.at(TO_YEAR);
+  const where = c.lat == null ? c.place : shortName(c);
+  $('t-proj').textContent = `${v.name} · ${where} in ${TO_YEAR}`;
+  const ok = pt && pt.skill > 0.1 && r.verdict !== 'unknown';
+  $('proj-stat').textContent = ok ? `≈ ${fmt(end.centre, 1)}${u ? ' ' + u : ''}` : 'No projection';
+  $('proj-note').textContent = ok
+    ? `Likely range for a single year: ${fmt(end.low, 1)} to ${fmt(end.high, 1)}${u ? ' ' + u : ''}. Last observed year (${series.years.at(-1)}): ${fmt(series.values.at(-1), 1)}.`
+    : `This trend is not reliable enough to extend: ${r.verdict === 'unknown' ? 'the change is not clear yet' : 'it did not predict past years better than "no change"'}.`;
+  $('proj-chart').innerHTML = projChart(series, p, ok);
+  $('learn-test').textContent = pt
+    ? `We hid ${pt.testYears[0]}–${pt.testYears[1]}, fitted the trend on ${pt.trainYears[0]}–${pt.trainYears[1]}, and checked it: it predicted the hidden years ${pt.skill > 0.1 ? `${Math.round(pt.skill * 100)}% better than` : pt.skill < -0.1 ? 'worse than' : 'no better than'} assuming nothing changes.`
+    : 'With so few years we cannot hide some to test the trend, so we do not extend it.';
+}
+
+function projChart(s, p, withBand) {
+  const W = 760, H = 230, m = { l: 48, r: 12, t: 12, b: 28 };
+  const x0 = s.years[0], x1 = withBand ? TO_YEAR : s.years.at(-1);
+  const all = [...s.values, ...(withBand ? p.points.flatMap((q) => [q.low, q.high]) : [])];
+  const lo = Math.min(...all), hi = Math.max(...all), pad = (hi - lo) * 0.08 || 1;
+  const X = (y) => m.l + ((y - x0) / (x1 - x0)) * (W - m.l - m.r);
+  const Y = (v) => H - m.b - ((v - (lo - pad)) / (hi - lo + 2 * pad)) * (H - m.t - m.b);
+  const line = s.years.map((y, i) => `${X(y)},${Y(s.values[i])}`).join(' ');
+  const band = withBand ? [...p.points.map((q) => `${X(q.year)},${Y(q.high)}`), ...p.points.slice().reverse().map((q) => `${X(q.year)},${Y(q.low)}`)].join(' ') : '';
+  const a = p.at(s.years[0]), b = p.at(x1);
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Annual series with its trend${withBand ? ` extended to ${TO_YEAR} with a 95% band` : ''}" style="max-height:230px">
+    <line x1="${m.l}" y1="${H - m.b}" x2="${W - m.r}" y2="${H - m.b}" stroke="rgba(255,255,255,.3)"/>
+    <text x="${m.l}" y="${H - 8}" fill="currentColor" font-size="12">${x0}</text>
+    <text x="${W - m.r}" y="${H - 8}" fill="currentColor" font-size="12" text-anchor="end">${x1}</text>
+    <text x="4" y="${Y(hi)}" fill="currentColor" font-size="12">${fmt(hi, 1)}</text>
+    <text x="4" y="${Y(lo)}" fill="currentColor" font-size="12">${fmt(lo, 1)}</text>
+    ${withBand ? `<polygon points="${band}" fill="rgba(0,212,255,.18)" stroke="none"/><line x1="${X(s.years.at(-1))}" y1="${m.t}" x2="${X(s.years.at(-1))}" y2="${H - m.b}" stroke="rgba(255,255,255,.25)" stroke-dasharray="3 4"/>` : ''}
+    <polyline points="${line}" fill="none" stroke="var(--text-primary)" stroke-width="2"/>
+    <line x1="${X(s.years[0])}" y1="${Y(a.centre)}" x2="${X(x1)}" y2="${Y(b.centre)}" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="8 6"/>
+  </svg>`;
 }
 
 const dataTable = (s, v, u) => `<table><thead><tr><th>Year</th><th>${v.name}${u ? ` (${u})` : ''}</th></tr></thead><tbody>${
@@ -703,19 +744,22 @@ function openStoredCell(lat, lon) {
 async function loadJson(url) {
   try { const r = await fetch(url); return r.ok ? await r.json() : null; } catch { return null; }
 }
-const [catalog, demos, witnesses, grid, indices] = await Promise.all([loadJson('data/catalog.json'), loadJson('data/demos.json'),
-  loadJson('data/witnesses.json'), loadJson('data/grid.json'), loadJson('data/indices.json')]);
+// Everything the first screen needs loads in parallel; the 5 MB atmosphere grid loads later, in the background.
+const [catalog, demos, witnesses, grid, indices, modis, rivers, facts, photos] = await Promise.all(['catalog', 'demos', 'witnesses', 'grid',
+  'indices', 'modis', 'rivers', 'place_facts', 'place_photos'].map((f) => loadJson(`data/${f}.json`)));
 INDICES = indices;
-const [modis, rivers] = await Promise.all([loadJson('data/modis.json'), loadJson('data/rivers.json')]);
 WITNESSES = witnesses;
 GRID = grid;
-GRID2 = await loadJson('data/grid_atmos.json');
-for (const v of GRID2?.variables ?? []) { v.technical = v.name; v.name = PLAIN[v.id] ?? v.name; }
-if (GRID2?.variables) EXTRA_VARS.push(...GRID2.variables.filter((v) => !EXTRA_VARS.some((x) => x.id === v.id)));
+loadJson('data/grid_atmos.json').then((g) => {
+  GRID2 = g;
+  for (const v of GRID2?.variables ?? []) { v.technical = v.name; v.name = PLAIN[v.id] ?? v.name; }
+  if (GRID2?.variables) EXTRA_VARS.push(...GRID2.variables.filter((v) => !EXTRA_VARS.some((x) => x.id === v.id)));
+  fillGlobal();
+});
 if (catalog?.variables?.length) VARIABLES = catalog.variables;
 for (const v of VARIABLES) { v.technical = v.name; v.name = PLAIN[v.id] ?? v.name; }
-FACTS = (await loadJson('data/place_facts.json'))?.facts ?? {};
-PHOTOS = (await loadJson('data/place_photos.json'))?.photos ?? {};
+FACTS = facts?.facts ?? {};
+PHOTOS = photos?.photos ?? {};
 if (catalog?.places?.length) PLACES = catalog.places;
 function addExtra(file) {
   if (!file?.extra) return;

@@ -375,3 +375,19 @@ export function areaWeightedMean(seriesList, lats) {
   const values = years.map((_, y) => +(same.reduce((a, i, k) => a + w[k] * seriesList[i].values[y], 0) / W).toFixed(4));
   return { years, values, cells: same.length };
 }
+
+// Projection: extend Sen's trend to a future year with a ~95% band for single years. The band adds the year-to-year
+// spread around the trend (residual SD) and the uncertainty of the slope itself (its 95% interval), in quadrature.
+export function projection({ years, values }, toYear) {
+  const { slope, ci, intercept } = senSlope(years, values);
+  const res = values.map((v, i) => v - (intercept + slope * years[i]));
+  const sd = Math.sqrt(res.reduce((a, r) => a + r * r, 0) / (res.length - 2));
+  const mid = (years[0] + years.at(-1)) / 2, halfCI = (ci[1] - ci[0]) / 2;
+  const at = (y) => {
+    const centre = intercept + slope * y, half = Math.sqrt((1.96 * sd) ** 2 + (halfCI * (y - mid)) ** 2);
+    return { year: y, centre, low: centre - half, high: centre + half };
+  };
+  const out = [];
+  for (let y = years.at(-1) + 1; y <= toYear; y++) out.push(at(y));
+  return { slope, sd, points: out, at };
+}

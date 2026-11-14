@@ -136,6 +136,8 @@
   .pop-body b { font-size:17px; }
   .tiny { font-size:11px; color:var(--text-secondary); margin:0; } .tiny a { color:inherit; }
   @media (max-width:640px) { .pop { display:none; } }
+  .learn { margin:0; padding-left:20px; font-size:13px; display:flex; flex-direction:column; gap:5px; color:var(--text-secondary); }
+  .learn b { color:var(--text-primary); }
   [hidden] { display:none !important; }
 </style>
 </head>
@@ -231,7 +233,24 @@
   <p class="note" id="witnesses"></p>
   <details><summary>Data and sources</summary><p class="note" id="chart-caption"></p><div id="table"></div></details>
   <div class="spacer"></div>
-  <div class="row"><a class="btn sec" href="#/case">Back</a><a class="btn" href="#/verdict">See the verdict</a></div>
+  <div class="row"><a class="btn sec" href="#/case">Back</a><a class="btn sec" href="#/projection">Projection</a><a class="btn" href="#/verdict">See the verdict</a></div>
+</section>
+
+<section class="view side" id="view-projection" aria-labelledby="t-proj">
+  <p class="step">Projection · What comes next?</p>
+  <h2 id="t-proj" tabindex="-1"></h2>
+  <p class="stat" id="proj-stat"></p>
+  <p class="note" id="proj-note"></p>
+  <div id="proj-chart"></div>
+  <h3>How does the model predict?</h3>
+  <ol class="learn">
+    <li><b>One value per year.</b> Averaging each year cancels the seasons, so only the slow change is left.</li>
+    <li><b>Draw the trend.</b> Sen's slope takes the middle of all year-to-year slopes, so one odd year cannot bend it.</li>
+    <li><b>Test it on the past.</b> <span id="learn-test"></span></li>
+    <li><b>Extend it, with a margin.</b> The band shows where about 95 of 100 future years should fall if the trend and its usual ups and downs continue. It is a projection, not a prophecy: eruptions, El Niño or human choices can change the path.</li>
+  </ol>
+  <div class="spacer"></div>
+  <div class="row"><a class="btn sec" href="#/evidence">Back</a><a class="btn" href="#/verdict">See the verdict</a></div>
 </section>
 
 <section class="view side" id="view-verdict" aria-labelledby="t3">

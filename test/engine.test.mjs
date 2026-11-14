@@ -221,3 +221,18 @@ test('area-weighted mean gives polar cells less weight and skips incomplete cell
   assert.equal(r.cells, 2);
   assert.ok(Math.abs(r.values[0] - 10 * 0.5 / 1.5) < 1e-3, `${r.values[0]}`);
 });
+
+test('projection band covers about 95% of held-out future years', async () => {
+  const { projection } = await import('../engine.js');
+  const u = rng(11);
+  let inside = 0, total = 0;
+  for (let k = 0; k < 200; k++) {
+    let e = 0;
+    const years = Array.from({ length: 45 }, (_, i) => 1981 + i);
+    const values = years.map((_, i) => { e = 0.3 * e + normal(u) * 0.3; return 0.02 * i + e; });
+    const p = projection({ years: years.slice(0, 35), values: values.slice(0, 35) }, 2025);
+    for (const q of p.points) { total++; const v = values[years.indexOf(q.year)]; if (v >= q.low && v <= q.high) inside++; }
+  }
+  const share = inside / total;
+  assert.ok(share > 0.88 && share < 0.995, `coverage ${share}`);
+});
