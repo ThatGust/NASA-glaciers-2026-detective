@@ -135,7 +135,7 @@ function drawPlaceDots() {
   });
 }
 
-function flyTo(lat, lon, height = 900000, seconds = 3) {
+function flyTo(lat, lon, height = 2500000, seconds = 3) {
   if (!viewer) return;
   const destination = C.Cartesian3.fromDegrees(lon, lat, height);
   if (reducedMotion) viewer.camera.setView({ destination });
