@@ -942,6 +942,21 @@ $('back-earth').addEventListener('click', () => { location.hash = '#/home'; });
 
 $('moon-cases').innerHTML = MOON_CASES.map((c) => `<li><button type="button" class="lead-btn" data-case="${c.id}"><span><strong>${c.title}</strong></span>
   <span class="tag ${c.tag[0]}">${c.tag[1]}</span></button></li>`).join('');
+// Discoveries made by watching the Moon itself for decades (data/moon_cases.json, cited facts plus a quiz each).
+let MOON_OWN = [];
+function renderMoonOwn() {
+  $('moon-own').innerHTML = MOON_OWN.map((c) => `<li><button type="button" class="lead-btn" data-case="${esc(c.id)}"><span><strong>${esc(c.title)}</strong></span>
+    <span class="tag ${esc(c.tag[0])}">${esc(c.tag[1])}</span></button></li>`).join('');
+}
+$('moon-own').addEventListener('click', openFrom);
+function openFrom(e) {
+  const b = e.target.closest('[data-case]');
+  if (!b) return;
+  const own = MOON_OWN.find((c) => c.id === b.dataset.case);
+  lunarCase = own ? { ...own, text: own.intro, own: true } : MOON_CASES.find((c) => c.id === b.dataset.case);
+  openLunarCase();
+  location.hash = '#/lunar';
+}
 $('moon-cases').addEventListener('click', (e) => {
   const b = e.target.closest('[data-case]');
   if (!b) return;
@@ -960,7 +975,7 @@ let lunarGuess = null;
 $('lunar-quiz').addEventListener('click', (e) => {
   const b = e.target.closest('[data-q]');
   if (!b || $('lunar-quiz').classList.contains('done')) return;
-  const q = QUIZ[lunarCase.id], ok = +b.dataset.q === q.answer;
+  const q = lunarCase.quiz ?? QUIZ[lunarCase.id], ok = +b.dataset.q === q.answer;
   b.setAttribute('aria-pressed', 'true'); $('lunar-quiz').classList.add('done'); $('lunar-note').hidden = false;
   if (ok) award(1);
   feedback('lunar-feedback', ok ? 'good' : 'miss', `${ok ? '✓ Right! +1 point.' : '✗ Not this time.'} ${q.why}`);
@@ -981,12 +996,15 @@ function openLunarCase() {
   $('lunar-stat').textContent = ''; $('lunar-note').textContent = ''; $('lunar-chart').innerHTML = '';
   $('lunar-feedback').textContent = ''; lunarGuess = null;
   $('lunar-guess').querySelectorAll('.chip').forEach((b) => b.setAttribute('aria-pressed', 'false'));
-  const quiz = QUIZ[c.id];
+  const quiz = c.quiz ? { q: c.quiz.q, options: c.quiz.options, answer: c.quiz.answer, why: c.quiz.why } : QUIZ[c.id];
+  $('lunar-facts').hidden = !c.facts;
+  $('lunar-facts').innerHTML = (c.facts ?? []).map((f) => `<li><b>${esc(f.value)}${f.unit ? ' ' + esc(f.unit) : ''}</b> · ${esc(f.label)} (${esc(f.year_range ?? '')}) · <a href="${esc(f.source_url)}" target="_blank" rel="noopener">${esc(f.source_name)}</a></li>`).join('');
   $('lunar-quiz').hidden = !quiz;
   if (quiz) $('lunar-quiz').innerHTML = `<p><b>🔍 Quick question:</b> ${quiz.q}</p><div class="row">${quiz.options.map((o, i) => `<button type="button" class="chip" data-q="${i}">${o}</button>`).join('')}</div>`;
   $('lunar-quiz').classList.remove('done');
   if (!testable) {
     $('lunar-note').hidden = true;
+    if (c.own) { $('lunar-note').innerHTML = c.learn_more_url ? `<a href="${esc(c.learn_more_url)}" target="_blank" rel="noopener">Learn more</a>` : ''; return; }
     $('lunar-note').textContent = c.id === 'tides'
       ? 'This is the textbook lunar effect: no statistics needed to see the tide come in twice a day.'
       : 'This effect is well documented by marine biologists; it shows that living things keep time with the Moon.';
@@ -1013,7 +1031,10 @@ $('lunar-run').addEventListener('click', async () => {
   try {
     // Tide range is shown in centimetres so a few-cm lunar swing is readable.
     const s = tide ? { years: tide.years, values: tide.values.map((x) => x * 100), units: 'cm' } : await seriesFor(v, p.lat, p.lon, 1981);
-    const t = lunarTest(s);
+    // Seeded placebos: every student in a class gets exactly the same p-value for the same case.
+    let seed = 20261114;
+    const random = () => { seed = (seed + 0x6d2b79f5) | 0; let x = Math.imul(seed ^ (seed >>> 15), 1 | seed); x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x; return ((x ^ (x >>> 14)) >>> 0) / 4294967296; };
+    const t = lunarTest(s, { random });
     if (t.status === 'too-short') { $('lunar-stat').textContent = 'Record too short'; $('lunar-note').textContent = `The test needs at least ${LUNAR_MIN_YEARS} years (two full 18.6-year cycles); this record has ${t.n}.`; return; }
     const pv = t.p < 0.001 ? 'p < 0.001' : `p = ${fmt(t.p, 3)}`;
     $('lunar-stat').textContent = t.verdict === 'signal' ? `Moon-like signal (${pv})` : t.verdict === 'hint' ? `A hint, not convincing (${pv})` : `No lunar signal found (${pv})`;
@@ -1059,6 +1080,8 @@ async function loadJson(url) {
 const [catalog, demos, witnesses, grid, indices, modis, rivers, facts, photos, tides] = await Promise.all(['catalog', 'demos', 'witnesses', 'grid',
   'indices', 'modis', 'rivers', 'place_facts', 'place_photos', 'tides'].map((f) => loadJson(`data/${f}.json`)));
 TIDES = tides;
+MOON_OWN = (await loadJson('data/moon_cases.json'))?.cases ?? [];
+renderMoonOwn();
 INDICES = indices;
 WITNESSES = witnesses;
 GRID = grid;

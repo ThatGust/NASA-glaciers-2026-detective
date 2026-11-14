@@ -169,6 +169,8 @@
   .mission { margin:0; padding:0; list-style:none; display:flex; gap:6px; flex-wrap:wrap; }
   .mission li { font:13px var(--font-mono); border:1px solid var(--glass-border); border-radius:999px; padding:4px 10px; }
   .mission li.done { color:var(--ok); border-color:var(--ok); }
+  .facts { margin:0; padding-left:18px; font-size:13px; display:flex; flex-direction:column; gap:4px; }
+  .facts b { color:var(--accent); } .facts a { color:var(--text-secondary); }
   [hidden] { display:none !important; }
 </style>
 </head>
@@ -276,6 +278,8 @@
   <h2 id="t-moon" tabindex="-1">How does the Moon affect the Earth?</h2>
   <p class="note">The Moon pulls on the whole Earth. Some effects are proven, others are open questions. Pick a case.</p>
   <ul class="leads" id="moon-cases"></ul>
+  <h3>Discoveries about the Moon itself</h3>
+  <ul class="leads" id="moon-own"></ul>
   <h3>On the map</h3>
   <ul class="chips" id="moon-layers" aria-label="Moon map layers"></ul>
   <p class="note">Official names from the IAU/USGS Gazetteer of Planetary Nomenclature. Click a place to learn about it.</p>
@@ -299,6 +303,7 @@
     <select id="lunar-var" aria-label="Variable" style="width:180px"></select>
     <button class="btn small" type="button" id="lunar-run">Test</button>
   </div>
+  <ul class="facts" id="lunar-facts" hidden></ul>
   <p class="stat" id="lunar-stat" style="font-size:22px"></p>
   <p class="note" id="lunar-note"></p>
   <div id="lunar-chart"></div>

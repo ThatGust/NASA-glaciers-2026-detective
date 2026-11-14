@@ -1,0 +1,169 @@
+{
+  "generated": "2026-11-14",
+  "cases": [
+    {
+      "id": "moon_recession",
+      "title": "The Moon is drifting away",
+      "tag": ["proven", "Measured with lasers"],
+      "intro": "Lasers bounce off reflectors on the Moon. Measurements collected over many years reveal a slow outward drift hidden beneath its changing distance each month.",
+      "facts": [
+        {
+          "label": "Average outward drift of the orbit; published estimate with uncertainty",
+          "value": "38.30 ± 0.08",
+          "unit": "mm/year",
+          "year_range": "1970–2015; analysis published in 2016",
+          "source_url": "https://link.springer.com/article/10.1007/s10569-016-9702-3",
+          "source_name": "Williams and Boggs (2016), Celestial Mechanics and Dynamical Astronomy; JPL/Caltech"
+        },
+        {
+          "label": "Reflector deployment years: Apollo and Soviet Luna missions",
+          "value": "1969–1973",
+          "unit": "calendar years",
+          "year_range": "1969–1973",
+          "source_url": "https://ilrs.gsfc.nasa.gov/science/scienceContributions/lunar.html",
+          "source_name": "International Laser Ranging Service (ILRS), hosted by NASA GSFC"
+        },
+        {
+          "label": "APOLLO laser-ranging record described in the paper",
+          "value": "April 2006–December 2020",
+          "unit": "observation period",
+          "year_range": "2006–2020",
+          "source_url": "https://arxiv.org/abs/2304.11128",
+          "source_name": "Battat et al. (2023), APOLLO dataset characterization; Apache Point Observatory"
+        }
+      ],
+      "quiz": {
+        "q": "Which evidence best reveals the Moon's slow outward drift?",
+        "options": ["Its size in a single photograph", "Laser measurements collected over many years", "How bright it looks tonight"],
+        "answer": 1,
+        "why": "The distance changes during each orbit. Long records let scientists separate those repeating changes from the slow outward drift."
+      },
+      "learn_more_url": "https://ilrs.gsfc.nasa.gov/science/scienceContributions/lunar.html"
+    },
+    {
+      "id": "new_craters",
+      "title": "New craters still form",
+      "tag": ["proven", "Seen before and after"],
+      "intro": "The Moon's surface keeps changing. Compare pictures of the same ground taken years apart to find fresh craters left by incoming space rocks.",
+      "facts": [
+        {
+          "label": "New impact craters detected in the survey, not a yearly or whole-Moon total",
+          "value": 222,
+          "unit": "craters in sampled image pairs",
+          "year_range": "2009–2015; study published in 2016",
+          "source_url": "https://pubmed.ncbi.nlm.nih.gov/27734864/",
+          "source_name": "Speyerer et al. (2016), Nature; NASA LRO/LROC observations"
+        },
+        {
+          "label": "Excess over the Neukum model for craters at least ten metres wide; not growth over time",
+          "value": 33,
+          "unit": "% more than model prediction",
+          "year_range": "2009–2015; study published in 2016",
+          "source_url": "https://pubmed.ncbi.nlm.nih.gov/27734864/",
+          "source_name": "Speyerer et al. (2016), Nature; NASA LRO/LROC observations"
+        },
+        {
+          "label": "Image collection period used for the published new-crater search",
+          "value": "2009–2015",
+          "unit": "calendar years",
+          "year_range": "2009–2015",
+          "source_url": "https://www.hou.usra.edu/meetings/lpsc2022/pdf/1626.pdf",
+          "source_name": "Watters, Speyerer and Robinson (2022), LPSC abstract 1626; LROC investigators"
+        }
+      ],
+      "quiz": {
+        "q": "The survey found more craters than a model predicted. What does that show?",
+        "options": ["The Moon's impact rate must be increasing each year", "Every crater on the Moon is new", "The model underestimated crater formation in this survey"],
+        "answer": 2,
+        "why": "A higher count than a model predicts does not prove impacts are becoming more frequent. Before-and-after images show that new craters formed."
+      },
+      "learn_more_url": "https://pubmed.ncbi.nlm.nih.gov/27734864/"
+    },
+    {
+      "id": "impact_flashes",
+      "title": "Flashes reveal hidden impacts",
+      "tag": ["proven", "Watched from Earth"],
+      "intro": "Telescopes watch the Moon's unlit ground for brief flashes from space rocks hitting the surface. Clear skies and repeated observations help separate impacts from camera noise.",
+      "facts": [
+        {
+          "label": "Lunar impacts observed by NASA Marshall; cumulative report, not an annual rate",
+          "value": "more than 400",
+          "unit": "observed impacts",
+          "year_range": "May 2006–March 2026; reported on 12 March 2026",
+          "source_url": "https://www.nasa.gov/blogs/watch-the-skies/2026/03/12/nasa-marshall-lunar-meteor-observatory-marks-20-years-of-discovery/",
+          "source_name": "NASA Marshall, Automated Lunar and Meteor Observatory anniversary report (2026)"
+        },
+        {
+          "label": "Flashes selected under clear, stable skies for the published study",
+          "value": 126,
+          "unit": "impact flashes in selected sample",
+          "year_range": "September 2006–August 2011",
+          "source_url": "https://arxiv.org/pdf/1404.6458",
+          "source_name": "Suggs et al. (2014), Icarus; NASA Meteoroid Environment Office, Table 1"
+        },
+        {
+          "label": "Lower impact-energy limit for the study's reported flux, not a typical impact energy",
+          "value": "1.05 × 10^7",
+          "unit": "J of estimated impact kinetic energy",
+          "year_range": "September 2006–August 2011",
+          "source_url": "https://arxiv.org/pdf/1404.6458",
+          "source_name": "Suggs et al. (2014), Icarus; NASA Meteoroid Environment Office, abstract"
+        },
+        {
+          "label": "Telescopes used together to reject cosmic rays and camera noise",
+          "value": 2,
+          "unit": "telescopes",
+          "year_range": "Monitoring setup described on 23 October 2023",
+          "source_url": "https://www.nasa.gov/meteoroid-environment-office/lunar-impact-monitoring/",
+          "source_name": "NASA Meteoroid Environment Office, Lunar Impact Monitoring"
+        }
+      ],
+      "quiz": {
+        "q": "Why watch the same flash with separate telescopes?",
+        "options": ["To check that it is real rather than camera noise", "To make the impact stronger", "To stop new craters forming"],
+        "answer": 0,
+        "why": "A flash seen by separate telescopes is less likely to be a cosmic ray or camera glitch. Repeated checks make the evidence stronger."
+      },
+      "learn_more_url": "https://www.nasa.gov/meteoroid-environment-office/lunar-impact-monitoring/"
+    },
+    {
+      "id": "apollo_moonquakes",
+      "title": "Old records reveal Moon shakes",
+      "tag": ["proven", "Recorded by Apollo sensors"],
+      "intro": "Astronauts left ground sensors on the Moon. Their recordings still hold clues: scientists can find missed shaking events by examining old data more carefully.",
+      "facts": [
+        {
+          "label": "Apollo seismic observation period",
+          "value": "1969–1977",
+          "unit": "calendar years",
+          "year_range": "1969–1977",
+          "source_url": "https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2023JE008153",
+          "source_name": "Onodera (2024), JGR: Planets; NASA Apollo data reanalysis, corrected in 2026"
+        },
+        {
+          "label": "Previously identified events in long-period data; includes impacts, not just tectonic quakes",
+          "value": "more than 13,000",
+          "unit": "seismic events in earlier catalog",
+          "year_range": "1969–1977 recordings; earlier catalog summarized in 2024",
+          "source_url": "https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2023JE008153",
+          "source_name": "Onodera (2024), JGR: Planets; NASA Apollo data reanalysis, corrected in 2026"
+        },
+        {
+          "label": "Newly detected events in reanalyzed short-period data; includes thermal shaking and impacts",
+          "value": 22000,
+          "unit": "new seismic-event detections in old data",
+          "year_range": "1969–1977 recordings; reanalysis published in 2024",
+          "source_url": "https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2023JE008153",
+          "source_name": "Onodera (2024), JGR: Planets; NASA Apollo data reanalysis, corrected in 2026"
+        }
+      ],
+      "quiz": {
+        "q": "Why did scientists find more events after the sensors stopped working?",
+        "options": ["The Moon must be shaking more often today", "They found missed signals in old recordings", "The sensors kept recording forever"],
+        "answer": 1,
+        "why": "Better analysis can reveal missed events in old records. A larger catalog does not show that the Moon is shaking more often today."
+      },
+      "learn_more_url": "https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2023JE008153"
+    }
+  ]
+}
