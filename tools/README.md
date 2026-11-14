@@ -202,3 +202,88 @@ Ozone needs extra caution: [Wargan et al. (2017)](https://pmc.ncbi.nlm.nih.gov/a
 **OMI search:** the [cached CMR query](https://cmr.earthdata.nasa.gov/search/collections.json?keyword=OMI%20ozone&page_size=200) returned 175 collections. No monthly OMI L3 total-column grid matched. `TrCO3_Monthly_OMIMLS` is tropospheric ozone; `OMTO3d`, `OMTO3e` and `OMDOAO3e` are daily; `MSO3L3zm5` is a merged multi-satellite zonal mean. None is substituted for the requested product, so **OMI_O3 is omitted**. A newly appearing monthly collection makes the script stop for an explicit adapter rather than silently ignore it.
 
 No browser/UI integration, external field calibration, full-resolution global averaging or independent magnitude validation was performed. Root context/PDF updates are outside this lane's explicit write scope; the requested single AI-use log row is appended separately.
+
+## Places, facts and satellite images (data lane 4)
+
+Completed 14 November 2026: **18 additions, 48 catalog places, 65 fact records and 65 satellite images**. All original places/IDs are preserved; river facts live only in data/place_facts.json.
+
+| Environment | New places |
+|---|---|
+| lake | Lake Titicaca; Aral Sea; Lake Chad |
+| volcano | El Misti (Arequipa); Mount Etna; Mauna Loa |
+| savanna | Serengeti; Cerrado; Sahel |
+| tundra | Yamal Peninsula; Alaska North Slope; Baffin Island |
+| coral_reef | Great Barrier Reef at Davies Reef; Glover's Reef; Elphinstone Reef |
+| wetland | Pantanal; Sundarbans; Okavango Delta |
+
+- Coordinate evidence for additions is embedded in catalog.json. Davies Reef uses the [published reef coordinate](https://pmc.ncbi.nlm.nih.gov/articles/PMC5971101/). Original provenance files and demos.json were preserved.
+- Facts use **NASA POWER grid elevation**, 1991–2020 means of annual series, and engine.analyze T2M trends for 1981–2025. Contextual descriptions have at most 14 words and cite Wikipedia revisions (CC BY-SA 4.0); Zongo cites Huayna Potosí and Chili cites Arequipa. All 30 original POWER records were reused; 35 new combined records were acquired. Uncached POWER requests and retries are serialized at least 2.1 seconds apart, with HTTP 429 backoff.
+- **Images total 1,661,330 bytes (1.66 MB)**; largest **54,454 bytes**. All are 480×320 JPEGs below 70,000 bytes. [Credits](../img/places/CREDITS.md) record source URLs, layer, date, bounds, projection and the cloud heuristic. The [single contact sheet](.cache/contact_sheet.html) and selection manifest are Git-ignored. These are real NASA Worldview/GIBS images; no image-generation model was used.
+- Clear daily views could not be established for every feature. Historical composites are used for quelccaya, zongo, chimborazo, perito-moreno, columbia, jakobshavn, aletsch, khumbu, puncak-jaya, congo, london, cape_horn, south_pole, vostok, congo_river, niger_river, yenisei_river and ganges_river. They illustrate places, not current glacier outlines. **Elphinstone remains near the MODIS resolution limit** after unsuccessful HLS selection attempts. Arctic cloud/ice separation remains unverified.
+- **Integrator review:** replaced only the 20 named images; all **45 unlisted image hashes stayed unchanged**. Non-polar bounds were retained; the three coast/reef cases tried 12 more date/layer combinations. North Pole uses EPSG:3413 / VIIRS on 5 August 2025; South Pole and Vostok use EPSG:3031 / Blue Marble Next Generation. Credits and the contact sheet were regenerated.
+- Passed: validate_data.mjs --cache (including exact reproduction of all 65 facts), fetch_place_images.mjs --check (dimensions/size/decode/projection), validate_extras.mjs (25 existing series), and all **19 npm tests**. The MODIS cache-coverage audit was not expanded to new places. UI integration was not tested. The protected Earthdata files/cache and .env files were not touched; UI and engine files were not edited. No commits or pushes were made by this agent.
+
+Reproduce from app/ (Node.js 24+ and existing Python/Pillow/pyproj):
+
+~~~sh
+node tools/build_catalog.mjs --places-only
+node tools/place_facts.mjs
+node tools/fetch_place_images.mjs
+node tools/fetch_place_images.mjs --review-fixes
+node tools/validate_data.mjs --cache
+node tools/fetch_place_images.mjs --check
+node tools/validate_extras.mjs
+npm test
+~~~
+
+The review command needs the ignored manifest from the full image command. NASA revisions/network availability may change selections; composite TIME is not a single acquisition date. Offline libraries: [Pillow 11.1.0, MIT-CMU](https://github.com/python-pillow/Pillow/blob/11.1.0/LICENSE) and [pyproj 3.7.2, MIT](https://github.com/pyproj4/pyproj/blob/3.7.2/LICENSE); no dependencies were added.
+
+## Lane 5A: defined place universes (14 November 2026)
+
+Acquisition in progress. Coverage applies to the **documented Wikidata query inventories**, not all places on Earth. `data/coverage.json` records each exact query, its retrieval time, the full member Q-IDs, N, selected members and percentage. Totals sum kind memberships and can count one feature in several universes. The pitch must retain this scope when quoting coverage.
+
+```sh
+node tools/build_universes.mjs
+node tools/build_universes.mjs --select
+node tools/place_facts.mjs
+node tools/fetch_place_images.mjs
+node tools/validate_data.mjs --cache
+node tools/validate_extras.mjs
+npm test
+```
+
+The universe builder uses a descriptive nonpersonal User-Agent, serialized requests at least 6.5 seconds apart, bounded retries and `Retry-After`. Exact responses and per-entity checkpoints live in `tools/.cache/wikidata/`. `--cache-only` forbids uncached Wikidata requests. The initial catalog/river baseline is saved there once. All existing IDs and sampling coordinates are preserved. Existing coordinate citations remain authoritative; new non-river points cite Wikidata P625, while rivers require a published mouth coordinate or an existing cited gauge. Existing rivers that the UI appends are counted separately to avoid duplicate markers; previously hidden rivers added to the catalog expose only NASA climate sampling, not an unvalidated discharge series.
+
+Selection prioritizes published size or sitelink count, every represented continent, South American members, and the named Peruvian priorities plus Lake Baikal. Points within 5 km of an existing point are rejected and recorded, rather than shifted. Country and ISO codes come from current Wikidata country claims; continent uses the feature's P30, then country P30. Transcontinental countries can supply multiple continents. Size fields retain the largest nondeprecated, current-rank recorded value; these inventories mix measurement/census dates and administrative boundaries and must not be presented as uniform current surveys.
+
+Facts checkpoint after each new place and reuse complete saved climate facts. New climate calls request only T2M and PRECTOTCORR, are serialized at least 2.1 seconds apart including retries, and stop uncached acquisition after sustained service failure. Explicit nulls carry a pending/unavailable status and reason; rerunning resumes acquisition. New descriptions are short Wikidata descriptions or simple type/country statements, linked to entity revisions. They are context, not NASA measurements.
+
+Sources/licenses: [Wikidata CC0](https://www.wikidata.org/wiki/Wikidata:Licensing); existing pinned Wikipedia paraphrases remain [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/); [NASA POWER](https://power.larc.nasa.gov/docs/services/api/temporal/monthly/); real NASA Worldview/GIBS imagery credited in [CREDITS.md](../img/places/CREDITS.md). JPEGs are 360×240, at most 25,000 bytes, with seasonal cloud screening, Blue Marble Next Generation fallback and polar projections near the poles. Existing reviewed images were resized/recompressed from their original snapshots. No image was generated by AI.
+
+AI-use record: Codex implemented and checked this data acquisition/selection pipeline, source-linked context and this report. The statistical engine, UI, demos, ground-photo folder and root context files are outside this lane's write scope. No .env files were read, dependencies added, commits made or pushes performed.
+
+
+## Ground photographs (data lane 5B)
+
+Initial pass on 14 November 2026: **59 places with photos; 6 without, out of 65 distinct catalog/river places**. **4 distinct candidate files rejected by license** (GFDL-only or FAL). Final JPEGs total **2,009,694 bytes**; largest **39,837 bytes**. Final expanded-catalog pass is **pending lane 5A's `data/catalog.ready` marker**; the downloader remains active and polls every 60 seconds.
+
+Currently omitted: `zongo`, `pacific`, `atlantic`, `yamal`, `alaska_north_slope`, `chili`. No accepted, sufficiently attributable ground/aerial photograph of these actual places was established through their Wikidata/Wikipedia references. Missing entries are omitted from the manifest; no generic or synthetic substitute is used.
+
+[Photo manifest](../data/place_photos.json) contains each relative file path, original title, Commons file page, plain-text author, license, license URL and one-line credit. The downloader prefers non-deprecated Wikidata P18 claims (preferred rank first), then Wikipedia's lead image, then other images on that same article that identify the place in Commons metadata. It uses catalog Wikidata IDs when available; otherwise Wikipedia pageprops resolves the item. Cited facts/published Wikipedia references provide a fallback when coordinates cite a gauge sheet or another non-Wikipedia source. Parent mountain/city photographs must explicitly identify Zongo/Chili to qualify.
+
+Only public domain, CC0, CC BY and CC BY-SA are accepted, with their actual versions/jurisdictions retained. Reject insufficient width, non-photographic file types, maps, flags, logos, diagrams, artwork, satellite/rendered views and unsuitable subjects; known misleading lead photographs were excluded after contact-sheet review. Final copies are 480-pixel-wide JPEGs, at most 40,000 bytes each. Commons metadata and visual review establish contextual suitability, not current conditions or a measured trend. Follow the [photo attribution policy](THIRD_PARTY_NOTICES.md#lane-5b-wikimedia-commons-place-photographs), including the original title/source link, license link and disclosure of resizing/recompression.
+
+Run from `app/`, using Node.js with built-in fetch and the existing Python/Pillow installation (no new dependency):
+
+~~~sh
+node tools/fetch_place_photos.mjs --self-test
+node tools/fetch_place_photos.mjs
+node tools/fetch_place_photos.mjs --validate
+npm test
+~~~
+
+The full command processes current places first, waits for the marker, re-reads the final catalog and processes additions/changed records. API responses and thumbnail downloads are cached by URL under `tools/.cache/commons/`; state and per-candidate rejection reasons support restarts. Completed valid-sized outputs are reused; interrupted writes are staged inside the cache and renamed into place. Use one downloader instance. Requests are serialized at least 1.05 seconds apart (below two per second), with a descriptive non-personal User-Agent, retries, Retry-After handling and HTTP 429 backoff. No secrets or .env files are needed or read. The final command writes a machine-readable coverage report to `tools/.cache/commons/report.json`.
+
+Passed for the initial set: in-script license/metadata/source self-checks, `--validate`, a separate Pillow decode/480-pixel width check of every listed JPEG, contact-sheet review, and all **19 npm tests**. UI integration was not tested. No commits or pushes were made.
+
+AI-use record, 14 November 2026: Codex implemented the downloader/self-checks, retrieved and screened Wikimedia sources, reviewed contact sheets, generated the manifest/JPEG derivatives, ran validation/tests and documented attribution. No image-generation model was used. The root AI-use log and context/PDF files are outside this lane's explicit write scope.
