@@ -128,10 +128,11 @@ function drawPlaceDots() {
   viewer.entities.values.filter((e) => String(e.id).startsWith('place:')).forEach((e) => viewer.entities.remove(e));
   for (const p of PLACES) viewer.entities.add({
     id: `place:${p.id}`, position: C.Cartesian3.fromDegrees(p.lon, p.lat),
-    point: { pixelSize: 7, color: C.Color.WHITE, outlineColor: C.Color.BLACK, outlineWidth: 1 },
-    label: { text: p.short, font: '12px Inter, sans-serif', pixelOffset: new C.Cartesian2(0, -14), fillColor: C.Color.WHITE,
-             showBackground: true, backgroundColor: C.Color.fromCssColorString('rgba(10,10,15,.7)'),
-             distanceDisplayCondition: new C.DistanceDisplayCondition(0, 12000000) },
+    point: { pixelSize: 8, color: C.Color.fromCssColorString(KIND_COLOR[p.environment] ?? '#ffffff'), outlineColor: C.Color.BLACK, outlineWidth: 1.5 },
+    // The label sits above the dot (bottom-anchored with a gap) and only appears when the camera is close enough.
+    label: { text: p.short, font: '600 13px Inter, sans-serif', verticalOrigin: C.VerticalOrigin.BOTTOM, pixelOffset: new C.Cartesian2(0, -12),
+             fillColor: C.Color.WHITE, showBackground: true, backgroundColor: C.Color.fromCssColorString('rgba(10,10,15,.88)'),
+             backgroundPadding: new C.Cartesian2(6, 3), distanceDisplayCondition: new C.DistanceDisplayCondition(0, 4500000) },
   });
 }
 
@@ -182,8 +183,32 @@ function factLine(p) {
   return bits.join(' · ');
 }
 
+const countriesOf = (p) => String(p.country ?? FACTS[p.id]?.country ?? '').split(';').map((c) => c.trim()).filter(Boolean);
+let countryFilter = '', searchText = '';
+function fillCountries() {
+  const all = [...new Set(PLACES.flatMap(countriesOf))].filter((c) => !/catalog point|international/i.test(c)).sort();
+  $('country').innerHTML = `<option value="">All countries</option>${all.map((c) => `<option>${c}</option>`).join('')}`;
+}
+$('country').addEventListener('change', () => { countryFilter = $('country').value; page = 0; renderPlaces(); showDots(); });
+$('place-search').addEventListener('input', () => { searchText = $('place-search').value.trim().toLowerCase(); page = 0; renderPlaces(); showDots(); });
+// Typing "lat, lon" and pressing Enter investigates any point on Earth.
+$('place-search').addEventListener('keydown', (e) => {
+  const m = e.key === 'Enter' && $('place-search').value.match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);
+  if (!m) return;
+  e.preventDefault();
+  const [lat, lon] = [+m[1], +m[2]];
+  if (Math.abs(lat) > 90 || Math.abs(lon) > 180) return;
+  selectedPlace = null; setPoint(lat, lon); flyTo(lat, lon); renderPlaces();
+});
+const matches = (p) => (!kindFilter || p.environment === kindFilter) && (!countryFilter || countriesOf(p).includes(countryFilter))
+  && (!searchText || /^\s*-?\d/.test(searchText) || `${p.name} ${p.short} ${countriesOf(p).join(' ')}`.toLowerCase().includes(searchText));
+// Dots on the globe follow the same filter, so the map shows what the list shows.
+function showDots() {
+  viewer?.entities.values.forEach((e) => { if (String(e.id).startsWith('place:')) e.show = !location.hash.startsWith('#/global') && matches(PLACES.find((p) => `place:${p.id}` === e.id) ?? {}); });
+}
+
 function renderPlaces() {
-  const list = PLACES.filter((p) => !kindFilter || p.environment === kindFilter);
+  const list = PLACES.filter(matches);
   const pages = Math.max(1, Math.ceil(list.length / PER_PAGE));
   page = Math.min(page, pages - 1);
   $('place-cards').innerHTML = list.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE).map((p) => `
@@ -192,11 +217,33 @@ function renderPlaces() {
       <span class="kind">${ENVIRONMENTS[p.environment] ?? p.environment}</span>
       <b>${p.short}</b><small>${factLine(p)}</small>
     </button>`).join('');
-  $('page-info').textContent = `${page + 1} / ${pages} · ${list.length} places`;
+  $('page-info').textContent = list.length ? `${page + 1} / ${pages} · ${list.length} places` : 'No place matches: try another filter';
   $('prev-page').disabled = page === 0;
   $('next-page').disabled = page >= pages - 1;
-  const sel = PLACES.find((p) => p.id === selectedPlace);
-  $('point-summary').textContent = sel ? `${sel.name}${FACTS[sel.id]?.one_line ? ` — ${FACTS[sel.id].one_line}` : ''}` : `Point ${$('lat').value}°, ${$('lon').value}° (or type coordinates)`;
+  showPop();
+}
+
+// Floating card over the globe: a photo and the key facts of the selected place.
+let PHOTOS = {};
+function showPop() {
+  const p = PLACES.find((x) => x.id === selectedPlace), f = p && FACTS[p.id], ph = p && PHOTOS[p.id];
+  $('place-pop').hidden = !location.hash.startsWith('#/case') || !$('tour').hidden;
+  if (!p) {
+    $('pop-img').hidden = true;
+    $('pop-name').textContent = 'Selected point';
+    $('pop-country').textContent = `${$('lat').value}°, ${$('lon').value}°`;
+    $('pop-line').textContent = 'Any point on Earth can be investigated with NASA data.';
+    $('pop-facts').textContent = ''; $('pop-credit').textContent = '';
+    return;
+  }
+  $('pop-img').hidden = false;
+  $('pop-img').src = ph ? ph.file : `img/places/${p.id}.jpg`;
+  $('pop-img').alt = ph ? `Photo of ${p.short}` : `Satellite image of ${p.short}`;
+  $('pop-name').textContent = p.name;
+  $('pop-country').textContent = [ENVIRONMENTS[p.environment], countriesOf(p).join(', ')].filter(Boolean).join(' · ');
+  $('pop-line').textContent = f?.one_line ?? '';
+  $('pop-facts').textContent = f ? [f.elevation_m != null && `${Math.round(f.elevation_m).toLocaleString('en-US')} m up`, factLine(p)].filter(Boolean).join(' · ') : '';
+  $('pop-credit').innerHTML = ph ? `${ph.attribution.replace(/</g, '&lt;')} · <a href="${ph.page}" target="_blank" rel="noopener">source</a>` : 'Satellite image: NASA Worldview (public domain)';
 }
 $('place-cards').addEventListener('click', (e) => { const b = e.target.closest('.place'); if (b) selectPlace(b.dataset.id); });
 $('prev-page').addEventListener('click', () => { page--; renderPlaces(); });
@@ -217,7 +264,8 @@ function route() {
   $('compare-banner').hidden = !(v === 'case' && compareWith);
   $(`view-${v}`).querySelector('h1, h2')?.focus();
   if (gridLayer) gridLayer.show = v === 'global';
-  viewer?.entities.values.forEach((e) => { if (String(e.id).startsWith('place:')) e.show = v !== 'global'; });
+  showDots();
+  showPop();
   if (v === 'global') { drawGrid(); flyTo(10, -40, 22000000, 2); }
   if (v === 'home') flyTo(-15.53, -72.65, 160000, 9);
 }
@@ -544,7 +592,7 @@ function showStep() {
   else $('tour-next').textContent = 'Next';
 }
 function nextStep() { if (++tourAt < tourSteps.length) showStep(); else stopTour(); }
-function stopTour() { clearTimeout(tourTimer); $('tour').hidden = true; }
+function stopTour() { clearTimeout(tourTimer); $('tour').hidden = true; showPop(); }
 $('tour-next').addEventListener('click', nextStep);
 $('tour-stop').addEventListener('click', stopTour);
 $('tour-pause').addEventListener('click', () => {
@@ -665,6 +713,7 @@ if (GRID2?.variables) EXTRA_VARS.push(...GRID2.variables.filter((v) => !EXTRA_VA
 if (catalog?.variables?.length) VARIABLES = catalog.variables;
 for (const v of VARIABLES) { v.technical = v.name; v.name = PLAIN[v.id] ?? v.name; }
 FACTS = (await loadJson('data/place_facts.json'))?.facts ?? {};
+PHOTOS = (await loadJson('data/place_photos.json'))?.photos ?? {};
 if (catalog?.places?.length) PLACES = catalog.places;
 function addExtra(file) {
   if (!file?.extra) return;
@@ -688,6 +737,7 @@ if (goodRivers.length) {
 if (Array.isArray(demos)) DEMOS = demos;
 fillVariables();
 renderKinds();
+fillCountries();
 drawPlaceDots();
 selectPlace(PLACES.find((p) => p.id === 'coropuna')?.id ?? PLACES[0].id);
 renderDemos();
