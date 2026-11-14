@@ -164,9 +164,10 @@ for (const [id, name, group, definition] of (placesOnly ? [] : candidates)) {
 const limits = [];
 const limitParameters = [...candidates.map(c => c[0]), 'PS', 'T2MDEW', 'PRECSNO', 'WS10M', 'GWETPROF', 'T2MWET', 'TO3', 'TQV', 'TROPPB', 'U10M', 'V10M'];
 for (const count of (placesOnly ? [] : [10, 11, 20, 21, 25, 26])) limits.push(await getJson(pointUrl(limitParameters.slice(0, count).join(','), -15.55, -72.65, 2023, 2024)));
-const catalog = { generated: new Date().toISOString().slice(0, 10), variables, places: coordinateEvidence.map(c => c.place),
-  coordinate_evidence: Object.fromEntries(coordinateEvidence.filter(c => !existingEvidence.coordinateEvidence.some(old => old.place.id === c.place.id)).map(c => [c.place.id, c])) };
-assert.equal(catalog.places.length, 48);
+const additions = existingCatalog.places.filter(p => !coordinateEvidence.some(c => c.place.id === p.id));
+const catalog = { generated: new Date().toISOString().slice(0, 10), variables, places: [...coordinateEvidence.map(c => c.place), ...additions],
+  coordinate_evidence: { ...existingCatalog.coordinate_evidence, ...Object.fromEntries(coordinateEvidence.filter(c => !existingEvidence.coordinateEvidence.some(old => old.place.id === c.place.id)).map(c => [c.place.id, c])) } };
+assert.ok(catalog.places.length >= 48);
 for (const environment of new Set(catalog.places.map(p => p.environment))) assert.ok(catalog.places.filter(p => p.environment === environment).length >= 3);
 await writeFile(new URL('../data/catalog.json', import.meta.url), JSON.stringify(catalog, null, 2) + '\n');
 if (placesOnly) { console.log(`Catalog: ${variables.length} variables, ${catalog.places.length} cited places (existing places preserved).`); process.exit(0); }

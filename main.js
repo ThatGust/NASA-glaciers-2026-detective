@@ -70,6 +70,8 @@ const VERDICTS = {
 const UNITS = { C: '°C', 'mm/day': 'mm/day', 'MJ/m^2/day': 'MJ/m²/day', 1: '', 'g/kg': 'g/kg', '%': '%', 'm/s': 'm/s', cm: 'cm', kPa: 'kPa', dimensionless: '', days: 'days', 'm3/s': 'm³/s', 'kg C/m2/yr': 'kg C/m²/yr' };
 
 const $ = (id) => document.getElementById(id);
+// Place names, descriptions and photo credits come from Wikidata/Commons: escape them before building HTML.
+const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fmt = (x, d = 2) => x.toLocaleString('en-US', { maximumFractionDigits: d, minimumFractionDigits: d });
 // Slopes can be tiny (aerosols: 0.003 per decade), so show at least two significant digits.
@@ -187,7 +189,7 @@ const countriesOf = (p) => String(p.country ?? FACTS[p.id]?.country ?? '').split
 let countryFilter = '', searchText = '';
 function fillCountries() {
   const all = [...new Set(PLACES.flatMap(countriesOf))].filter((c) => !/catalog point|international/i.test(c)).sort();
-  $('country').innerHTML = `<option value="">All countries</option>${all.map((c) => `<option>${c}</option>`).join('')}`;
+  $('country').innerHTML = `<option value="">All countries</option>${all.map((c) => `<option>${esc(c)}</option>`).join('')}`;
 }
 $('country').addEventListener('change', () => { countryFilter = $('country').value; page = 0; renderPlaces(); showDots(); });
 $('place-search').addEventListener('input', () => { searchText = $('place-search').value.trim().toLowerCase(); page = 0; renderPlaces(); showDots(); });
@@ -212,10 +214,10 @@ function renderPlaces() {
   const pages = Math.max(1, Math.ceil(list.length / PER_PAGE));
   page = Math.min(page, pages - 1);
   $('place-cards').innerHTML = list.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE).map((p) => `
-    <button type="button" class="place" data-id="${p.id}" aria-pressed="${p.id === selectedPlace}" title="${FACTS[p.id]?.one_line ?? p.name}">
-      <img src="img/places/${p.id}.jpg" alt="Satellite image of ${p.short}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'noimg'}))">
-      <span class="kind">${ENVIRONMENTS[p.environment] ?? p.environment}</span>
-      <b>${p.short}</b><small>${factLine(p)}</small>
+    <button type="button" class="place" data-id="${esc(p.id)}" aria-pressed="${p.id === selectedPlace}" title="${esc(FACTS[p.id]?.one_line ?? p.name)}">
+      <img src="img/places/${encodeURIComponent(p.id)}.jpg" alt="Satellite image of ${esc(p.short)}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'noimg'}))">
+      <span class="kind">${esc(ENVIRONMENTS[p.environment] ?? p.environment)}</span>
+      <b>${esc(p.short)}</b><small>${esc(factLine(p))}</small>
     </button>`).join('');
   $('page-info').textContent = list.length ? `${page + 1} / ${pages} · ${list.length} places` : 'No place matches: try another filter';
   $('prev-page').disabled = page === 0;
@@ -243,7 +245,7 @@ function showPop() {
   $('pop-country').textContent = [ENVIRONMENTS[p.environment], countriesOf(p).join(', ')].filter(Boolean).join(' · ');
   $('pop-line').textContent = f?.one_line ?? '';
   $('pop-facts').textContent = f ? [f.elevation_m != null && `${Math.round(f.elevation_m).toLocaleString('en-US')} m up`, factLine(p)].filter(Boolean).join(' · ') : '';
-  $('pop-credit').innerHTML = ph ? `${ph.attribution.replace(/</g, '&lt;')} · <a href="${ph.page}" target="_blank" rel="noopener">source</a>` : 'Satellite image: NASA Worldview (public domain)';
+  $('pop-credit').innerHTML = ph ? `${esc(ph.attribution)} · <a href="${esc(ph.page)}" target="_blank" rel="noopener">source</a>` : 'Satellite image: NASA Worldview (public domain)';
 }
 $('place-cards').addEventListener('click', (e) => { const b = e.target.closest('.place'); if (b) selectPlace(b.dataset.id); });
 $('prev-page').addEventListener('click', () => { page--; renderPlaces(); });
@@ -723,7 +725,8 @@ function addExtra(file) {
 addExtra(WITNESSES);
 addExtra(modis);
 // Rivers become a kind of place. A river whose modelled flow disagrees with its published mean is left out, not shown.
-const goodRivers = (rivers?.places ?? []).filter((p) => !p.quality?.flags?.length && rivers.series[p.id]);
+// The expanded catalog already lists some rivers by the same id: keep one place per id.
+const goodRivers = (rivers?.places ?? []).filter((p) => !p.quality?.flags?.length && rivers.series[p.id] && !PLACES.some((x) => x.id === p.id));
 if (goodRivers.length) {
   PLACES = [...PLACES, ...goodRivers];
   addExtra({
