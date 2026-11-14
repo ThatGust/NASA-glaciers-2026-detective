@@ -36,7 +36,7 @@ const VERDICTS = {
   likely: { label: '◐ Likely', text: 'This dataset shows signs of a trend, but not enough to be sure yet.' },
   unknown: { label: '○ Not yet known', text: 'With the data available, a trend cannot be told apart from normal variation.' },
 };
-const UNITS = { C: '°C', 'mm/day': 'mm/day', 'MJ/m^2/day': 'MJ/m²/day', 1: '(0–1 index)', 'g/kg': 'g/kg', '%': '%', 'm/s': 'm/s', cm: 'cm', kPa: 'kPa', dimensionless: '(index)' };
+const UNITS = { C: '°C', 'mm/day': 'mm/day', 'MJ/m^2/day': 'MJ/m²/day', 1: '(0–1 index)', 'g/kg': 'g/kg', '%': '%', 'm/s': 'm/s', cm: 'cm', kPa: 'kPa', dimensionless: '(index)', days: 'days' };
 
 const $ = (id) => document.getElementById(id);
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -46,8 +46,9 @@ const fmtSlope = (x) => { const a = Math.abs(x); return a === 0 || a >= 0.1 ? fm
 const signed = (x) => (x > 0 ? '+' : '') + fmtSlope(x);
 const unitOf = (s) => UNITS[s.units] ?? s.units;
 const SOURCES = { MERRA2: 'MERRA-2', SYN1DEG: 'CERES SYN1deg' };
-const sourceOf = (v) => `NASA POWER · ${SOURCES[v.source] ?? v.source}`;
-const varById = (id) => VARIABLES.find((v) => v.id === id);
+const sourceOf = (v) => (v.source.includes(' via ') ? v.source : `NASA POWER · ${SOURCES[v.source] ?? v.source}`);
+// Extra variables (precomputed, catalog places only) are looked up too, but never offered for live cases.
+const varById = (id) => VARIABLES.find((v) => v.id === id) ?? WITNESSES?.extraVariables?.find((v) => v.id === id);
 let current = null;        // the case being shown: { variable, place, series, r }
 let compareWith = null;    // first case of a comparison, while the user picks the second place
 let leads = null;          // last scan result
@@ -197,7 +198,8 @@ $('scan').addEventListener('click', async () => {
   $('status').textContent = 'Asking NASA POWER for every variable…';
   try {
     const all = await fetchPowerMany(VARIABLES.map((v) => ({ id: v.id, start: v.start ?? 1981 })), lat, lon);
-    leads = { place, lat, lon, list: scan(all) };
+    const pid = PLACES.find((p) => p.lat === lat && p.lon === lon)?.id;
+    leads = { place, lat, lon, list: scan({ ...all, ...(WITNESSES?.extra?.[pid] ?? {}) }) };
     renderLeads(leads);
     $('status').textContent = '';
     flyTo(lat, lon);
@@ -226,7 +228,8 @@ function renderLeads({ place, list }) {
     const r = l.result;
     return `<li class="lead"><button type="button" class="lead-btn" data-i="${i}">
       <span class="lead-verdict">${VERDICTS[l.verdict].label}</span>
-      <strong>${v.name}</strong> ${signed(r.slopePerDecade)} ${unitOf(l.series)} per decade (${r.firstYear}–${r.lastYear})</button></li>`;
+      <strong>${v.name}</strong> ${signed(r.slopePerDecade)} ${unitOf(l.series)} per decade (${r.firstYear}–${r.lastYear})${
+        sourceOf(v).startsWith('NASA POWER') ? '' : `<span class="note"> · ${sourceOf(v).split(' via ')[0]}</span>`}</button></li>`;
   }).join('');
 }
 $('leads-list').addEventListener('click', (e) => {
@@ -277,6 +280,7 @@ function render(c0) {
   $('chart-caption').textContent = `Annual mean ${v.name.toLowerCase()}. Dashed line: trend (Sen's slope). Source: ${sourceOf(v)}.`;
   $('table').innerHTML = dataTable(series, v, u);
   $('witnesses').textContent = witnessText(v, c.witness);
+  $('compare-start').hidden = !sourceOf(v).startsWith('NASA POWER'); // precomputed variables cannot be fetched for a new place
 
   const vd = VERDICTS[r.verdict];
   $('verdict').textContent = vd.label;
