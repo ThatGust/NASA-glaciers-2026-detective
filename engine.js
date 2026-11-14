@@ -229,3 +229,22 @@ export async function fetchPowerMany(params, lat, lon, end = new Date().getFullY
   }
   return out;
 }
+
+// Annual mean of daily values stamped at the END of each 24 h window (Meteomatics style); a year is dropped if any day is missing (same rule as the NASA POWER series).
+export function annualFromDaily(dates) {
+  const byYear = new Map();
+  for (const { date, value } of dates) {
+    const day = new Date(Date.parse(date) - 86400000); // the 24 h window ends at this timestamp
+    const y = day.getUTCFullYear();
+    if (!byYear.has(y)) byYear.set(y, []);
+    byYear.get(y).push(value);
+  }
+  const years = [], values = [];
+  for (const [y, v] of [...byYear].sort((a, b) => a[0] - b[0])) {
+    const days = (y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0)) ? 366 : 365;
+    if (v.length !== days || v.some((x) => x == null || x === -999 || !Number.isFinite(x))) continue;
+    years.push(y);
+    values.push(+(v.reduce((a, b) => a + b, 0) / days).toFixed(4));
+  }
+  return { years, values };
+}

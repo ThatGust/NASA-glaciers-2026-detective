@@ -1,5 +1,5 @@
 // Trend Detective UI: ties the form, NASA POWER and the engine together. Data formats: see README.
-import { analyze, fetchPower, fetchPowerMany, scan } from './engine.js';
+import { analyze, compareWitnesses, fetchPower, fetchPowerMany, scan } from './engine.js';
 
 // Built-in fallback catalog. data/catalog.json (verified sources, more variables and places) replaces it when present.
 let VARIABLES = [
@@ -28,6 +28,7 @@ let PLACES = [
   ['puncak-jaya', 'Puncak Jaya glaciers (Indonesia)', 'Puncak Jaya', -4.08, 137.18],
 ].map(([id, name, short, lat, lon]) => ({ id, name, short, lat, lon, environment: 'glacier' }));
 let DEMOS = [];
+let WITNESSES = null; // data/witnesses.json: second, independent source (ERA5) for catalog places
 
 const ENVIRONMENTS = { glacier: 'Glaciers and snow peaks', desert: 'Deserts', rainforest: 'Rainforests', city: 'Large cities', coast: 'Coasts and estuaries', ocean: 'Open ocean', polar: 'Polar regions' };
 const VERDICTS = {
@@ -247,15 +248,35 @@ function headline({ variable: v, place, series, r }) {
     : `In ${place}, ${v.name.toLowerCase()} seems to have ${up ? 'risen' : 'fallen'} ${howMuch}, but it is not certain yet`;
 }
 
-function render(c) {
+// Second witness: only for catalog places with a precomputed series. A contradicting witness lowers "confirmed" to "likely".
+function withWitness(c) {
+  const p = PLACES.find((x) => x.lat === c.lat && x.lon === c.lon);
+  const w = p && WITNESSES?.series?.[p.id]?.[c.variable.id];
+  if (!w) return { ...c, witness: null };
+  let cmp;
+  try { cmp = compareWitnesses(c.series, w); } catch { return { ...c, witness: null }; }
+  const r = !cmp.agrees && c.r.verdict === 'confirmed' ? { ...c.r, verdict: 'likely', knownSince: null, downgraded: true } : c.r;
+  return { ...c, r, witness: cmp };
+}
+
+function witnessText(v, w) {
+  if (!w) return `One witness: ${sourceOf(v)}. There is no second source for this place and variable, so the verdict rests on this one alone.`;
+  const wv = VERDICTS[w.witnessVerdict].label.replace(/^\S+ /, '').toLowerCase();
+  return w.agrees
+    ? `Two witnesses: ${sourceOf(v)} and ${w.witness}. Over ${w.overlap[0]}–${w.overlap[1]} both see the trend going the same way (the second one rates it ${wv}).`
+    : `Two witnesses that disagree: ${w.witness} sees the opposite direction over ${w.overlap[0]}–${w.overlap[1]}. A "confirmed" verdict is lowered to "likely" when witnesses disagree.`;
+}
+
+function render(c0) {
+  const c = withWitness(c0);
+  current = { ...c0, ...c };
   const { variable: v, place, lat, lon, series, r } = c;
   const u = unitOf(series);
   $('t2').textContent = headline(c);
   $('chart').innerHTML = chart(series, r);
   $('chart-caption').textContent = `Annual mean ${v.name.toLowerCase()}. Dashed line: trend (Sen's slope). Source: ${sourceOf(v)}.`;
   $('table').innerHTML = dataTable(series, v, u);
-  // shortcut: one witness in live cases; a second source only exists where the catalog lists one.
-  $('witnesses').textContent = `One witness: ${sourceOf(v)}. There is no second NASA source measuring the same thing here, so the verdict rests on this one alone.`;
+  $('witnesses').textContent = witnessText(v, c.witness);
 
   const vd = VERDICTS[r.verdict];
   $('verdict').textContent = vd.label;
@@ -276,7 +297,7 @@ function render(c) {
   $('record').innerHTML = [
     ['What', `${v.name} (${v.id})`], ['Where', `${place} (${fmt(lat)}°, ${fmt(lon)}°)`],
     ['How much', `${signed(r.slopePerDecade)} ${u} per decade`], ['Verdict', `${vd.label}. ${clockText(r)}`],
-    ['Witnesses', sourceOf(v)], ['Method', "Annual means · Sen's slope · Mann-Kendall (Hamed & Rao)"],
+    ['Witnesses', c.witness ? `${sourceOf(v)}; ${c.witness.witness} (${c.witness.agrees ? 'agrees' : 'disagrees'})` : sourceOf(v)], ['Method', "Annual means · Sen's slope · Mann-Kendall (Hamed & Rao)"],
   ].map(([k, val]) => `<tr><th scope="row">${k}</th><td>${val}</td></tr>`).join('');
 }
 
@@ -366,7 +387,8 @@ $('demo-list').addEventListener('click', (e) => {
 async function loadJson(url) {
   try { const r = await fetch(url); return r.ok ? await r.json() : null; } catch { return null; }
 }
-const [catalog, demos] = await Promise.all([loadJson('data/catalog.json'), loadJson('data/demos.json')]);
+const [catalog, demos, witnesses] = await Promise.all([loadJson('data/catalog.json'), loadJson('data/demos.json'), loadJson('data/witnesses.json')]);
+WITNESSES = witnesses;
 if (catalog?.variables?.length) VARIABLES = catalog.variables;
 if (catalog?.places?.length) PLACES = catalog.places;
 if (Array.isArray(demos)) DEMOS = demos;

@@ -134,3 +134,11 @@ test('a scan lead that loses significance after adjustment carries the adjusted 
   assert.equal(lead.result.verdict, lead.verdict, 'result verdict must match the list verdict');
   if (lead.verdict !== 'confirmed') { assert.equal(lead.result.adjusted, true); assert.equal(lead.result.knownSince, null); }
 });
+
+test('annualFromDaily averages complete years and drops years with a missing day', async () => {
+  const { annualFromDaily } = await import('../engine.js');
+  const dates = [];
+  for (let t = Date.UTC(2020, 0, 2); t <= Date.UTC(2022, 0, 1); t += 86400000) dates.push({ date: new Date(t).toISOString(), value: 2 });
+  dates[400].value = null; // a day in 2021
+  assert.deepEqual(annualFromDaily(dates), { years: [2020], values: [2] });
+});
