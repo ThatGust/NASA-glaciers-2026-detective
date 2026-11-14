@@ -9,6 +9,7 @@ import { mapLimited } from './power_api.mjs';
 const imageDir = new URL('../img/places/', import.meta.url);
 const cache = new URL('./.cache/place_images/', import.meta.url);
 const manifestFile = new URL('./.cache/place_images.json', import.meta.url);
+const cloudReportFile = new URL('./.cache/place_images_cloud_screen.json', import.meta.url);
 const layers = ['MODIS_Terra_CorrectedReflectance_TrueColor', 'VIIRS_SNPP_CorrectedReflectance_TrueColor'];
 const fallback = 'BlueMarble_NextGeneration';
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -108,6 +109,11 @@ export function imageScore(metrics, environment) {
   return metrics.black * 10 + cloud;
 }
 
+export function usableComposite(metrics, environment) {
+  // Next Generation shows real deep water nearly black; the daily-image 2% test rejects it.
+  return metrics.black < 0.98 && (metrics.texture >= 1 || ['glacier', 'polar', 'tundra', 'ocean'].includes(environment));
+}
+
 async function imageFor(place) {
   const polar = Math.abs(place.lat) >= 66.5;
   const crs = polar ? place.lat > 0 ? 'EPSG:3413' : 'EPSG:3031' : 'EPSG:4326';
@@ -146,7 +152,7 @@ async function imageFor(place) {
       const file = await download(url), metrics = inspect(file);
       const composite = { layer, date, bbox, crs, url, file: fileURLToPath(file), ...metrics };
       candidates.push(composite);
-      if (metrics.black <= 0.02 && (metrics.texture >= 1 || snow || place.environment === 'ocean')) {
+      if (usableComposite(metrics, place.environment)) {
         selected = composite;
         note = 'Cloud-free Blue Marble Next Generation satellite composite; TIME is an API parameter, not a single acquisition date.';
       }
@@ -177,7 +183,7 @@ for path in json.load(sys.stdin):
 }
 
 async function saveManifest(report) {
-  const temporary = new URL('./.cache/place_images.json.tmp', import.meta.url);
+  const temporary = new URL(`./.cache/place_images.${process.pid}.tmp`, import.meta.url);
   await writeFile(temporary, JSON.stringify(report, null, 2) + '\n');
   await rename(temporary, manifestFile);
 }
@@ -185,13 +191,19 @@ async function saveManifest(report) {
 async function writeOutputs(rows) {
   const report = { generated: new Date().toISOString(), rows, total_bytes: rows.reduce((sum, row) => sum + row.bytes, 0) };
   await saveManifest(report);
+  let cloudNote = '';
+  try {
+    const screen = JSON.parse(await readFile(cloudReportFile, 'utf8'));
+    cloudNote = `Cloud review (${screen.generated.slice(0, 10)}): ${screen.replaced.length} daily images replaced with cloud-free Blue Marble Next Generation. Automatic flag: at least 15% of pixels have all RGB channels >=155 and channel spread <=40. Glacier, polar and tundra places are exempt; existing Blue Marble composites are already cloud-free and are retained. Explicitly reported non-snow examples are reviewed even below the threshold. Bright sand, salt or rock can trigger this heuristic; it is not a scientific cloud mask. Composite TIME is not an observation date. ${screen.failures?.length ?? 0} flagged views retained because no usable composite showed the feature${screen.failures?.length ? ': ' + screen.failures.map(f => f.id).join(', ') : ''}.`;
+  } catch (error) { if (error.code !== 'ENOENT') throw error; }
   const credits = [
     '# Place image credits', '',
     'NASA Worldview / GIBS, public domain. We acknowledge imagery from NASA Global Imagery Browse Services (GIBS), part of NASA ESDIS.', '',
     '[NASA data use guidance](https://www.earthdata.nasa.gov/engage/open-data-services-software-policies/data-use-guidance) · [GIBS API documentation](https://nasa-gibs.github.io/gibs-api-docs/) · [current Worldview Snapshots request implementation](https://wvs.earthdata.nasa.gov/js/index-chunk.js).', '',
     '360 × 240 JPEGs, each at most 25,000 bytes. EPSG:4326 BBOX uses latitude,longitude: minLat,minLon,maxLat,maxLon. EPSG:3413 (Arctic) and EPSG:3031 (Antarctic) BBOX uses projected metres: minX,minY,maxX,maxY. Cropped by the API and recompressed locally; no synthetic content.', '',
-    'Selection compares six real true-colour snapshots (three seasonal dates, MODIS Terra and VIIRS SNPP), plus six alternate dates if the best cloud score exceeds 10%. Reject >2% near-black pixels (all channels ≤5) or nearly flat images (grayscale standard deviation <1). Rank by 10×black fraction + cloud-like fraction (all channels ≥155, channel spread ≤40, including gray cloud). Also record near-white fraction (all channels ≥220, spread ≤35). For glaciers, score cloud-like pixels only in the outer rim, excluding the central half-width/half-height feature where snow is expected. For polar places, omit the brightness penalty. If none passes, or the best non-polar cloud score exceeds 35%, try Blue Marble. This is a heuristic, not a validated cloud mask; sand, salt, snow, haze and ocean colour can mislead it. Human review remains necessary.', '',
+    'Daily-image selection compares six real true-colour snapshots (three seasonal dates, MODIS Terra and VIIRS SNPP), plus six alternate dates if the best cloud score exceeds 10%. Reject >2% near-black pixels (all channels ≤5) or nearly flat images (grayscale standard deviation <1). Rank by 10×black fraction + cloud-like fraction (all channels ≥155, channel spread ≤40, including gray cloud). Also record near-white fraction (all channels ≥220, spread ≤35). For glaciers, score cloud-like pixels only in the outer rim, excluding the central half-width/half-height feature where snow is expected. For polar places, omit the brightness penalty. If none passes, or the best non-polar cloud score exceeds 35%, try Blue Marble. This is a heuristic, not a validated cloud mask; sand, salt, snow, haze and ocean colour can mislead it. Human review remains necessary.', '',
     'Blue Marble Next Generation is a cloud-free satellite composite. ShadedRelief/Bathymetry variants add relief/bathymetry. Dates below are requested TIME parameters, not single acquisition dates or current glacier outlines. Integrator-requested replacements use Next Generation, retaining geographic bounds; polar replacements use metre bounds in polar stereographic projections. Small reefs can be near the sensor resolution limit.', '',
+    ...(cloudNote ? [cloudNote, ''] : []),
     '| Place / file | Layer | Requested date | BBOX | Projection | Credit | Review note |',
     '|---|---|---|---|---|---|---|',
     ...rows.map(row => `| [${row.name.replaceAll('|', '/')}](./${row.id}.jpg) | ${row.selected.layer} | ${row.selected.date} | ${row.selected.bbox.join(', ')} | ${row.selected.crs ?? 'EPSG:4326'} | [NASA Worldview / GIBS, public domain](${row.selected.url}) | ${row.note} |`), '',
@@ -201,6 +213,93 @@ async function writeOutputs(rows) {
   await writeFile(new URL('./.cache/contact_sheet.html', import.meta.url), `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Trend Detective satellite image review</title><style>body{font:16px system-ui;margin:24px;background:#eef2f4;color:#172c3a}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px}figure{margin:0;background:white;padding:12px}img{width:100%;height:auto}small{display:block;overflow-wrap:anywhere}</style><h1>Satellite images: human review</h1><p>${rows.length} images · ${(report.total_bytes / 1e6).toFixed(2)} MB. Automatic cloud screening is approximate.</p><div class="grid">${rows.map(row => `<figure><img src="../../img/places/${row.id}.jpg" alt="Satellite view of ${esc(row.name)}" width="480" height="320"><figcaption><strong>${esc(row.name)}</strong><small>${esc(row.id)} · ${esc(row.selected.date)} · ${esc(row.selected.layer)} · ${esc(row.selected.crs ?? 'EPSG:4326')}</small><small>White ${(row.selected.white * 100).toFixed(1)}% · black ${(row.selected.black * 100).toFixed(1)}%</small><small>${esc(row.note)}</small></figcaption></figure>`).join('')}</div></html>`);
   await validateImages((await allPlaces()).places);
   console.log(`Saved ${rows.length} images, ${report.total_bytes} bytes; contact sheet: tools/.cache/contact_sheet.html`);
+}
+
+export function cloudFlag(environment, fraction) {
+  assert.ok(Number.isFinite(fraction) && fraction >= 0 && fraction <= 1);
+  return !['glacier', 'polar', 'tundra'].includes(environment) && fraction >= 0.15;
+}
+
+async function cloudScreen() {
+  const { places } = await allPlaces();
+  const manifest = JSON.parse(await readFile(manifestFile, 'utf8'));
+  const rows = new Map(manifest.rows.map(row => [row.id, row]));
+  const hash = async id => createHash('sha256').update(await readFile(new URL(`${id}.jpg`, imageDir))).digest('hex');
+  for (const place of places) assert.ok(rows.has(place.id), `Missing original bounds/credit: ${place.id}`);
+  let screen;
+  try { screen = JSON.parse(await readFile(cloudReportFile, 'utf8')); }
+  catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    const metrics = inspectBatch(places.map(p => [new URL(`${p.id}.jpg`, imageDir)]));
+    const requested = new Set(['galeras', 'baoshan', 'hechi', 'shaoguan', 'tongren', 'guaviare_river']);
+    const scanned = [];
+    for (let i = 0; i < places.length; i++) {
+      const p = places[i], previous = rows.get(p.id);
+      const exempt = ['glacier', 'polar', 'tundra'].includes(p.environment);
+      const composite = previous.selected.layer.startsWith('BlueMarble_');
+      const automatic = cloudFlag(p.environment, metrics[i].cloudlike);
+      scanned.push({ id: p.id, environment: p.environment, fraction: metrics[i].cloudlike, automatic,
+        requested: requested.has(p.id), exempt, already_cloud_free: composite,
+        replace: !exempt && !composite && (automatic || requested.has(p.id)), before_hash: await hash(p.id) });
+    }
+    screen = { generated: new Date().toISOString(), threshold: { minimum_channel: 155, maximum_channel_spread: 40, minimum_fraction: 0.15 },
+      method: 'Fraction measured on each delivered 360x240 JPEG. Glacier/polar/tundra excluded. Existing Blue Marble composites retained. Explicit user examples below the automatic threshold are included as manual review targets.',
+      scanned, replaced: [] };
+    await writeFile(cloudReportFile, JSON.stringify(screen, null, 2) + '\n');
+  }
+  assert.deepEqual(screen.scanned.map(row => row.id).sort(), places.map(p => p.id).sort(), 'Catalog changed since cloud scan');
+  screen.failures ??= [];
+  const pending = screen.scanned.filter(row => row.replace && !screen.replaced.some(done => done.id === row.id));
+  const updatedIds = new Set(screen.replaced.map(row => row.id));
+  console.log(`Cloud screen: ${screen.scanned.length} images, ${screen.scanned.filter(r => r.automatic).length} automatic flags, ${pending.length} pending replacements.`);
+  for (let i = 0; i < pending.length; i += 3) {
+    const updates = await mapLimited(pending.slice(i, i + 3), async flagged => {
+      const place = places.find(p => p.id === flagged.id), previous = rows.get(place.id);
+      let bbox = previous.selected.bbox, crs = previous.selected.crs ?? 'EPSG:4326';
+      if (Math.abs(place.lat) >= 66.5 && crs === 'EPSG:4326') {
+        crs = place.lat > 0 ? 'EPSG:3413' : 'EPSG:3031';
+        const projected = spawnSync('python', ['-c', `
+import json,sys
+from pyproj import Transformer
+south,west,north,east=json.loads(sys.argv[1])
+print(json.dumps(Transformer.from_crs('EPSG:4326',sys.argv[2],always_xy=True).transform_bounds(west,south,east,north,densify_pts=21)))
+`, JSON.stringify(bbox), crs], { encoding: 'utf8', windowsHide: true });
+        assert.equal(projected.status, 0, projected.stderr);
+        bbox = JSON.parse(projected.stdout);
+        assert.ok(bbox.every(Number.isFinite));
+      }
+      let date, url, file, metrics;
+      const attempts = [];
+      for (const trial of ['2004-08-01', '2004-01-01', '2004-07-01', '2004-12-01']) {
+        date = trial; url = snapshotUrl(fallback, date, bbox, crs);
+        try {
+          file = await download(url); metrics = inspect(file);
+          if (usableComposite(metrics, place.environment)) break;
+          attempts.push({ url, reason: 'Empty/flat composite; feature not visible', black: metrics.black, texture: metrics.texture });
+          file = undefined;
+        } catch (error) { attempts.push({ url, reason: error.message }); file = undefined; }
+      }
+      if (!file) return { failure: { id: place.id, reason: 'No usable Blue Marble Next Generation view; original image retained', attempts } };
+      const output = new URL(`${place.id}.jpg`, imageDir);
+      inspect(file, output);
+      const selected = { layer: fallback, date, bbox, crs, url, file: fileURLToPath(file), ...metrics };
+      const row = { ...previous, name: place.name, selected, width: 360, height: 240, bytes: (await readFile(output)).length,
+        note: 'Cloud review: cloud-free Blue Marble Next Generation historical satellite composite; illustrative mosaic, not a current observation. Original geographic footprint retained.',
+        candidates: [...(previous.candidates ?? []), selected] };
+      return { row, audit: { id: place.id, fraction_before: flagged.fraction, reason: flagged.automatic ? 'automatic brightness screen' : 'explicit user-reported clouds', before_hash: flagged.before_hash, after_hash: await hash(place.id), url, bbox, crs } };
+    });
+    for (const { row, audit, failure } of updates) {
+      if (failure) { screen.failures = [...screen.failures.filter(f => f.id !== failure.id), failure]; console.warn(`Cloud review: ${failure.id}: ${failure.reason}`); continue; }
+      rows.set(row.id, row); screen.replaced.push(audit); updatedIds.add(row.id);
+      screen.failures = screen.failures.filter(f => f.id !== row.id);
+    }
+    await writeFile(cloudReportFile, JSON.stringify(screen, null, 2) + '\n');
+    await writeOutputs(places.map(p => ({ ...rows.get(p.id), name: p.name })));
+    console.log(`Cloud replacements saved: ${screen.replaced.length}`);
+  }
+  for (const row of screen.scanned) if (!updatedIds.has(row.id)) assert.equal(await hash(row.id), row.before_hash, `${row.id}: unrequested image changed`);
+  await writeOutputs(places.map(p => ({ ...rows.get(p.id), name: p.name })));
+  console.log(`Cloud review complete: ${screen.replaced.length} replaced; ${places.length - updatedIds.size} other image hashes unchanged; ${screen.failures.length} composite failures.`);
 }
 
 const reviewIds = new Set(['aletsch', 'cape_byron', 'cape_horn', 'chimborazo', 'congo', 'congo_river',
@@ -310,6 +409,12 @@ async function main() {
 }
 
 function selfTest() {
+  assert.ok(usableComposite({ black: 0.2, texture: 30 }, 'wetland'));
+  assert.ok(!usableComposite({ black: 1, texture: 0 }, 'ocean'));
+  assert.ok(!usableComposite({ black: 0, texture: 0 }, 'city'));
+  assert.ok(cloudFlag('city', 0.15));
+  assert.ok(!cloudFlag('city', 0.14999));
+  for (const kind of ['glacier', 'polar', 'tundra']) assert.ok(!cloudFlag(kind, 1));
   assert.deepEqual(bboxFor({ id: 'test', environment: 'volcano', lat: 0, lon: 0 }), [-0.3, -0.45, 0.3, 0.45]);
   for (const lat of [-90, 90]) {
     const bbox = bboxFor({ id: lat < 0 ? 'south_pole' : 'north_pole', lat, lon: 0 });
@@ -329,6 +434,7 @@ function selfTest() {
 
 if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) {
   selfTest();
-  if (process.argv.includes('--check')) await validateImages((await allPlaces()).places);
+  if (process.argv.includes('--cloud-screen')) await cloudScreen();
+  else if (process.argv.includes('--check')) await validateImages((await allPlaces()).places);
   else if (!process.argv.includes('--self-test')) await main();
 }

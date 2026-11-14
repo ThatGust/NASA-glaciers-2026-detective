@@ -205,6 +205,7 @@ export async function expandCatalog(report) {
   assert.equal(Object.keys(report.universes).length, Object.keys(definitions).length, 'Finish all universe queries before catalog selection');
   const data = name => new URL(`../data/${name}.json`, import.meta.url);
   const catalog = JSON.parse(await readFile(data('catalog'), 'utf8'));
+  const curatedNames = new Map(catalog.places.filter(p => p.name_source).map(p => [p.wikidata, p]));
   const rivers = JSON.parse(await readFile(data('rivers'), 'utf8'));
   const facts = JSON.parse(await readFile(data('place_facts'), 'utf8')).facts;
   // Save the initial ID/coordinate baseline once; repeated runs must not redefine it.
@@ -252,6 +253,8 @@ export async function expandCatalog(report) {
     if (near) { rejected.push({ wikidata: q, kind, reason: 'Within 5 km of an existing sampling point', near: near.id }); return false; }
     p.id = label(e).normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || q.toLowerCase();
     if (occupied().some(other => other.id === p.id)) p.id += '_' + q.toLowerCase();
+    const curated = curatedNames.get(q);
+    if (curated) Object.assign(p, { id: curated.id, name: curated.name, short: curated.short, name_source: curated.name_source });
     places.push(p);
     represented.set(q, p);
     return true;
@@ -300,6 +303,7 @@ export async function expandCatalog(report) {
   coverage.total.unique_percent = 100 * coverage.total.unique_included / coverage.total.unique_N;
   coverage.total.note = 'N and included are sums of kind memberships; a place can belong to more than one universe. places counts unique catalog entries.';
   assert.ok(Object.values(coverage.kinds).every(k => k.included >= Math.ceil(0.2 * k.N)), 'Coverage below 20%');
+  assert.equal(new Set(places.map(p => p.id)).size, places.length, 'Curated names must retain unique place IDs');
   await writeFile(data('catalog'), JSON.stringify(catalog, null, 2) + '\n');
   await writeFile(data('coverage'), JSON.stringify(coverage, null, 2) + '\n');
 }

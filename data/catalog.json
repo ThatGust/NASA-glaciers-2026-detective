@@ -6529,8 +6529,8 @@
       "context_source": "https://www.wikidata.org/wiki/Special:EntityData/Q408211.json?revision=2560091114"
     },
     {
-      "name": "Cerro Azul",
-      "short": "Cerro Azul",
+      "name": "Cerro Azul (Chile volcano)",
+      "short": "Cerro Azul (Chile)",
       "lat": -35.653333333333,
       "lon": -70.760833333333,
       "environment": "volcano",
@@ -6543,7 +6543,8 @@
       "continent": "South America",
       "id": "cerro_azul",
       "context_description": "Mountain in Curicó Province, Chile",
-      "context_source": "https://www.wikidata.org/wiki/Special:EntityData/Q1055787.json?revision=2564286372"
+      "context_source": "https://www.wikidata.org/wiki/Special:EntityData/Q1055787.json?revision=2564286372",
+      "name_source": "https://en.wikipedia.org/w/index.php?title=Cerro+Azul+%28Chile+volcano%29&oldid=1368752472"
     },
     {
       "name": "Cumbal",
@@ -6976,8 +6977,8 @@
       "context_source": "https://www.wikidata.org/wiki/Special:EntityData/Q1036179.json?revision=2557735280"
     },
     {
-      "name": "Cerro Azul",
-      "short": "Cerro Azul",
+      "name": "Cerro Azul (Ecuador volcano)",
+      "short": "Cerro Azul (Ecuador)",
       "lat": -0.91666666666667,
       "lon": -91.408333333333,
       "environment": "volcano",
@@ -6990,7 +6991,8 @@
       "continent": "South America",
       "id": "cerro_azul_q1055779",
       "context_description": "Mountain",
-      "context_source": "https://www.wikidata.org/wiki/Special:EntityData/Q1055779.json?revision=2564285570"
+      "context_source": "https://www.wikidata.org/wiki/Special:EntityData/Q1055779.json?revision=2564285570",
+      "name_source": "https://en.wikipedia.org/w/index.php?title=Cerro+Azul+%28Ecuador+volcano%29&oldid=1368752478"
     },
     {
       "name": "Olca",
@@ -9364,8 +9366,8 @@
       "context_source": "https://www.wikidata.org/wiki/Special:EntityData/Q23925966.json?revision=2488361843"
     },
     {
-      "name": "Unnamed volcano",
-      "short": "Unnamed volcano",
+      "name": "Central Andean Arc at 25.1°S",
+      "short": "Central Andean Arc (25.1°S)",
       "lat": -25.1,
       "lon": -68.27,
       "environment": "volcano",
@@ -9380,7 +9382,8 @@
       "continent": "South America",
       "id": "unnamed_volcano",
       "context_description": "Northern Chile, Bolivia and Argentina / Pyroclastic cone / Undated Evidence",
-      "context_source": "https://www.wikidata.org/wiki/Special:EntityData/Q24070564.json?revision=2488361846"
+      "context_source": "https://www.wikidata.org/wiki/Special:EntityData/Q24070564.json?revision=2488361846",
+      "name_source": "https://volcano.si.edu/volcano.cfm?vn=355161"
     },
     {
       "name": "Harrat al-Sham",
@@ -13884,8 +13887,8 @@
       "context_source": "https://www.wikidata.org/wiki/Special:EntityData/Q572089.json?revision=2566108709"
     },
     {
-      "name": "Yichun",
-      "short": "Yichun",
+      "name": "Yichun, Heilongjiang",
+      "short": "Yichun (Heilongjiang)",
       "lat": 47.72347,
       "lon": 128.88932,
       "environment": "city",
@@ -13900,7 +13903,8 @@
       "population": 1148126,
       "id": "yichun",
       "context_description": "Prefecture-level city in Heilongjiang, China",
-      "context_source": "https://www.wikidata.org/wiki/Special:EntityData/Q349976.json?revision=2565277033"
+      "context_source": "https://www.wikidata.org/wiki/Special:EntityData/Q349976.json?revision=2565277033",
+      "name_source": "https://en.wikipedia.org/w/index.php?title=Yichun%2C+Heilongjiang&oldid=1382718222"
     },
     {
       "name": "Jiamusi",
@@ -14891,8 +14895,8 @@
       "context_source": "https://www.wikidata.org/wiki/Special:EntityData/Q363391.json?revision=2565378844"
     },
     {
-      "name": "Yichun",
-      "short": "Yichun",
+      "name": "Yichun, Jiangxi",
+      "short": "Yichun (Jiangxi)",
       "lat": 27.80412,
       "lon": 114.38303,
       "environment": "city",
@@ -14907,7 +14911,8 @@
       "population": 5007702,
       "id": "yichun_q363326",
       "context_description": "Prefecture-level city in Jiangxi, China",
-      "context_source": "https://www.wikidata.org/wiki/Special:EntityData/Q363326.json?revision=2565378780"
+      "context_source": "https://www.wikidata.org/wiki/Special:EntityData/Q363326.json?revision=2565378780",
+      "name_source": "https://en.wikipedia.org/w/index.php?title=Yichun%2C+Jiangxi&oldid=1377809090"
     },
     {
       "name": "Liuzhou",
@@ -25461,8 +25466,8 @@
     },
     "cerro_azul": {
       "place": {
-        "name": "Cerro Azul",
-        "short": "Cerro Azul",
+        "name": "Cerro Azul (Chile volcano)",
+        "short": "Cerro Azul (Chile)",
         "lat": -35.653333333333,
         "lon": -70.760833333333,
         "environment": "volcano",
@@ -25475,7 +25480,8 @@
         "continent": "South America",
         "id": "cerro_azul",
         "context_description": "Mountain in Curicó Province, Chile",
-        "context_source": "https://www.wikidata.org/wiki/Special:EntityData/Q1055787.json?revision=2564286372"
+        "context_source": "https://www.wikidata.org/wiki/Special:EntityData/Q1055787.json?revision=2564286372",
+        "name_source": "https://en.wikipedia.org/w/index.php?title=Cerro+Azul+%28Chile+volcano%29&oldid=1368752472"
       },
       "citation": "Published coordinate: https://www.wikidata.org/wiki/Q1055787#P625",
       "wikidata_entity": "Q1055787"
@@ -26012,8 +26018,8 @@
     },
     "cerro_azul_q1055779": {
       "place": {
-        "name": "Cerro Azul",
-        "short": "Cerro Azul",
+        "name": "Cerro Azul (Ecuador volcano)",
+        "short": "Cerro Azul (Ecuador)",
         "lat": -0.91666666666667,
         "lon": -91.408333333333,
         "environment": "volcano",
@@ -26026,7 +26032,8 @@
         "continent": "South America",
         "id": "cerro_azul_q1055779",
         "context_description": "Mountain",
-        "context_source": "https://www.wikidata.org/wiki/Special:EntityData/Q1055779.json?revision=2564285570"
+        "context_source": "https://www.wikidata.org/wiki/Special:EntityData/Q1055779.json?revision=2564285570",
+        "name_source": "https://en.wikipedia.org/w/index.php?title=Cerro+Azul+%28Ecuador+volcano%29&oldid=1368752478"
       },
       "citation": "Published coordinate: https://www.wikidata.org/wiki/Q1055779#P625",
       "wikidata_entity": "Q1055779"
@@ -28956,8 +28963,8 @@
     },
     "unnamed_volcano": {
       "place": {
-        "name": "Unnamed volcano",
-        "short": "Unnamed volcano",
+        "name": "Central Andean Arc at 25.1°S",
+        "short": "Central Andean Arc (25.1°S)",
         "lat": -25.1,
         "lon": -68.27,
         "environment": "volcano",
@@ -28972,7 +28979,8 @@
         "continent": "South America",
         "id": "unnamed_volcano",
         "context_description": "Northern Chile, Bolivia and Argentina / Pyroclastic cone / Undated Evidence",
-        "context_source": "https://www.wikidata.org/wiki/Special:EntityData/Q24070564.json?revision=2488361846"
+        "context_source": "https://www.wikidata.org/wiki/Special:EntityData/Q24070564.json?revision=2488361846",
+        "name_source": "https://volcano.si.edu/volcano.cfm?vn=355161"
       },
       "citation": "Published coordinate: https://www.wikidata.org/wiki/Q24070564#P625",
       "wikidata_entity": "Q24070564"
@@ -34444,8 +34452,8 @@
     },
     "yichun": {
       "place": {
-        "name": "Yichun",
-        "short": "Yichun",
+        "name": "Yichun, Heilongjiang",
+        "short": "Yichun (Heilongjiang)",
         "lat": 47.72347,
         "lon": 128.88932,
         "environment": "city",
@@ -34460,7 +34468,8 @@
         "population": 1148126,
         "id": "yichun",
         "context_description": "Prefecture-level city in Heilongjiang, China",
-        "context_source": "https://www.wikidata.org/wiki/Special:EntityData/Q349976.json?revision=2565277033"
+        "context_source": "https://www.wikidata.org/wiki/Special:EntityData/Q349976.json?revision=2565277033",
+        "name_source": "https://en.wikipedia.org/w/index.php?title=Yichun%2C+Heilongjiang&oldid=1382718222"
       },
       "citation": "Published coordinate: https://www.wikidata.org/wiki/Q349976#P625",
       "wikidata_entity": "Q349976"
@@ -35663,8 +35672,8 @@
     },
     "yichun_q363326": {
       "place": {
-        "name": "Yichun",
-        "short": "Yichun",
+        "name": "Yichun, Jiangxi",
+        "short": "Yichun (Jiangxi)",
         "lat": 27.80412,
         "lon": 114.38303,
         "environment": "city",
@@ -35679,7 +35688,8 @@
         "population": 5007702,
         "id": "yichun_q363326",
         "context_description": "Prefecture-level city in Jiangxi, China",
-        "context_source": "https://www.wikidata.org/wiki/Special:EntityData/Q363326.json?revision=2565378780"
+        "context_source": "https://www.wikidata.org/wiki/Special:EntityData/Q363326.json?revision=2565378780",
+        "name_source": "https://en.wikipedia.org/w/index.php?title=Yichun%2C+Jiangxi&oldid=1377809090"
       },
       "citation": "Published coordinate: https://www.wikidata.org/wiki/Q363326#P625",
       "wikidata_entity": "Q363326"

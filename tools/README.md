@@ -240,7 +240,26 @@ The review command needs the ignored manifest from the full image command. NASA 
 
 ## Lane 5A: defined place universes (14 November 2026)
 
-Acquisition in progress. Coverage applies to the **documented Wikidata query inventories**, not all places on Earth. `data/coverage.json` records each exact query, its retrieval time, the full member Q-IDs, N, selected members and percentage. Totals sum kind memberships and can count one feature in several universes. The pitch must retain this scope when quoting coverage.
+Acquisition completed: **919 catalog places, eight additional visible river sites, and 927 complete NASA climate fact records and satellite images**. Coverage applies to the **documented Wikidata query inventories**, not all places on Earth. `data/coverage.json` records each exact query, its retrieval time, the full member Q-IDs, N, selected members and percentage. Totals sum kind memberships and can count one feature in several universes. The pitch must retain this scope when quoting coverage. Across unique query members, 905 of 4,473 are included (20.23%); the app also retains existing places outside these inventories. `data/catalog.ready` signals the completed catalog to lane 5B.
+
+| Kind | Universe N | Included | Coverage |
+|---|---:|---:|---:|
+| lake | 914 | 185 | 20.24% |
+| volcano | 1,826 | 366 | 20.04% |
+| glacier | 170 | 34 | 20.00% |
+| city | 662 | 133 | 20.09% |
+| river | 249 | 61 | 24.50% |
+| desert | 132 | 28 | 21.21% |
+| rainforest | 65 | 13 | 20.00% |
+| savanna | 19 | 6 | 31.58% |
+| wetland | 135 | 32 | 23.70% |
+| coral_reef | 11 | 5 | 45.45% |
+| tundra | 27 | 6 | 22.22% |
+| coast | 123 | 25 | 20.33% |
+| ocean | 118 | 24 | 20.34% |
+| polar | 55 | 11 | 20.00% |
+
+Every continent with members is represented. Lake Baikal and the named Peruvian priorities are present. The selection audit records 29 exclusions: 24 points within 5 km of another sample, two lacking usable geographic metadata, and three rivers without a verified mouth coordinate. Some South American records could not be included under the required deduplication and coordinate-verification rules; exact IDs and reasons remain in coverage.json. No location was shifted to bypass these checks. All 927 climate records are complete; no POWER nulls remain. Image size and subsequent cloud fixes are reported in lane 6A below.
 
 ```sh
 node tools/build_universes.mjs
@@ -287,3 +306,138 @@ The full command processes current places first, waits for the marker, re-reads 
 Passed for the initial set: in-script license/metadata/source self-checks, `--validate`, a separate Pillow decode/480-pixel width check of every listed JPEG, contact-sheet review, and all **19 npm tests**. UI integration was not tested. No commits or pushes were made.
 
 AI-use record, 14 November 2026: Codex implemented the downloader/self-checks, retrieved and screened Wikimedia sources, reviewed contact sheets, generated the manifest/JPEG derivatives, ran validation/tests and documented attribution. No image-generation model was used. The root AI-use log and context/PDF files are outside this lane's explicit write scope.
+
+<!-- tides-control:start -->
+## NOAA tidal-range positive control (lane 6B)
+
+Generated 2026-11-14T19:52:35.515Z. The eight stations were specified before testing: the six requested stations plus Portland, Maine, and Baltimore. All retained stations have at least 80 complete years. Data: [tides.json](../data/tides.json); full audit, raw request URLs, harmonic constants and machine-readable results: [ignored cache](.cache/tides/lunar_results.json). Source: NOAA CO-OPS, **not NASA**. These are derived research data, not an official NOAA product.
+
+**Outcome:** 8/8 full-series results have p<0.05; 7/8 remain significant on their longest contiguous block. Honolulu is not robust to that check (full p=0.033; contiguous p=0.270) and should not be promoted as a reliable demonstration. Strong, correctly phased examples among the preselected East Coast controls: Boston, The Battery, Portland.
+
+### Existing engine results
+
+The unedited engine's `lunarTest` detrends both annual range and astronomical index, then tests their absolute correlation against AR(1) simulations. Each station uses **999 placebos and LCG seed 20261114, reset per station**; minimum attainable p is 0.001. Share is squared detrended correlation, not a causal fraction. Signed swing is `2 * amplitude`, the fitted change from index -1 to +1 (minor to major standstill), **not** an unsigned amplitude. P values are per-station and unadjusted. Engine SHA-256: `b12f6becb309a0f4962b10a5dfe19e22d37ceadabb503bf8cc9694886b77c399`.
+
+| Station | Complete years; N | Form factor F; regime | p | Share | Signed swing (cm) | Verdict |
+|---|---|---|---|---|---|---|
+| [Boston (8443970)](https://tidesandcurrents.noaa.gov/stationhome.html?id=8443970) | 1922-2025; 102 | 0.16; semidiurnal | 0.001 | 89.9% | -16.55 | signal |
+| [The Battery (8518750)](https://tidesandcurrents.noaa.gov/stationhome.html?id=8518750) | 1921-2025; 105 | 0.19; semidiurnal | 0.001 | 87.7% | -9.78 | signal |
+| [San Francisco (9414290)](https://tidesandcurrents.noaa.gov/stationhome.html?id=9414290) | 1898-2025; 126 | 0.84; mixed, mainly semidiurnal | 0.001 | 38.8% | -4.24 | signal |
+| [Honolulu (1612340)](https://tidesandcurrents.noaa.gov/stationhome.html?id=1612340) | 1912-2025; 112 | 1.01; mixed, mainly semidiurnal | 0.033 | 8.4% | 0.93 | signal |
+| [Seattle (9447130)](https://tidesandcurrents.noaa.gov/stationhome.html?id=9447130) | 1899-2025; 127 | 0.97; mixed, mainly semidiurnal | 0.001 | 92.8% | -8.60 | signal |
+| [Key West (8724580)](https://tidesandcurrents.noaa.gov/stationhome.html?id=8724580) | 1926-2025; 97 | 0.76; mixed, mainly semidiurnal | 0.002 | 33.6% | -1.04 | signal |
+| [Portland (8418150)](https://tidesandcurrents.noaa.gov/stationhome.html?id=8418150) | 1912-2025; 114 | 0.16; semidiurnal | 0.001 | 88.0% | -15.06 | signal |
+| [Baltimore (8574680)](https://tidesandcurrents.noaa.gov/stationhome.html?id=8574680) | 1903-2025; 122 | 0.67; mixed, mainly semidiurnal | 0.001 | 28.7% | -1.53 | signal |
+
+### Phase and magnitude check
+
+The proposed semidiurnal sign was reversed. [Kaye and Stuckey (1973), USGS abstract](https://www.usgs.gov/publications/nodal-tidal-cycle-186-yr-its-importance-sea-level-curves-east-coast-united-states-and) places Boston/East Coast range maxima near node longitude 180 degrees and minima near 0 degrees. With this engine's cosine index, **semidiurnal-dominated range should generally have negative swing: larger near minor standstill**, not major standstill. [Peng et al. (2019), section 3.3 and Figures 12-14](https://doi.org/10.1029/2018JC014695) likewise associates semidiurnal maxima with 2015 and diurnal maxima with 2006; intermediate mixed regimes can vary. F=(K1+O1)/(M2+S2), from [NOAA harmonic constants](https://api.tidesandcurrents.noaa.gov/mdapi/prod/); F<0.9 is used for a clear negative-phase expectation, F>=1.5 for positive, and 0.9<=F<1.5 remains mixed/ambiguous.
+
+- **Boston:** expected negative; observed negative (agrees). Signed peak-to-peak swing -16.55 cm; absolute half-swing amplitude 8.28 cm; 5.72% of mean tidal range.
+- **The Battery:** expected negative; observed negative (agrees). Signed peak-to-peak swing -9.78 cm; absolute half-swing amplitude 4.89 cm; 7.09% of mean tidal range.
+- **San Francisco:** expected negative; observed negative (agrees). Signed peak-to-peak swing -4.24 cm; absolute half-swing amplitude 2.12 cm; 3.45% of mean tidal range.
+- **Honolulu:** expected either (mixed); observed positive. Signed peak-to-peak swing 0.93 cm; absolute half-swing amplitude 0.47 cm; 2.39% of mean tidal range.
+- **Seattle:** expected either (mixed); observed negative. Signed peak-to-peak swing -8.60 cm; absolute half-swing amplitude 4.30 cm; 3.68% of mean tidal range.
+- **Key West:** expected negative; observed negative (agrees). Signed peak-to-peak swing -1.04 cm; absolute half-swing amplitude 0.52 cm; 2.65% of mean tidal range.
+- **Portland:** expected negative; observed negative (agrees). Signed peak-to-peak swing -15.06 cm; absolute half-swing amplitude 7.53 cm; 5.46% of mean tidal range.
+- **Baltimore:** expected negative; observed negative (agrees). Signed peak-to-peak swing -1.53 cm; absolute half-swing amplitude 0.77 cm; 4.48% of mean tidal range.
+
+Observed absolute half-swing amplitudes span **0.47-8.28 cm**: centimetre-scale modulation, with larger signed peak-to-peak changes because swing is twice amplitude. This agrees in order of magnitude with published nodal effects. Peng's few-centimetre amplitudes and up-to-30-cm modulation concern **high-water levels**, not MHW-minus-MLW tidal range; neither that upper value nor a few centimetres is a universal expected size for this different observable. These results are an observational positive-control check, not a station-by-station replication of Peng's freely phased, filtered monthly method or proof of lunar effects on other variables. No station, sign, record window, seed or astronomical phase was selected to obtain significance.
+
+### Data completeness and limitations
+
+[NOAA Data API](https://api.tidesandcurrents.noaa.gov/api/prod/): `product=monthly_mean`, `datum=STND`, `units=metric`, `time_zone=gmt`, requested 1850-01-01 through 2025-12-31 (within the 200-year limit). NOAA states the time-zone parameter does not apply to monthly means; these remain its published calendar months. Annual values are equal-weight means of all 12 valid monthly (MHW-MLW) differences, rounded to 1e-9 m. Blank/fill/nonfinite values are missing, duplicate months are errors, and an incomplete year is omitted without interpolation. NOAA-marked inferred monthly values are retained and counted below. A common additive datum offset cancels in MHW-MLW; this does not remove gauge relocation or tidal-regime changes.
+
+- **Boston:** excluded years: 1921 (5/12), 2009 (10/12), 2017 (11/12). Inferred valid monthly values retained: 3; MN check mismatches >3 mm: 25. Longest contiguous block: 1922-2008 (87 years), p=0.001, swing=-16.08 cm.
+- **The Battery:** excluded years: 1856-1919 (0/12), 1920 (7/12). Inferred valid monthly values retained: 16; MN check mismatches >3 mm: 30. Longest contiguous block: 1921-2025 (105 years), p=0.001, swing=-9.78 cm.
+- **San Francisco:** excluded years: 1854-1896 (0/12), 1897 (5/12), 2012 (10/12), 2024 (5/12). Inferred valid monthly values retained: 8; MN check mismatches >3 mm: 24. Longest contiguous block: 1898-2011 (114 years), p=0.001, swing=-4.31 cm.
+- **Honolulu:** excluded years: 1911 (8/12), 1976 (7/12), 1977 (11/12). Inferred valid monthly values retained: 5; MN check mismatches >3 mm: 25. Longest contiguous block: 1912-1975 (64 years), p=0.270, swing=0.72 cm.
+- **Seattle:** excluded years: 1898 (0/12). Inferred valid monthly values retained: 2; MN check mismatches >3 mm: 20. Longest contiguous block: 1899-2025 (127 years), p=0.001, swing=-8.60 cm.
+- **Key West:** excluded years: 1913-1925 (0/12), 1953 (4/12), 2014-2015 (11/12). Inferred valid monthly values retained: 5; MN check mismatches >3 mm: 37. Longest contiguous block: 1954-2013 (60 years), p=0.007, swing=-0.85 cm.
+- **Portland:** excluded years: none. Inferred valid monthly values retained: 0; MN check mismatches >3 mm: 24. Longest contiguous block: 1912-2025 (114 years), p=0.001, swing=-15.06 cm.
+- **Baltimore:** excluded years: 1902 (6/12), 2012 (11/12). Inferred valid monthly values retained: 1; MN check mismatches >3 mm: 26. Longest contiguous block: 1903-2011 (109 years), p=0.002, swing=-1.53 cm.
+
+The existing AR(1) simulation treats adjacent retained entries as equally spaced even across missing years; primary gap-spanning p values have that limitation. The separate longest-contiguous-block checks above avoid it while preserving the requested full-series results. Linear detrending alone cannot remove nonlinear harbour/bathymetry changes.
+
+Excluded-year counts include early or late returned rows with MSL but no complete MHW/MLW record; those are not necessarily gaps inside the tested annual span. Full individual-month accounting remains in the cached audit. The retained source months include NOAA's inferred flags; these are not client-created estimates.
+
+MN comparisons are diagnostics against a separate NOAA field. The requested MHW-MLW values are retained even when MN differs by a few millimetres; no substitution or correction is applied.
+
+No station/API failures.
+
+Reproduce from `app/` (Node.js only; no added dependency):
+
+~~~sh
+node tools/fetch_tides.mjs --self-test
+node tools/fetch_tides.mjs
+node tools/fetch_tides.mjs --validate
+npm test
+~~~
+
+Successful NOAA JSON responses and request/retrieval provenance are cached under `tools/.cache/tides/`; restarts reuse them. Requests are serialized at least 1.1 seconds apart, with a non-personal User-Agent, timeouts, retries and Retry-After backoff. `--validate` is offline and exactly reconstructs every annual series and fixed-seed lunar result, while checking the engine hash. [NOAA terms](https://tidesandcurrents.noaa.gov/disclaimers.html) allow public use unless otherwise marked, request attribution, prohibit presenting modified material as official government material, and disclaim warranties. Credit NOAA/NOS/CO-OPS; these annual aggregates and statistical results are project derivatives.
+<!-- tides-control:end -->
+
+## Moon investigation cases (data lane 7, 14 November 2026)
+
+`data/moon_cases.json` contains **4 cases, 13 URL-cited facts and 4 quizzes**: lunar recession, fresh craters, impact flashes and Apollo seismic records. Titles, introductions and answer explanations meet the requested word limits. All tags mark documented observations as `proven`; these are editorial evidence labels, not engine-computed significance tests. Existing `MOON_CASES`/`QUIZ` were inspected; the new JSON is ready for a separate UI integration.
+
+Run offline from `app/`:
+
+```sh
+node tools/validate_moon_cases.mjs
+node tools/validate_moon_cases.mjs --self-test
+```
+
+The validator checks required fields/types, unique IDs, case/fact counts, HTTPS citations, text lengths, three distinct quiz options and integer answer indices. Optional series must have finite values, equal lengths, increasing completed years and a source URL. Rejection self-checks passed; all **22 existing npm tests passed**. Scientific source interpretation was reviewed separately; the script does not prove source accuracy or URL reachability.
+
+- **Recession:** the [journal abstract](https://link.springer.com/article/10.1007/s10569-016-9702-3) gives **38.30 ± 0.08 mm/year**. The earlier [JPL conference abstract](https://www.hou.usra.edu/meetings/lpsc2016/pdf/1096.pdf) gives ±0.09 and dates its LLR observations to **March 1970–September 2015**. The JSON uses the journal uncertainty. [ILRS](https://ilrs.gsfc.nasa.gov/science/scienceContributions/lunar.html) supplies reflector history; [Battat et al.](https://arxiv.org/abs/2304.11128) supplies the APOLLO record period, not a new recession estimate.
+- **Craters:** [Speyerer et al.](https://pubmed.ncbi.nlm.nih.gov/27734864/) report **222** detections and a **33%** excess over the Neukum prediction for diameters **at least 10 m**. The [investigators' later abstract](https://www.hou.usra.edu/meetings/lpsc2022/pdf/1626.pdf) dates the images to **2009–2015**. Do not divide this sample count by elapsed years to claim a whole-Moon annual rate or an accelerating impact trend.
+- **Flashes:** [NASA's anniversary report](https://www.nasa.gov/blogs/watch-the-skies/2026/03/12/nasa-marshall-lunar-meteor-observatory-marks-20-years-of-discovery/) gives **more than 400** observed impacts by **12 March 2026**. [Suggs et al.](https://arxiv.org/pdf/1404.6458) date routine monitoring to **early 2006**, and analyze **126** selected flashes from **September 2006–August 2011**. Their **1.05 × 10^7 J** flux threshold is not a typical energy; energy estimates depend on luminous efficiency. Cumulative detections do not measure an annual trend.
+- **Seismic records:** [Onodera's paper, including its 2026 correction](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2023JE008153), distinguishes the earlier **more than 13,000** long-period events from **22,000** newly detected short-period events in old **1969–1977** recordings. These include thermal shaking and impacts; they are not all tectonic moonquakes, and catalog growth is not increased present activity.
+
+No `series` was included: verified sources provide fitted rates, event records or cumulative totals, rather than an openly downloadable published yearly measurement series. No annual values were reconstructed or simulated. Raw public responses, timestamps, hashes and web-extraction fallbacks are under the ignored `tools/.cache/moon_cases/`. HTTP challenge pages are explicitly marked unusable in `sources.json`. Firecrawl was unauthenticated; public web extraction verified sources where direct HTTP was blocked.
+
+Sources/rights are recorded in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md#lane-7-moon-investigation-cases). No UI/engine, moon_features.json or tides.json edits, .env reads, dependencies, commits or pushes were made by this lane. No browser integration test or root context/PDF regeneration was performed; the requested AI-use log row was appended separately.
+
+
+## Lane 6A: cloud review, names and Moon features (Signal or Noise)
+
+Completed on 14 November 2026. **108 satellite images replaced; five catalog names clarified; 1,178 official Moon features supplied in 273,605 bytes**. No UI/engine edits, dependencies, .env reads or commits were made by this lane.
+
+### Cloud review
+
+Run `node tools/fetch_place_images.mjs --cloud-screen`. The screen measures the delivered JPEG: flag at least **15%** pixels with every RGB channel >=155 and channel spread <=40. Glacier, polar and tundra environments are exempt (66 images). Bright rock, salt and sand can also trigger the screen; this is a review heuristic, not a scientific cloud mask.
+
+Of 141 automatic flags, 34 were already cloud-free Blue Marble composites and were retained. Tongren and Guaviare River were additionally replaced because the user identified their gray/thin clouds below the automatic threshold. **108 replacements retain exactly the original BBOX and projection; all 819 other image hashes stayed unchanged.** All 927 JPEGs decode at 360x240 and are at most 25,000 bytes; total size is **11,117,768 bytes (11.12 MB)**. [CREDITS.md](../img/places/CREDITS.md) records each source, date, bounds and projection. Originals/metrics and resumable audit are cached under `tools/.cache/place_images*`.
+
+**One unresolved image: peter_i_island.** BlueMarble_NextGeneration was flat and did not show the island in four seasonal polar requests; a geographic-service probe was also flat. The original cloudy view was retained, rather than replaced by a blank sea. Vatnajokull was exempt as a glacier and already uses a cloud-free Blue Marble composite; its expected white ice was not classified as cloud. Composite dates are requested API parameters, not single observation dates. Legitimate dark water is retained in otherwise textured composites; truly empty/flat non-ocean views are rejected.
+
+### Every catalog name change
+
+IDs, coordinates, environments, variables and all other catalog data were preserved. The original short label equaled the original name in every row. New names cite the current [Smithsonian GVP record 355161](https://volcano.si.edu/volcano.cfm?vn=355161) or pinned English Wikipedia records. The generator preserves these source-linked overrides on rebuild.
+
+| ID (unchanged) | Old name / short | New name | New short | Citation |
+|---|---|---|---|---|
+| unnamed_volcano | Unnamed volcano | Central Andean Arc at 25.1°S | Central Andean Arc (25.1°S) | [source](https://volcano.si.edu/volcano.cfm?vn=355161) |
+| cerro_azul | Cerro Azul | Cerro Azul (Chile volcano) | Cerro Azul (Chile) | [source](https://en.wikipedia.org/w/index.php?title=Cerro+Azul+%28Chile+volcano%29&oldid=1368752472) |
+| cerro_azul_q1055779 | Cerro Azul | Cerro Azul (Ecuador volcano) | Cerro Azul (Ecuador) | [source](https://en.wikipedia.org/w/index.php?title=Cerro+Azul+%28Ecuador+volcano%29&oldid=1368752478) |
+| yichun | Yichun | Yichun, Heilongjiang | Yichun (Heilongjiang) | [source](https://en.wikipedia.org/w/index.php?title=Yichun%2C+Heilongjiang&oldid=1382718222) |
+| yichun_q363326 | Yichun | Yichun, Jiangxi | Yichun (Jiangxi) | [source](https://en.wikipedia.org/w/index.php?title=Yichun%2C+Jiangxi&oldid=1377809090) |
+
+### Official Moon gazetteer
+
+[moon_features.json](../data/moon_features.json) comes from the [IAU/USGS official Moon center-point ZIP](https://asc-planetarynames-data.s3.us-west-2.amazonaws.com/MOON_nomenclature_center_pts.zip), linked from [GIS Downloads](https://planetarynames.wr.usgs.gov/GIS_Downloads), with retrieval time and SHA-256 recorded. The source is public domain, maintained by USGS for the IAU with NASA support. Source ZIP and acquisition report are cached in `tools/.cache/moon/`.
+
+All 9,087 source records are IAU-approved. Selection includes all mare/oceanus/lacus/sinus/palus records (22/1/21/12/3), 16 mountains/ranges, 11 valleys and five scarps longer than 100 km, 1,081 craters at least 50 km across (including qualifying lettered craters), and all six official Statio landing-site records. Those landing entries represent Apollo 11, Chang'e 3/4/5/6 and Chandrayaan-3. No Luna or other Apollo landing-site entries were invented where the archive does not list them.
+
+Coordinates are official center points, east-positive longitude normalized to [-180,180), not feature outlines or exact spacecraft positions. Gazetteer diameter means approximate diameter or longest dimension ([field definitions](https://planetarynames.wr.usgs.gov/Page/Specifics)); [descriptor definitions](https://planetarynames.wr.usgs.gov/DescriptorTerms) distinguish feature types. Origin text is preserved, with whitespace normalized and a word-boundary ellipsis after at most 180 characters. The compact UTF-8 JSON is below the 400,000-byte limit.
+
+~~~sh
+node tools/build_moon_features.mjs
+node tools/build_moon_features.mjs --validate
+node tools/fetch_place_images.mjs --check
+node tools/validate_data.mjs
+npm test
+~~~
+
+Passed: complete source-to-output membership comparison, ZIP checksum, coordinate/size/type/year/unique-link checks, longitude/cutoff self-checks, JPEG decoding/dimensions/size checks, all three offline demos, all 14 Earth coverage inventories, preserved catalog IDs/non-name fields, unchanged image hashes/BBOX/projections, and all **22 npm tests**. No browser/UI integration test was performed. AI assisted the implementation, source review and report; Moon origins are official source text and no imagery was generated by AI.
