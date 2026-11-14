@@ -134,9 +134,22 @@ function drawPlaceDots() {
     // The label sits above the dot (bottom-anchored with a gap) and only appears when the camera is close enough.
     label: { text: p.short, font: '600 13px Inter, sans-serif', verticalOrigin: C.VerticalOrigin.BOTTOM, pixelOffset: new C.Cartesian2(0, -12),
              fillColor: C.Color.WHITE, showBackground: true, backgroundColor: C.Color.fromCssColorString('rgba(10,10,15,.88)'),
-             backgroundPadding: new C.Cartesian2(6, 3), distanceDisplayCondition: new C.DistanceDisplayCondition(0, 1200000) },
+             backgroundPadding: new C.Cartesian2(6, 3), show: false },
   });
+  labelOnly(selectedPlace);
 }
+
+// Labels: only the selected place and the one under the pointer, so 900 names never pile up.
+let hoverId = null;
+function labelOnly(...ids) {
+  if (!viewer) return;
+  for (const e of viewer.entities.values) if (String(e.id).startsWith('place:')) e.label.show = ids.includes(String(e.id).slice(6));
+}
+if (viewer) new C.ScreenSpaceEventHandler(viewer.scene.canvas).setInputAction((m) => {
+  const id = viewer.scene.pick(m.endPosition)?.id?.id;
+  const next = typeof id === 'string' && id.startsWith('place:') ? id.slice(6) : null;
+  if (next !== hoverId) { hoverId = next; labelOnly(selectedPlace, hoverId); }
+}, C.ScreenSpaceEventType.MOUSE_MOVE);
 
 function flyTo(lat, lon, height = 2500000, seconds = 3) {
   if (!viewer) return;
@@ -157,6 +170,7 @@ function selectPlace(id) {
   const p = PLACES.find((x) => x.id === id);
   if (!p) return;
   selectedPlace = p.id;
+  labelOnly(p.id);
   setPoint(p.lat, p.lon);
   flyTo(p.lat, p.lon);
   fillVariables(p.environment);
@@ -416,32 +430,37 @@ function render(c0) {
   $('verdict').textContent = vd.label;
   $('explanation').textContent = vd.text;
   const checks = [];
-  if (r.verdict === 'confirmed') checks.push(['yes', r.knownSince ? `Clear since ${r.knownSince}` : 'A clear trend']);
-  else if (r.adjusted) checks.push(['maybe', `Strong alone, but not after testing ${r.tested} things at once`]);
-  else if (r.yearsNeeded === Infinity || r.yearsNeeded > 100) checks.push(['maybe', 'No signal: even 100 more years may not settle it']);
-  else checks.push(['maybe', `About ${Math.max(1, r.yearsNeeded)} more years of data would settle it`]);
+  const add = (title, k, t) => checks.push([k, t, title]);
+  if (r.verdict === 'confirmed') add('The clock', 'yes', r.knownSince ? `Clear since ${r.knownSince}` : 'A clear trend');
+  else if (r.adjusted) add('The clock', 'maybe', `Strong alone, but not after testing ${r.tested} things at once`);
+  else if (r.yearsNeeded === Infinity || r.yearsNeeded > 100) add('The clock', 'maybe', 'No signal: even 100 more years may not settle it');
+  else add('The clock', 'maybe', `About ${Math.max(1, r.yearsNeeded)} more years of data would settle it`);
   const tt = r.ttest, ttConfirmed = tt.p < 0.05;
   const sameCall = ttConfirmed === (r.verdict === 'confirmed') && Math.sign(tt.slopePerDecade) === Math.sign(r.slopePerDecade);
-  checks.push(sameCall ? ['yes', 'A second test agrees'] : ['no', 'A second test disagrees: trust it less']);
+  add('Ask a second test', ...(sameCall ? ['yes', 'A second test agrees'] : ['no', 'A second test disagrees: trust it less']));
   const pt = predictionTest(series);
-  if (pt) checks.push(pt.skill > 0.1 ? ['yes', `Predicts ${pt.testYears[0]}–${pt.testYears[1]} better than "no change"`]
+  if (pt) add('Test it on the past', ...(pt.skill > 0.1 ? ['yes', `Predicts ${pt.testYears[0]}–${pt.testYears[1]} better than "no change"`]
     : pt.skill < -0.1 ? ['no', `Predicts ${pt.testYears[0]}–${pt.testYears[1]} worse than "no change"`]
-      : ['maybe', `Predicts ${pt.testYears[0]}–${pt.testYears[1]} no better than "no change"`]);
+      : ['maybe', `Predicts ${pt.testYears[0]}–${pt.testYears[1]} no better than "no change"`]));
   const alibis = !INDICES ? [] : ['ENSO', 'PDO'].map((k) => ({ idx: INDICES[k], a: alibiTest(series, INDICES[k]) })).filter((x) => x.a);
   if (alibis.length) {
     const short = { ENSO: 'El Niño', PDO: 'the PDO' };
     const weak = alibis.filter((x) => r.verdict === 'confirmed' && x.a.after.verdict !== 'confirmed');
-    checks.push(r.verdict !== 'confirmed' ? ['maybe', `El Niño explains ${Math.round(alibis[0].a.share * 100)}% of the ups and downs`]
+    add('Check the alibi: El Niño', ...(r.verdict !== 'confirmed' ? ['maybe', `El Niño explains ${Math.round(alibis[0].a.share * 100)}% of the ups and downs`]
       : weak.length ? ['maybe', `Partly explained by ${weak.map((x) => short[Object.keys(INDICES).find((k) => INDICES[k] === x.idx)]).join(' and ')}`]
-        : ['yes', 'Not explained by El Niño or the PDO']);
+        : ['yes', 'Not explained by El Niño or the PDO']));
   }
-  checks.push(!c.witness ? ['maybe', 'Only one dataset here'] : c.witness.status === 'corroborated' ? ['yes', 'A second dataset agrees']
-    : c.witness.status === 'contradicted' ? ['no', 'A second dataset disagrees'] : ['maybe', 'A second dataset sees no clear trend']);
+  add('Question a second witness', ...(!c.witness ? ['maybe', 'Only one dataset here'] : c.witness.status === 'corroborated' ? ['yes', 'A second dataset agrees']
+    : c.witness.status === 'contradicted' ? ['no', 'A second dataset disagrees'] : ['maybe', 'A second dataset sees no clear trend']));
   const saw = r.verdict === 'unknown' ? 'none' : r.slopePerDecade > 0 ? 'up' : 'down';
   const words = { up: 'rises', down: 'falls', none: 'no change' };
-  if (c.hunch && c.hunch !== 'unsure') checks.push(c.hunch === saw ? ['yes', 'Your hunch was right'] : ['no', `Your hunch (${words[c.hunch]}) did not match: follow the evidence`]);
+  if (c.hunch && c.hunch !== 'unsure') add('Your first hunch', ...(c.hunch === saw ? ['yes', 'Your hunch was right'] : ['no', `Your hunch (${words[c.hunch]}) did not match: follow the evidence`]));
   const icon = { yes: '✓', no: '✗', maybe: '?' }, said = { yes: 'passed', no: 'failed', maybe: 'open' };
-  $('checks').innerHTML = checks.map(([k, t]) => `<li><span class="ic ${k}" aria-label="${said[k]}">${icon[k]}</span><span>${t}</span></li>`).join('');
+  // Clues start closed: the detective opens each one.
+  $('checks').innerHTML = checks.map(([k, t, title], i) => `<li data-clue="${i}"><button type="button" class="clue">🔍 ${title}</button>
+    <span hidden><span class="ic ${k}" aria-label="${said[k]}">${icon[k]}</span> ${t}</span></li>`).join('');
+  if (c.hunch && c.hunch !== 'unsure' && !c.demo) award(c.hunch === saw ? 1 : 0, 'hunch');
+  resetGame(c.demo);
 
   $('details').innerHTML = [
     `Years analyzed: ${r.n} (${r.firstYear}–${r.lastYear}), one mean per year to remove the seasonal cycle.`,
@@ -491,6 +510,51 @@ function renderCompare(c) {
       ? `Opposite directions: ${name} ${dir(a)} in ${a.place} but ${dir(b)} in ${b.place}. The same variable can trend in opposite ways in different regions.`
       : `Same direction: ${name} ${dir(a)} in both places, at ${fmtSlope(Math.abs(a.r.slopePerDecade))} and ${fmtSlope(Math.abs(b.r.slopePerDecade))} ${unitOf(a.series)} per decade.`;
 }
+
+// --- Detective game: the user makes the calls, can be wrong, and earns points. ---
+const RANKS = [[0, 'Rookie'], [5, 'Junior detective'], [12, 'Inspector'], [25, 'Chief inspector'], [45, 'Legendary detective']];
+let score = 0;
+try { score = +localStorage.getItem('td-score') || 0; } catch { score = 0; }
+function showScore() { $('score').textContent = `🕵 ${score} pts · ${RANKS.filter(([p]) => score >= p).at(-1)[1]}`; }
+function award(points) { score += points; try { localStorage.setItem('td-score', String(score)); } catch { /* private mode: keep it in memory */ } showScore(); }
+showScore();
+
+function resetGame(reveal) {
+  for (const id of ['ask-trend', 'ask-verdict']) { $(id).classList.toggle('done', !!reveal); $(id).hidden = !!reveal; $(id).querySelectorAll('.chip').forEach((b) => b.setAttribute('aria-pressed', 'false')); }
+  $('trend-feedback').textContent = ''; $('verdict-feedback').textContent = '';
+  $('stat-row').hidden = !reveal; $('verdict-block').hidden = !reveal;
+  if (reveal) document.querySelectorAll('#checks [data-clue] > span').forEach((x) => { x.hidden = false; x.previousElementSibling.hidden = true; });
+}
+function feedback(id, kind, text) { $(id).className = `feedback ${kind}`; $(id).textContent = text; }
+
+$('ask-trend').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-trend]');
+  if (!b || $('ask-trend').classList.contains('done')) return;
+  const r = current.r, guess = b.dataset.trend, tilt = r.slopePerDecade > 0 ? 'up' : r.slopePerDecade < 0 ? 'down' : 'none';
+  const truth = r.verdict === 'unknown' ? 'none' : tilt;
+  b.setAttribute('aria-pressed', 'true'); $('ask-trend').classList.add('done'); $('stat-row').hidden = false;
+  if (guess === truth) { award(1); feedback('trend-feedback', 'good', '✓ Good eye! +1 point. ' + (truth === 'none' ? 'The ups and downs hide any steady change.' : 'The dashed trend line agrees with you.')); }
+  else if (truth === 'none' && guess === tilt) feedback('trend-feedback', 'close', '≈ Close: the line does tilt that way, but the change is too small to tell apart from normal ups and downs. No points this time.');
+  else feedback('trend-feedback', 'miss', `✗ Not quite. Follow the dashed line from ${current.series.years[0]} to ${current.series.years.at(-1)}: ${truth === 'none' ? 'it stays almost flat compared with the ups and downs' : `it goes ${truth === 'up' ? 'up' : 'down'}`}. Detectives learn from misses!`);
+});
+
+$('ask-verdict').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-call]');
+  if (!b || $('ask-verdict').classList.contains('done')) return;
+  const order = ['unknown', 'likely', 'confirmed'], call = b.dataset.call, truth = current.r.verdict;
+  const gap = Math.abs(order.indexOf(call) - order.indexOf(truth));
+  b.setAttribute('aria-pressed', 'true'); $('ask-verdict').classList.add('done'); $('verdict-block').hidden = false;
+  const why = { confirmed: 'the tests say a change this clear would almost never come from chance', likely: 'there are signs, but chance could still explain them', unknown: 'the ups and downs are too big for the change to stand out yet' }[truth];
+  if (gap === 0) { award(2); feedback('verdict-feedback', 'good', `✓ Great call! +2 points: ${why}.`); }
+  else if (gap === 1) { award(1); feedback('verdict-feedback', 'close', `≈ Close, +1 point. The tests say "${VERDICTS[truth].label.slice(2)}": ${why}.`); }
+  else feedback('verdict-feedback', 'miss', `✗ The tests disagree: ${why}. Open the clues to see why.`);
+});
+
+$('checks').addEventListener('click', (e) => {
+  const b = e.target.closest('.clue');
+  if (!b) return;
+  b.hidden = true; b.nextElementSibling.hidden = false;
+});
 
 // Projection: shown only when the trend beat "no change" on held-out years (prediction test), never otherwise.
 const TO_YEAR = 2040;
@@ -604,7 +668,7 @@ $('demo-list').addEventListener('click', (e) => {
   const make = (pid) => {
     const p = PLACES.find((x) => x.id === pid) ?? { name: pid, lat: 0, lon: 0 };
     const series = d.series[pid];
-    return { variable: v, place: p.name, lat: p.lat, lon: p.lon, series, r: analyze(series) };
+    return { variable: v, place: p.name, lat: p.lat, lon: p.lon, series, r: analyze(series), demo: true };
   };
   const [a, b2] = d.places;
   current = { ...make(a), other: b2 ? make(b2) : undefined };
@@ -821,14 +885,43 @@ $('moon-cases').addEventListener('click', (e) => {
   location.hash = '#/lunar';
 });
 
+const QUIZ = {
+  tides: { q: 'How many high tides do most coasts get each day?', options: ['One', 'Two', 'Four'], answer: 1,
+    why: 'Two: the Moon pulls a bulge of water toward it, and another bulge forms on the far side of the Earth.' },
+  corals: { q: 'When do many corals release their eggs?', options: ['At new moon', 'A few nights after a full moon', 'On random nights'], answer: 1,
+    why: 'A few nights after a full moon: moonlight helps thousands of corals spawn on the same night.' },
+};
+let lunarGuess = null;
+$('lunar-quiz').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-q]');
+  if (!b || $('lunar-quiz').classList.contains('done')) return;
+  const q = QUIZ[lunarCase.id], ok = +b.dataset.q === q.answer;
+  b.setAttribute('aria-pressed', 'true'); $('lunar-quiz').classList.add('done'); $('lunar-note').hidden = false;
+  if (ok) award(1);
+  feedback('lunar-feedback', ok ? 'good' : 'miss', `${ok ? '✓ Right! +1 point.' : '✗ Not this time.'} ${q.why}`);
+});
+$('lunar-guess').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-lg]');
+  if (!b) return;
+  lunarGuess = b.dataset.lg;
+  $('lunar-guess').querySelectorAll('.chip').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+});
+
 function openLunarCase() {
   const c = lunarCase, testable = c.kinds !== undefined;
   $('lunar-step').innerHTML = `Moon case · <span class="tag ${c.tag[0]}">${c.tag[1]}</span>`;
   $('t-lunar').textContent = c.title.replace('★ ', '');
   $('lunar-intro').textContent = c.text;
-  for (const id of ['lunar-controls', 'lunar-how', 'lunar-how-title']) $(id).hidden = !testable;
+  for (const id of ['lunar-controls', 'lunar-how', 'lunar-how-title', 'lunar-guess']) $(id).hidden = !testable;
   $('lunar-stat').textContent = ''; $('lunar-note').textContent = ''; $('lunar-chart').innerHTML = '';
+  $('lunar-feedback').textContent = ''; lunarGuess = null;
+  $('lunar-guess').querySelectorAll('.chip').forEach((b) => b.setAttribute('aria-pressed', 'false'));
+  const quiz = QUIZ[c.id];
+  $('lunar-quiz').hidden = !quiz;
+  if (quiz) $('lunar-quiz').innerHTML = `<p><b>🔍 Quick question:</b> ${quiz.q}</p><div class="row">${quiz.options.map((o, i) => `<button type="button" class="chip" data-q="${i}">${o}</button>`).join('')}</div>`;
+  $('lunar-quiz').classList.remove('done');
   if (!testable) {
+    $('lunar-note').hidden = true;
     $('lunar-note').textContent = c.id === 'tides'
       ? 'This is the textbook lunar effect: no statistics needed to see the tide come in twice a day.'
       : 'This effect is well documented by marine biologists; it shows that living things keep time with the Moon.';
@@ -854,6 +947,12 @@ $('lunar-run').addEventListener('click', async () => {
     const u = unitOf(s);
     $('lunar-note').textContent = `${v.name} at ${p.short}, ${s.years[0]}–${s.years.at(-1)}: the Moon's rhythm lines up with ${Math.round(t.share * 100)}% of the year-to-year ups and downs (after removing the trend). From minor to major standstill: ${signed(t.swing)}${u ? ' ' + u : ''}. A signal is not proof of cause.`;
     $('lunar-chart').innerHTML = lunarChart(s, t);
+    const sawMoon = t.verdict === 'signal' ? 'yes' : 'no';
+    if (!lunarGuess) feedback('lunar-feedback', 'close', 'Tip: make a guess before testing to earn points.');
+    else if (lunarGuess === sawMoon) { award(1); feedback('lunar-feedback', 'good', `✓ Your guess matched the test. +1 point.`); }
+    else feedback('lunar-feedback', 'miss', `✗ Your guess did not match the test${t.verdict === 'hint' ? ' (there is only a weak hint)' : ''}. That is how real research goes!`);
+    lunarGuess = null;
+    $('lunar-guess').querySelectorAll('.chip').forEach((x) => x.setAttribute('aria-pressed', 'false'));
   } catch (err) { $('lunar-stat').textContent = 'The test could not run'; $('lunar-note').textContent = err.message; }
 });
 

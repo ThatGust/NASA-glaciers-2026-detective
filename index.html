@@ -144,6 +144,17 @@
   @media (max-width:640px) { .pop { display:none; } }
   .learn { margin:0; padding-left:20px; font-size:13px; display:flex; flex-direction:column; gap:5px; color:var(--text-secondary); }
   .learn b { color:var(--text-primary); }
+  .score { position:fixed; z-index:3; top:16px; left:190px; margin:0; font:12px var(--font-mono); color:var(--text-primary);
+           background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:var(--btn-radius); padding:9px 12px; }
+  .ask { border:1px dashed rgba(0,212,255,.5); border-radius:var(--btn-radius); padding:8px 10px; display:flex; flex-direction:column; gap:6px; }
+  .ask p { font-size:14px; }
+  .ask .chip[aria-pressed="true"] { border-color:var(--accent); background:var(--accent-dim); }
+  .ask.done { opacity:.6; } .ask.done .chip { pointer-events:none; }
+  #verdict-block, #stat-row { display:flex; flex-direction:column; gap:8px; }
+  .feedback { font-size:14px; } .feedback:empty { display:none; }
+  .feedback.good { color:var(--ok); } .feedback.close { color:var(--warn); } .feedback.miss { color:var(--up); }
+  .clue { width:100%; text-align:left; font:14px var(--font-sans); color:var(--accent); background:none; border:0; padding:0; cursor:pointer; }
+  @media (max-width:640px) { .score { left:auto; right:16px; } }
   [hidden] { display:none !important; }
 </style>
 </head>
@@ -156,6 +167,7 @@
 </div>
 <div class="no3d" hidden id="no3d">Your browser cannot display the 3D globe.</div>
 <a class="brand" href="#/home">Trend Detective</a>
+<p class="score" id="score" title="Your detective score: right calls earn points" aria-live="polite"></p>
 <p class="credits">Imagery: NASA Blue Marble and Worldview (GIBS) · Globe: CesiumJS (Apache 2.0)</p>
 <a class="btn sec skip" href="#/case" id="skip">Skip</a>
 <aside class="pop" id="place-pop" hidden aria-live="polite">
@@ -218,6 +230,13 @@
   <p class="step" id="lunar-step">Moon case</p>
   <h2 id="t-lunar" tabindex="-1"></h2>
   <p class="note" id="lunar-intro"></p>
+  <div class="ask" id="lunar-quiz" hidden></div>
+  <p class="feedback" id="lunar-feedback" aria-live="polite"></p>
+  <div class="row" id="lunar-guess">
+    <span class="note">🔍 Your guess:</span>
+    <button type="button" class="chip" data-lg="yes">The Moon shows up</button>
+    <button type="button" class="chip" data-lg="no">No Moon here</button>
+  </div>
   <div class="row" id="lunar-controls" style="flex-wrap:nowrap">
     <select id="lunar-place" aria-label="Place"></select>
     <select id="lunar-var" aria-label="Variable" style="width:180px"></select>
@@ -271,8 +290,19 @@
 <section class="view side" id="view-evidence" aria-labelledby="t2">
   <p class="step">Step 2 of 3 · The evidence</p>
   <h2 id="t2" tabindex="-1"></h2>
-  <div class="row"><span class="stat" id="stat"></span><span class="badge" id="stat-badge"></span></div>
-  <p class="note" id="stat-note"></p>
+  <div class="ask" id="ask-trend">
+    <p><b>🔍 Your call:</b> look at the chart. Which way is it going?</p>
+    <div class="row">
+      <button type="button" class="chip" data-trend="up">↗ Rising</button>
+      <button type="button" class="chip" data-trend="down">↘ Falling</button>
+      <button type="button" class="chip" data-trend="none">→ No clear change</button>
+    </div>
+  </div>
+  <p class="feedback" id="trend-feedback" aria-live="polite"></p>
+  <div id="stat-row" hidden>
+    <div class="row"><span class="stat" id="stat"></span><span class="badge" id="stat-badge"></span></div>
+    <p class="note" id="stat-note"></p>
+  </div>
   <figure style="margin:0"><div id="chart"></div></figure>
   <p class="note" id="witnesses"></p>
   <details><summary>Data and sources</summary><p class="note" id="chart-caption"></p><div id="table"></div></details>
@@ -299,10 +329,21 @@
 
 <section class="view side" id="view-verdict" aria-labelledby="t3">
   <p class="step">Step 3 of 3 · The verdict</p>
-  <h2 id="t3" tabindex="-1" class="verdict"><span id="verdict"></span></h2>
-  <p id="explanation"></p>
-  <h3>Detective checks</h3>
-  <ul class="checks" id="checks"></ul>
+  <div class="ask" id="ask-verdict">
+    <p><b>🔍 Your verdict:</b> is this change real, or could it be chance?</p>
+    <div class="row">
+      <button type="button" class="chip" data-call="confirmed">● Real change</button>
+      <button type="button" class="chip" data-call="likely">◐ Signs, not sure</button>
+      <button type="button" class="chip" data-call="unknown">○ Can't tell yet</button>
+    </div>
+  </div>
+  <p class="feedback" id="verdict-feedback" aria-live="polite"></p>
+  <div id="verdict-block" hidden>
+    <h2 id="t3" tabindex="-1" class="verdict"><span id="verdict"></span></h2>
+    <p id="explanation"></p>
+    <h3>Clues <span class="note">(click each one to investigate)</span></h3>
+    <ul class="checks" id="checks"></ul>
+  </div>
   <details><summary>The statistics</summary><ul id="details"></ul></details>
   <div class="spacer"></div>
   <div class="row">
