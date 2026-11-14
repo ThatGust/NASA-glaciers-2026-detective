@@ -40,14 +40,15 @@ const SUGGESTIONS = {
   coast: [['T2M', 'WS2M', 'PRECTOTCORR', 'RH2M'], 'coasts feel the sea through wind, humidity and rain'],
   ocean: [['T2M', 'WS2M', 'CLOUD_AMT', 'PRECTOTCORR'], 'over the sea, air temperature, wind and clouds tell the story'],
   polar: [['T2M', 'SNODP', 'CLOUD_AMT', 'ALLSKY_SFC_SW_DWN'], 'the poles warm fastest, and snow and clouds respond'],
+  river: [['PRECTOTCORR', 'EVLAND', 'GWETROOT', 'T2M'], 'rivers carry what rain leaves after evaporation and soil take their share (scan this place to see its river discharge)'],
 };
-const ENVIRONMENTS = { glacier: 'Glaciers and snow peaks', desert: 'Deserts', rainforest: 'Rainforests', city: 'Large cities', coast: 'Coasts and estuaries', ocean: 'Open ocean', polar: 'Polar regions' };
+const ENVIRONMENTS = { river: 'Large rivers', glacier: 'Glaciers and snow peaks', desert: 'Deserts', rainforest: 'Rainforests', city: 'Large cities', coast: 'Coasts and estuaries', ocean: 'Open ocean', polar: 'Polar regions' };
 const VERDICTS = {
   confirmed: { label: '● Confirmed', text: 'In this dataset the trend is statistically significant: it is very unlikely to be chance.' },
   likely: { label: '◐ Likely', text: 'This dataset shows signs of a trend, but not enough to be sure yet.' },
   unknown: { label: '○ Not yet known', text: 'With the data available, a trend cannot be told apart from normal variation.' },
 };
-const UNITS = { C: '°C', 'mm/day': 'mm/day', 'MJ/m^2/day': 'MJ/m²/day', 1: '(0–1 index)', 'g/kg': 'g/kg', '%': '%', 'm/s': 'm/s', cm: 'cm', kPa: 'kPa', dimensionless: '(index)', days: 'days' };
+const UNITS = { C: '°C', 'mm/day': 'mm/day', 'MJ/m^2/day': 'MJ/m²/day', 1: '(0–1 index)', 'g/kg': 'g/kg', '%': '%', 'm/s': 'm/s', cm: 'cm', kPa: 'kPa', dimensionless: '(index)', days: 'days', 'm3/s': 'm³/s', 'kg C/m2/yr': 'kg C/m²/yr' };
 
 const $ = (id) => document.getElementById(id);
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -57,9 +58,11 @@ const fmtSlope = (x) => { const a = Math.abs(x); return a === 0 || a >= 0.1 ? fm
 const signed = (x) => (x > 0 ? '+' : '') + fmtSlope(x);
 const unitOf = (s) => UNITS[s.units] ?? s.units;
 const SOURCES = { MERRA2: 'MERRA-2', SYN1DEG: 'CERES SYN1deg' };
-const sourceOf = (v) => (v.source.includes(' via ') ? v.source : `NASA POWER · ${SOURCES[v.source] ?? v.source}`);
+const sourceOf = (v) => (EXTRA_VARS.includes(v) || v.source.includes(' via ') ? v.source : `NASA POWER · ${SOURCES[v.source] ?? v.source}`);
 // Extra variables (precomputed, catalog places only) are looked up too, but never offered for live cases.
-const varById = (id) => VARIABLES.find((v) => v.id === id) ?? WITNESSES?.extraVariables?.find((v) => v.id === id);
+// Precomputed variables from other datasets (MODIS, river discharge, Meteomatics), for catalog places only.
+let EXTRA = {}, EXTRA_VARS = [];
+const varById = (id) => VARIABLES.find((v) => v.id === id) ?? EXTRA_VARS.find((v) => v.id === id);
 let current = null;        // the case being shown: { variable, place, series, r }
 let compareWith = null;    // first case of a comparison, while the user picks the second place
 let leads = null;          // last scan result
@@ -221,7 +224,7 @@ $('scan').addEventListener('click', async () => {
   try {
     const all = await fetchPowerMany(VARIABLES.map((v) => ({ id: v.id, start: v.start ?? 1981 })), lat, lon);
     const pid = PLACES.find((p) => p.lat === lat && p.lon === lon)?.id;
-    leads = { place, lat, lon, list: scan({ ...all, ...(WITNESSES?.extra?.[pid] ?? {}) }) };
+    leads = { place, lat, lon, list: scan({ ...all, ...(EXTRA[pid] ?? {}) }) };
     renderLeads(leads);
     $('status').textContent = '';
     flyTo(lat, lon);
@@ -578,10 +581,28 @@ async function loadJson(url) {
 const [catalog, demos, witnesses, grid, indices] = await Promise.all([loadJson('data/catalog.json'), loadJson('data/demos.json'),
   loadJson('data/witnesses.json'), loadJson('data/grid.json'), loadJson('data/indices.json')]);
 INDICES = indices;
+const [modis, rivers] = await Promise.all([loadJson('data/modis.json'), loadJson('data/rivers.json')]);
 WITNESSES = witnesses;
 GRID = grid;
 if (catalog?.variables?.length) VARIABLES = catalog.variables;
 if (catalog?.places?.length) PLACES = catalog.places;
+function addExtra(file) {
+  if (!file?.extra) return;
+  EXTRA_VARS.push(...(file.extraVariables ?? []).filter((v) => !EXTRA_VARS.some((x) => x.id === v.id)));
+  for (const [pid, vars] of Object.entries(file.extra)) EXTRA[pid] = { ...(EXTRA[pid] ?? {}), ...vars };
+}
+addExtra(WITNESSES);
+addExtra(modis);
+// Rivers become a kind of place. A river whose modelled flow disagrees with its published mean is left out, not shown.
+const goodRivers = (rivers?.places ?? []).filter((p) => !p.quality?.flags?.length && rivers.series[p.id]);
+if (goodRivers.length) {
+  PLACES = [...PLACES, ...goodRivers];
+  addExtra({
+    extraVariables: [{ id: 'DISCHARGE', name: 'River discharge', group: 'Water', units: 'm3/s', source: `${rivers.organization}`,
+      definition: 'How much water flows down the river each second, averaged over the year.' }],
+    extra: Object.fromEntries(goodRivers.map((p) => [p.id, { DISCHARGE: { ...rivers.series[p.id], source: rivers.organization } }])),
+  });
+}
 if (Array.isArray(demos)) DEMOS = demos;
 fillVariables();
 fillEnvironments();
