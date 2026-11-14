@@ -78,6 +78,10 @@
   .demos { list-style:none; padding:0; margin:8px 0 0; display:flex; flex-wrap:wrap; justify-content:center; }
   #view-compare { width:min(760px, calc(100vw - 32px)); }
   .compare { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:8px; }
+  .legend { list-style:none; padding:0; margin:8px 0; }
+  .legend li { margin:4px 0; }
+  .swatch { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:6px; vertical-align:-1px; background:rgba(255,255,255,.15); }
+  .swatch.up { background:#ff7a26; } .swatch.down { background:#2678ff; } .swatch.unsure { background:rgba(255,255,255,.3); }
   [hidden] { display:none !important; }
 </style>
 </head>
@@ -92,11 +96,26 @@
 <section class="view cover" id="view-home" aria-labelledby="t0">
   <h1 id="t0" tabindex="-1">The Earth is changing. What do we know for sure?</h1>
   <p>Investigate a change with NASA data and get an honest verdict.</p>
-  <a class="btn" href="#/case">Open a case</a>
+  <a class="btn" href="#/global" id="global-link">See the planet's trends</a>
+  <a class="btn sec" href="#/case">Open a case</a>
   <div id="demos" hidden>
     <p class="note">Or watch a solved case first:</p>
     <ul class="demos" id="demo-list"></ul>
   </div>
+</section>
+
+<section class="view side" id="view-global" aria-labelledby="t-global">
+  <p class="step">Global monitor · Where is it changing?</p>
+  <label for="global-var">Variable</label>
+  <select id="global-var"></select>
+  <h2 id="t-global" tabindex="-1"></h2>
+  <ul class="legend" id="global-summary"></ul>
+  <p class="note"><span class="swatch up"></span> rises · <span class="swatch down"></span> falls · stronger color = faster change. <span id="global-scale"></span></p>
+  <h3>Large regions</h3>
+  <ul class="leads" id="regions"></ul>
+  <p class="note">Click any cell on the globe to investigate it as a case.</p>
+  <p class="note" id="global-note"></p>
+  <a class="btn sec" href="#/case">Open a case</a>
 </section>
 
 <section class="view side" id="view-case" aria-labelledby="t1">
@@ -146,6 +165,7 @@
   <p class="verdict" id="verdict"></p>
   <p id="explanation"></p>
   <p><strong id="clock"></strong></p>
+  <p id="second-method"></p>
   <details>
     <summary>See the statistics</summary>
     <ul id="details"></ul>

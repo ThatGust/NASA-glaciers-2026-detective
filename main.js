@@ -73,6 +73,7 @@ try {
   });
   // Clicking a place dot selects it; clicking anywhere else on the globe picks that point.
   new C.ScreenSpaceEventHandler(viewer.scene.canvas).setInputAction((e) => {
+    if (location.hash.startsWith('#/global')) return openCell(e.position);
     if (!location.hash.startsWith('#/case')) return;
     const id = viewer.scene.pick(e.position)?.id?.id;
     if (typeof id === 'string' && id.startsWith('place:')) return selectPlace(id.slice(6));
@@ -124,16 +125,18 @@ function selectPlace(id) {
 const placeName = (lat, lon) => PLACES.find((p) => p.lat === lat && p.lon === lon)?.name ?? `${fmt(lat)}°, ${fmt(lon)}°`;
 
 // --- Views: one at a time, each with its own address so the Back button works. ---
-const VIEWS = ['home', 'case', 'leads', 'evidence', 'verdict', 'compare', 'record'];
+const VIEWS = ['home', 'global', 'case', 'leads', 'evidence', 'verdict', 'compare', 'record'];
 function route() {
   let v = location.hash.replace('#/', '') || 'home';
   if (!VIEWS.includes(v)) v = 'home';
-  const needs = { evidence: current, verdict: current, record: current, leads, compare: current?.other };
+  const needs = { evidence: current, verdict: current, record: current, leads, compare: current?.other, global: GRID };
   if (v in needs && !needs[v]) { location.replace('#/case'); return; }
   for (const n of VIEWS) $(`view-${n}`).classList.toggle('active', n === v);
   $('skip').hidden = v !== 'home';
   $('compare-banner').hidden = !(v === 'case' && compareWith);
   $(`view-${v}`).querySelector('h1, h2')?.focus();
+  if (gridLayer) gridLayer.show = v === 'global';
+  if (v === 'global') { drawGrid(); flyTo(10, -40, 22000000, 2); }
   if (v === 'home') flyTo(-15.53, -72.65, 160000, 9);
 }
 addEventListener('hashchange', route);
@@ -242,13 +245,14 @@ $('leads-list').addEventListener('click', (e) => {
 });
 
 // --- Evidence, verdict and case file for one case. ---
-function headline({ variable: v, place, series, r }) {
-  if (r.slopePerDecade === 0) return `In ${place}, ${v.name.toLowerCase()} shows no measurable change (${r.firstYear}–${r.lastYear})`;
+function headline({ variable: v, place, lat, series, r }) {
+  const In = lat === null ? 'Across' : 'In';
+  if (r.slopePerDecade === 0) return `${In} ${place}, ${v.name.toLowerCase()} shows no measurable change (${r.firstYear}–${r.lastYear})`;
   const up = r.slopePerDecade > 0;
   const howMuch = `${fmtSlope(Math.abs(r.slopePerDecade))} ${unitOf(series)} per decade (${r.firstYear}–${r.lastYear})`;
   return r.verdict === 'confirmed'
-    ? `In ${place}, ${v.name.toLowerCase()} ${up ? 'rose' : 'fell'} ${howMuch}`
-    : `In ${place}, ${v.name.toLowerCase()} seems to have ${up ? 'risen' : 'fallen'} ${howMuch}, but it is not certain yet`;
+    ? `${In} ${place}, ${v.name.toLowerCase()} ${up ? 'rose' : 'fell'} ${howMuch}`
+    : `${In} ${place}, ${v.name.toLowerCase()} seems to have ${up ? 'risen' : 'fallen'} ${howMuch}, but it is not certain yet`;
 }
 
 // Second witness: only for catalog places with a precomputed series. A contradicting witness lowers "confirmed" to "likely".
@@ -258,16 +262,17 @@ function withWitness(c) {
   if (!w) return { ...c, witness: null };
   let cmp;
   try { cmp = compareWitnesses(c.series, w); } catch { return { ...c, witness: null }; }
-  const r = !cmp.agrees && c.r.verdict === 'confirmed' ? { ...c.r, verdict: 'likely', knownSince: null, downgraded: true } : c.r;
+  const r = cmp.status === 'contradicted' && c.r.verdict === 'confirmed' ? { ...c.r, verdict: 'likely', knownSince: null, downgraded: true } : c.r;
   return { ...c, r, witness: cmp };
 }
 
 function witnessText(v, w) {
   if (!w) return `One witness: ${sourceOf(v)}. There is no second source for this place and variable, so the verdict rests on this one alone.`;
   const wv = VERDICTS[w.witnessVerdict].label.replace(/^\S+ /, '').toLowerCase();
-  return w.agrees
-    ? `Two witnesses: ${sourceOf(v)} and ${w.witness}. Over ${w.overlap[0]}–${w.overlap[1]} both see the trend going the same way (the second one rates it ${wv}).`
-    : `Two witnesses that disagree: ${w.witness} sees the opposite direction over ${w.overlap[0]}–${w.overlap[1]}. A "confirmed" verdict is lowered to "likely" when witnesses disagree.`;
+  const span = `${w.overlap[0]}–${w.overlap[1]}`;
+  if (w.status === 'corroborated') return `Two witnesses agree: ${sourceOf(v)} and ${w.witness} both see the trend going the same way over ${span} (the second one rates it ${wv}).`;
+  if (w.status === 'contradicted') return `Two witnesses disagree: ${w.witness} sees a ${wv} trend in the opposite direction over ${span}. When witnesses contradict each other, a "confirmed" verdict is lowered to "likely".`;
+  return `Second witness, not conclusive: ${w.witness} shows no clear trend over ${span}, so it neither backs nor contradicts ${sourceOf(v)}. The verdict rests on the first witness.`;
 }
 
 function render(c0) {
@@ -280,28 +285,35 @@ function render(c0) {
   $('chart-caption').textContent = `Annual mean ${v.name.toLowerCase()}. Dashed line: trend (Sen's slope). Source: ${sourceOf(v)}.`;
   $('table').innerHTML = dataTable(series, v, u);
   $('witnesses').textContent = witnessText(v, c.witness);
-  $('compare-start').hidden = !sourceOf(v).startsWith('NASA POWER'); // precomputed variables cannot be fetched for a new place
+  $('compare-start').hidden = lat == null || !sourceOf(v).startsWith('NASA POWER'); // regions and precomputed variables cannot be fetched live
 
   const vd = VERDICTS[r.verdict];
   $('verdict').textContent = vd.label;
   $('explanation').textContent = vd.text;
   $('clock').textContent = clockText(r);
+  // Second method named in the challenge: a t-test on the least-squares slope.
+  const tt = r.ttest, ttVerdict = tt.p < 0.05 ? 'confirmed' : tt.p < 0.1 ? 'likely' : 'unknown';
+  const sameCall = (ttVerdict === 'confirmed') === (r.verdict === 'confirmed') && Math.sign(tt.slopePerDecade) === Math.sign(r.slopePerDecade);
+  $('second-method').textContent = sameCall
+    ? `A second method agrees: a linear regression t-test gives ${signed(tt.slopePerDecade)} ${u} per decade (p ${tt.p < 0.001 ? '< 0.001' : '= ' + fmt(tt.p, 3)}).`
+    : `A second method reads it differently: a linear regression t-test gives ${signed(tt.slopePerDecade)} ${u} per decade (p ${tt.p < 0.001 ? '< 0.001' : '= ' + fmt(tt.p, 3)}). When methods disagree, trust the trend less.`;
   $('details').innerHTML = [
     `Years analyzed: ${r.n} (${r.firstYear}–${r.lastYear}), one mean per year to remove the seasonal cycle.`,
     `Sen's slope: ${signed(r.slopePerDecade)} ${u}/decade (95% interval: ${signed(r.slopeCI[0])} to ${signed(r.slopeCI[1])}).`,
     r.autocorrelationCorrected === false
       ? `Mann-Kendall test: p = ${r.p < 0.001 ? '< 0.001' : fmt(r.p, 3)}; Kendall's τ = ${fmt(r.tau)}. The Hamed & Rao autocorrelation correction could not be applied to this series (its correction factor is negative), so the uncorrected test is shown.`
       : `Mann-Kendall test with the Hamed & Rao (1998) autocorrelation correction: p = ${r.p < 0.001 ? '< 0.001' : fmt(r.p, 3)}; Kendall's τ = ${fmt(r.tau)}.`,
+    `Linear regression t-test (second method), with the effective sample size for autocorrelation (Santer et al. 2000): slope ${signed(r.ttest.slopePerDecade)} ${u}/decade (95% interval: ${signed(r.ttest.slopeCI[0])} to ${signed(r.ttest.slopeCI[1])}), p = ${r.ttest.p < 0.001 ? '< 0.001' : fmt(r.ttest.p, 3)}.`,
     r.q == null
-      ? 'Verdict: confirmed if p < 0.05; likely if p < 0.10; otherwise not yet known.'
+      ? 'Verdict (from Mann-Kendall): confirmed if p < 0.05; likely if p < 0.10; otherwise not yet known.'
       : `Verdict from a scan of ${r.tested} variables: it uses the Benjamini-Hochberg adjusted q = ${fmt(r.q, 3)} instead of p (confirmed if q < 0.05; likely if q < 0.10), so testing many variables does not create false alarms.`,
     'Clock: years needed to detect the current slope with 90% probability (α = 0.05) under autocorrelated noise, following the approach of Weatherhead et al. (1998). It is an approximation that assumes the trend and the noise stay the same.',
   ].map((t) => `<li>${t}</li>`).join('');
 
   $('record').innerHTML = [
-    ['What', `${v.name} (${v.id})`], ['Where', `${place} (${fmt(lat)}°, ${fmt(lon)}°)`],
+    ['What', `${v.name} (${v.id})`], ['Where', lat == null ? `${place} (area-weighted mean of the grid cells in it)` : `${place} (${fmt(lat)}°, ${fmt(lon)}°)`],
     ['How much', `${signed(r.slopePerDecade)} ${u} per decade`], ['Verdict', `${vd.label}. ${clockText(r)}`],
-    ['Witnesses', c.witness ? `${sourceOf(v)}; ${c.witness.witness} (${c.witness.agrees ? 'agrees' : 'disagrees'})` : sourceOf(v)], ['Method', "Annual means · Sen's slope · Mann-Kendall (Hamed & Rao)"],
+    ['Witnesses', c.witness ? `${sourceOf(v)}; ${c.witness.witness} (${c.witness.status.replace('-', ' ')})` : sourceOf(v)], ['Method', "Annual means · Sen's slope · Mann-Kendall (Hamed & Rao)"],
   ].map(([k, val]) => `<tr><th scope="row">${k}</th><td>${val}</td></tr>`).join('');
 }
 
@@ -387,12 +399,92 @@ $('demo-list').addEventListener('click', (e) => {
   if (first) flyTo(first.lat, first.lon, 4000000);
 });
 
+// --- Global view: a precomputed NASA POWER trend for every grid cell, drawn on the globe. ---
+let GRID = null, gridLayer = null, gridVar = 'T2M';
+const area = (lat) => Math.cos((lat * Math.PI) / 180);
+
+function fillGlobal() {
+  $('global-link').hidden = !GRID;
+  if (!GRID) return;
+  const ids = VARIABLES.filter((v) => GRID.trends[v.id]).map((v) => v.id);
+  $('global-var').innerHTML = ids.map((id) => `<option value="${id}">${varById(id).name}</option>`).join('');
+  $('global-var').value = gridVar;
+  $('global-note').textContent = `${GRID.cells.length} cells of ${GRID.step}° × ${GRID.step}°, each with its own trend test (NASA POWER, value at the cell center). Verdicts are adjusted for testing thousands of cells at once (Benjamini-Hochberg).`;
+}
+$('global-var').addEventListener('change', () => { gridVar = $('global-var').value; drawGrid(); });
+
+function drawGrid() {
+  if (!GRID) return;
+  const v = varById(gridVar), t = GRID.trends[gridVar], step = GRID.step;
+  // Color scale: the 95th percentile of |slope| is full color, so a few extreme cells do not wash out the rest.
+  const mags = t.filter(Boolean).map((x) => Math.abs(x[0])).sort((a, b) => a - b);
+  const top = mags[Math.floor(mags.length * 0.95)] || 1;
+  const share = { up: 0, down: 0, unsure: 0, none: 0 };
+  let total = 0;
+  const instances = [];
+  GRID.cells.forEach(([lat, lon], i) => {
+    const w = area(lat); total += w;
+    const x = t[i];
+    if (!x) { share.none += w; return; }
+    const [slope, , verdict] = x;
+    if (verdict === 'confirmed') share[slope > 0 ? 'up' : 'down'] += w; else share.unsure += w;
+    const k = Math.min(1, Math.abs(slope) / top);
+    const rgb = slope > 0 ? [1, 0.55 - 0.35 * k, 0.15] : [0.15, 0.55 - 0.15 * k, 1];
+    const alpha = verdict === 'confirmed' ? 0.25 + 0.5 * k : verdict === 'likely' ? 0.18 : 0.06;
+    if (viewer) instances.push(new C.GeometryInstance({
+      geometry: new C.RectangleGeometry({ rectangle: C.Rectangle.fromDegrees(lon - step / 2, lat - step / 2, lon + step / 2, lat + step / 2) }),
+      attributes: { color: C.ColorGeometryInstanceAttribute.fromColor(new C.Color(...rgb, alpha)) },
+    }));
+  });
+  if (viewer) {
+    if (gridLayer) viewer.scene.primitives.remove(gridLayer);
+    gridLayer = viewer.scene.primitives.add(new C.GroundPrimitive({
+      geometryInstances: instances, appearance: new C.PerInstanceColorAppearance({ flat: true, translucent: true }),
+    }));
+  }
+  const pct = (x) => `${Math.round((100 * x) / total)}%`;
+  const u = unitOf({ units: v.units });
+  $('t-global').textContent = `${v.name} around the planet`;
+  $('global-summary').innerHTML = `
+    <li><span class="swatch up"></span><strong>${pct(share.up)}</strong> of the planet's area: confirmed rise</li>
+    <li><span class="swatch down"></span><strong>${pct(share.down)}</strong>: confirmed fall</li>
+    <li><span class="swatch unsure"></span><strong>${pct(share.unsure)}</strong>: not confirmed yet (faint)</li>
+    ${share.none ? `<li><span class="swatch"></span><strong>${pct(share.none)}</strong>: no data (for example, land-only variables over the ocean)</li>` : ''}`;
+  $('global-scale').textContent = `Full color = ${fmtSlope(top)} ${u} per decade or more.`;
+  $('regions').innerHTML = Object.entries(GRID.regions).filter(([, r]) => r.series[gridVar]).map(([id, r]) => {
+    const res = analyze(r.series[gridVar]);
+    return `<li><button type="button" class="lead-btn" data-region="${id}"><span class="lead-verdict">${VERDICTS[res.verdict].label}</span>
+      <strong>${r.name[0].toUpperCase() + r.name.slice(1)}</strong> ${signed(res.slopePerDecade)} ${u} per decade</button></li>`;
+  }).join('');
+}
+
+$('regions').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-region]');
+  if (!b) return;
+  const r = GRID.regions[b.dataset.region], series = { ...r.series[gridVar], source: GRID.source };
+  render({ variable: varById(gridVar), place: r.name, lat: null, lon: null, series, r: analyze(series) });
+  location.hash = '#/evidence';
+});
+
+function openCell(position) {
+  const p = viewer.camera.pickEllipsoid(position);
+  if (!p) return;
+  const g = C.Cartographic.fromCartesian(p);
+  setPoint(+C.Math.toDegrees(g.latitude).toFixed(2), +C.Math.toDegrees(g.longitude).toFixed(2));
+  $('place').value = '';
+  document.querySelector(`input[name="variable"][value="${gridVar}"]`).checked = true;
+  location.hash = '#/case';
+  $('case-form').requestSubmit();
+}
+
 // --- Start: load the verified catalog and demos if they exist, then draw. ---
 async function loadJson(url) {
   try { const r = await fetch(url); return r.ok ? await r.json() : null; } catch { return null; }
 }
-const [catalog, demos, witnesses] = await Promise.all([loadJson('data/catalog.json'), loadJson('data/demos.json'), loadJson('data/witnesses.json')]);
+const [catalog, demos, witnesses, grid] = await Promise.all([loadJson('data/catalog.json'), loadJson('data/demos.json'),
+  loadJson('data/witnesses.json'), loadJson('data/grid.json')]);
 WITNESSES = witnesses;
+GRID = grid;
 if (catalog?.variables?.length) VARIABLES = catalog.variables;
 if (catalog?.places?.length) PLACES = catalog.places;
 if (Array.isArray(demos)) DEMOS = demos;
@@ -402,4 +494,5 @@ fillPlaceList();
 drawPlaceDots();
 selectPlace(PLACES.find((p) => p.id === 'coropuna')?.id ?? PLACES[0].id);
 renderDemos();
+fillGlobal();
 route();

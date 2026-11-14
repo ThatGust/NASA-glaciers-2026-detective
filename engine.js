@@ -131,6 +131,7 @@ export function analyze({ years, values, units = '' }) {
     p, tau, verdict, knownSince: verdict === 'confirmed' ? knownSince : null,
     yearsNeeded: verdict === 'confirmed' ? null : yearsNeeded(years, values, slope, intercept),
     units, autocorrelationCorrected: corrected,
+    ttest: (({ slope: b, ci: c, p: tp }) => ({ slopePerDecade: b * 10, slopeCI: [c[0] * 10, c[1] * 10], p: tp }))(linearTTest(years, values)),
   };
 }
 
@@ -140,8 +141,11 @@ export function compareWitnesses(principal, testigo) {
   const pick = (s) => common.map((y) => s.values[s.years.indexOf(y)]);
   const a = analyze({ years: common, values: pick(principal) });
   const b = analyze({ years: common, values: pick(testigo) });
+  const agrees = Math.sign(a.slopePerDecade) === Math.sign(b.slopePerDecade);
+  // The direction of a trend that is not even "likely" is noise, so it can neither back nor contradict the main series.
+  const status = b.verdict === 'unknown' ? 'not-corroborated' : agrees ? 'corroborated' : 'contradicted';
   return {
-    witness: testigo.source, agrees: Math.sign(a.slopePerDecade) === Math.sign(b.slopePerDecade),
+    witness: testigo.source, agrees, status,
     witnessVerdict: b.verdict, overlap: [common[0], common[common.length - 1]],
   };
 }
@@ -247,4 +251,56 @@ export function annualFromDaily(dates, countIf = null) {
     values.push(countIf ? v.filter(countIf).length : +(v.reduce((a, b) => a + b, 0) / days).toFixed(4));
   }
   return { years, values };
+}
+
+// Regularized incomplete beta I_x(a, b) by continued fraction (Numerical Recipes 6.4), for Student's t p-values.
+function incBeta(x, a, b) {
+  if (x <= 0) return 0;
+  if (x >= 1) return 1;
+  const lnBeta = lgamma(a + b) - lgamma(a) - lgamma(b);
+  const front = Math.exp(Math.log(x) * a + Math.log(1 - x) * b + lnBeta);
+  if (x > (a + 1) / (a + b + 2)) return 1 - incBeta(1 - x, b, a);
+  let f = 1, c = 1, d = 1 - ((a + b) * x) / (a + 1);
+  d = 1 / (Math.abs(d) < 1e-30 ? 1e-30 : d); f = d;
+  for (let m = 1; m <= 200; m++) {
+    for (const num of [(m * (b - m) * x) / ((a + 2 * m - 1) * (a + 2 * m)), -((a + m) * (a + b + m) * x) / ((a + 2 * m) * (a + 2 * m + 1))]) {
+      d = 1 + num * d; d = 1 / (Math.abs(d) < 1e-30 ? 1e-30 : d);
+      c = 1 + num / c; c = Math.abs(c) < 1e-30 ? 1e-30 : c;
+      f *= c * d;
+    }
+    if (Math.abs(c * d - 1) < 1e-12) break;
+  }
+  return (front * f) / a;
+}
+function lgamma(z) { // Lanczos approximation
+  const g = [676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+  if (z < 0.5) return Math.log(Math.PI / Math.abs(Math.sin(Math.PI * z))) - lgamma(1 - z);
+  z -= 1;
+  let x = 0.99999999999980993;
+  g.forEach((gi, i) => { x += gi / (z + i + 1); });
+  const t = z + 7.5;
+  return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x);
+}
+export const studentTwoSidedP = (t, df) => incBeta(df / (df + t * t), df / 2, 0.5);
+
+// Least-squares slope with a t-test, using the effective sample size for lag-1 autocorrelation (Santer et al. 2000).
+export function linearTTest(years, values) {
+  const n = years.length;
+  const mx = years.reduce((a, b) => a + b, 0) / n, my = values.reduce((a, b) => a + b, 0) / n;
+  let sxx = 0, sxy = 0;
+  years.forEach((x, i) => { sxx += (x - mx) ** 2; sxy += (x - mx) * (values[i] - my); });
+  const slope = sxy / sxx, b0 = my - slope * mx;
+  const e = values.map((y, i) => y - (b0 + slope * years[i]));
+  const ee = e.reduce((a, r) => a + r * r, 0);
+  let r1 = 0;
+  for (let i = 1; i < n; i++) r1 += e[i] * e[i - 1];
+  r1 = Math.max(0, Math.min(0.95, ee ? r1 / ee : 0));
+  const nEff = Math.max(3, (n * (1 - r1)) / (1 + r1));
+  const se = Math.sqrt(ee / (nEff - 2) / sxx);
+  const t = se > 0 ? slope / se : 0;
+  const df = nEff - 2;
+  // Two-sided 95% critical value by bisection on the t distribution.
+  let lo = 0, hi = 50;
+  for (let k = 0; k < 60; k++) { const mid = (lo + hi) / 2; if (studentTwoSidedP(mid, df) > 0.05) lo = mid; else hi = mid; }
+  return { slope, ci: [slope - hi * se, slope + hi * se], t, df, p: studentTwoSidedP(Math.abs(t), df), r1, nEff };
 }

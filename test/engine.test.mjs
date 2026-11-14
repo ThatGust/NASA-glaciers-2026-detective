@@ -144,3 +144,30 @@ test('annualFromDaily averages complete years and drops years with a missing day
   dates[10].value = -1; dates[11].value = -3; // two frost days in 2020
   assert.deepEqual(annualFromDaily(dates, (v) => v < 0), { years: [2020], values: [2] });
 });
+
+test('a witness only contradicts when its own trend is at least likely', async () => {
+  const { compareWitnesses } = await import('../engine.js');
+  const years = Array.from({ length: 40 }, (_, i) => 1980 + i);
+  const wiggle = (i) => (((i * 7) % 5) - 2) * 0.05;
+  const up = { years, values: years.map((_, i) => 0.05 * i + wiggle(i)), source: 'A' };
+  const down = { years, values: years.map((_, i) => -0.05 * i + wiggle(i)), source: 'B' };
+  const noise = { years, values: years.map((_, i) => (Math.sin(i * 12.9898) * 43758.5453) % 1), source: 'C' };
+  assert.equal(compareWitnesses(up, up).status, 'corroborated');
+  assert.equal(compareWitnesses(up, down).status, 'contradicted');
+  assert.equal(compareWitnesses(up, noise).status, 'not-corroborated');
+});
+
+test('Student t p-values match published tables', async () => {
+  const { studentTwoSidedP } = await import('../engine.js');
+  assert.ok(Math.abs(studentTwoSidedP(2.0, 10) - 0.07339) < 1e-4);
+  assert.ok(Math.abs(studentTwoSidedP(2.228, 10) - 0.05) < 1e-3);
+  assert.ok(Math.abs(studentTwoSidedP(1.96, 1e6) - 0.05) < 1e-3);
+});
+
+test('the linear t-test finds a clear trend and agrees in direction with Sen', async () => {
+  const { linearTTest } = await import('../engine.js');
+  const years = Array.from({ length: 30 }, (_, i) => 1990 + i);
+  const values = years.map((y, i) => 0.05 * i + (((i * 7) % 5) - 2) * 0.05);
+  const r = linearTTest(years, values);
+  assert.ok(Math.abs(r.slope - 0.05) < 0.005 && r.p < 0.001 && r.ci[0] > 0);
+});
