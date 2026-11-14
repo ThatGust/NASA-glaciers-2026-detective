@@ -141,4 +141,6 @@ test('annualFromDaily averages complete years and drops years with a missing day
   for (let t = Date.UTC(2020, 0, 2); t <= Date.UTC(2022, 0, 1); t += 86400000) dates.push({ date: new Date(t).toISOString(), value: 2 });
   dates[400].value = null; // a day in 2021
   assert.deepEqual(annualFromDaily(dates), { years: [2020], values: [2] });
+  dates[10].value = -1; dates[11].value = -3; // two frost days in 2020
+  assert.deepEqual(annualFromDaily(dates, (v) => v < 0), { years: [2020], values: [2] });
 });
