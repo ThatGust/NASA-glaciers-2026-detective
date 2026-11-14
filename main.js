@@ -25,6 +25,67 @@ const VEREDICTOS = {
 };
 
 const $ = (id) => document.getElementById(id);
+const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// --- Globo a pantalla completa: imágenes de NASA GIBS, sin claves (D-21). ---
+let viewer = null, marcador = null;
+try {
+  const C = window.Cesium;
+  const gibs = new C.WebMapTileServiceImageryProvider({
+    // shortcut: Blue Marble llega a ~600 m/píxel; de cerca se ve borroso. Para el caso Coropuna, añadir Landsat o MODIS.
+    url: 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/BlueMarble_ShadedRelief_Bathymetry/default/2004-08-01/GoogleMapsCompatible_Level8/{TileMatrix}/{TileRow}/{TileCol}.jpeg',
+    layer: 'BlueMarble_ShadedRelief_Bathymetry', style: 'default', tileMatrixSetID: 'GoogleMapsCompatible_Level8', format: 'image/jpeg', maximumLevel: 8,
+  });
+  viewer = new C.Viewer('globo', {
+    baseLayer: new C.ImageryLayer(gibs), baseLayerPicker: false, geocoder: false, homeButton: false, sceneModePicker: false,
+    navigationHelpButton: false, animation: false, timeline: false, fullscreenButton: false, infoBox: false, selectionIndicator: false,
+  });
+  viewer.camera.setView({ destination: C.Cartesian3.fromDegrees(-60, -10, 22000000) });
+  marcador = viewer.entities.add({
+    position: C.Cartesian3.fromDegrees(-72.65, -15.53),
+    point: { pixelSize: 10, color: C.Color.fromCssColorString('#00d4ff'), outlineColor: C.Color.BLACK, outlineWidth: 1 },
+    label: { text: 'Nevado Coropuna', font: '14px Inter, sans-serif', pixelOffset: new C.Cartesian2(0, -20), showBackground: true },
+  });
+  // Clic en el globo: elige el lugar del caso.
+  new C.ScreenSpaceEventHandler(viewer.scene.canvas).setInputAction((e) => {
+    const p = viewer.camera.pickEllipsoid(e.position);
+    if (!p || !location.hash.startsWith('#/caso')) return;
+    const g = C.Cartographic.fromCartesian(p);
+    ponerPunto(+C.Math.toDegrees(g.latitude).toFixed(2), +C.Math.toDegrees(g.longitude).toFixed(2), 'Punto elegido');
+  }, C.ScreenSpaceEventType.LEFT_CLICK);
+} catch (e) {
+  console.warn('Globo no disponible:', e);
+  $('sin3d').hidden = false;
+}
+
+function volarA(lat, lon, alto = 900000, segundos = 3) {
+  if (!viewer) return;
+  const destino = window.Cesium.Cartesian3.fromDegrees(lon, lat, alto);
+  if (quieto) viewer.camera.setView({ destination: destino });
+  else viewer.camera.flyTo({ destination: destino, duration: segundos });
+}
+
+function ponerPunto(lat, lon, nombre) {
+  $('lat').value = lat; $('lon').value = lon;
+  if (marcador) {
+    marcador.position = window.Cesium.Cartesian3.fromDegrees(lon, lat);
+    marcador.label.text = nombre;
+  }
+}
+
+// --- Vistas: una a la vez, con dirección propia para que el botón Atrás funcione. ---
+const VISTAS = ['inicio', 'caso', 'evidencia', 'veredicto', 'expediente'];
+function irA() {
+  let v = location.hash.replace('#/', '') || 'inicio';
+  if (!VISTAS.includes(v)) v = 'inicio';
+  if (['evidencia', 'veredicto', 'expediente'].includes(v) && !ultimo) { location.replace('#/caso'); return; }
+  for (const n of VISTAS) $(`vista-${n}`).classList.toggle('activa', n === v);
+  $('saltar').hidden = v !== 'inicio';
+  $(`vista-${v}`).querySelector('h1, h2')?.focus();
+  if (v === 'inicio') volarA(-15.53, -72.65, 160000, 9);
+}
+addEventListener('hashchange', irA);
+$('saltar').addEventListener('click', () => viewer?.camera.cancelFlight());
 const fmt = (x, d = 2) => x.toLocaleString('es-PE', { maximumFractionDigits: d, minimumFractionDigits: d });
 const signo = (x) => (x > 0 ? '+' : '') + fmt(x);
 let ultimo = null;
@@ -33,9 +94,10 @@ $('variables').innerHTML = VARIABLES.map((v, i) => `
   <li class="tarjeta"><label><input type="radio" name="variable" value="${v.id}" ${i ? '' : 'checked'}>
   <strong>${v.name}</strong>${v.def}</label></li>`).join('');
 $('lugar').innerHTML = LUGARES.map((l, i) => `<option value="${i}">${l.name}</option>`).join('');
-const ponerLugar = () => { const l = LUGARES[$('lugar').value]; $('lat').value = l.lat; $('lon').value = l.lon; };
+const ponerLugar = () => { const l = LUGARES[$('lugar').value]; ponerPunto(l.lat, l.lon, l.name); volarA(l.lat, l.lon); };
 $('lugar').addEventListener('change', ponerLugar);
-ponerLugar();
+ponerPunto(LUGARES[0].lat, LUGARES[0].lon, LUGARES[0].name);
+irA();
 
 $('caso').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -49,8 +111,8 @@ $('caso').addEventListener('submit', async (e) => {
     ultimo = { variable: v, lugar, lat, lon, serie, r };
     mostrar(ultimo);
     $('estado').textContent = '';
-    $('resultado').hidden = false;
-    $('t2').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    volarA(lat, lon);
+    location.hash = '#/evidencia';
   } catch (err) {
     $('estado').textContent = `No se pudo completar el caso: ${err.message}`;
   }
