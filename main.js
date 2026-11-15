@@ -941,10 +941,10 @@ const LUNAR_VARS = ['T2M', 'PRECTOTCORR', 'SNODP', 'T2M_MAX', 'T2M_MIN', 'RH2M']
 let moonViewer = null, lunarCase = null, onMoon = false, TIDES = null;
 // Official lunar names (IAU/USGS gazetteer) grouped into map layers; loaded the first time the Moon opens.
 const MOON_LAYERS = [
-  ['seas', 'Seas and lakes', '#4d9bff', ['Mare', 'Oceanus', 'Lacus', 'Sinus', 'Palus'], 12000000, 7],
-  ['mountains', 'Mountains and valleys', '#e8c27a', ['Mons', 'Montes', 'Rupes', 'Vallis'], 3000000, 6],
-  ['craters', 'Craters', '#c8c8d0', ['Crater'], 1200000, 4],
-  ['landing', 'Landing sites', '#3ddc97', ['Landing site'], 20000000, 9],
+  ['seas', 'Seas and lakes', '#4d9bff', ['Mare', 'Oceanus', 'Lacus', 'Sinus', 'Palus'], 4500000, 7],
+  ['mountains', 'Mountains and valleys', '#e8c27a', ['Mons', 'Montes', 'Rupes', 'Vallis'], 2000000, 6],
+  ['craters', 'Craters', '#c8c8d0', ['Crater'], 900000, 4],
+  ['landing', 'Landing sites', '#3ddc97', ['Landing site'], 5500000, 9],
 ];
 const moonLayerOn = { seas: true, mountains: true, craters: false, landing: true };
 let MOON_FEATURES = [];
@@ -997,7 +997,8 @@ function setWorld(moon) {
     try {
       const M = C.Ellipsoid.MOON;
       moonViewer = new C.Viewer('moon-globe', {
-        globe: new C.Globe(M), skyAtmosphere: false, baseLayerPicker: false, geocoder: false, homeButton: false, sceneModePicker: false,
+        // The scene must use the Moon's size too, or dragging and zooming act on an invisible Earth-sized sphere.
+        ellipsoid: M, globe: new C.Globe(M), skyAtmosphere: false, baseLayerPicker: false, geocoder: false, homeButton: false, sceneModePicker: false,
         navigationHelpButton: false, animation: false, timeline: false, fullscreenButton: false, infoBox: false, selectionIndicator: false,
     // Draw only when something changes (camera, tiles, data) instead of 60 times a second: the idle globe then uses almost no CPU.
     requestRenderMode: true, maximumRenderTimeChange: Infinity,
