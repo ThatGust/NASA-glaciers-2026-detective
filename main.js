@@ -149,17 +149,24 @@ try {
   $('no3d').hidden = false;
 }
 
+// Place symbols as plain billboard/label collections: unlike 900 entities, they cost nothing per frame while the camera is still.
+let placeBillboards = null, placeLabels = null;
+const placeMarks = {}; // place id -> { b, l }
 function drawPlaceDots() {
   if (!viewer) return;
-  viewer.entities.values.filter((e) => String(e.id).startsWith('place:')).forEach((e) => viewer.entities.remove(e));
-  for (const p of PLACES) viewer.entities.add({
-    id: `place:${p.id}`, position: C.Cartesian3.fromDegrees(p.lon, p.lat),
-    billboard: { image: kindIcon(p.environment), width: 22, height: 22 },
-    // The label sits above the dot (bottom-anchored with a gap) and only appears when the camera is close enough.
-    label: { text: p.short, font: '600 13px Inter, sans-serif', verticalOrigin: C.VerticalOrigin.BOTTOM, pixelOffset: new C.Cartesian2(0, -15),
-             fillColor: C.Color.WHITE, showBackground: true, backgroundColor: C.Color.fromCssColorString('rgba(10,10,15,.88)'),
-             backgroundPadding: new C.Cartesian2(6, 3), show: false },
-  });
+  if (placeBillboards) { viewer.scene.primitives.remove(placeBillboards); viewer.scene.primitives.remove(placeLabels); }
+  placeBillboards = viewer.scene.primitives.add(new C.BillboardCollection());
+  placeLabels = viewer.scene.primitives.add(new C.LabelCollection());
+  for (const p of PLACES) {
+    const position = C.Cartesian3.fromDegrees(p.lon, p.lat), id = { id: `place:${p.id}` }; // pick(...).id.id stays 'place:<id>'
+    placeMarks[p.id] = {
+      b: placeBillboards.add({ position, id, image: kindIcon(p.environment), width: 22, height: 22 }),
+      // The label sits above the symbol and only appears for the selected place or the one under the pointer.
+      l: placeLabels.add({ position, id, text: p.short, font: '600 13px Inter, sans-serif', verticalOrigin: C.VerticalOrigin.BOTTOM, pixelOffset: new C.Cartesian2(0, -15),
+        fillColor: C.Color.WHITE, showBackground: true, backgroundColor: C.Color.fromCssColorString('rgba(10,10,15,.88)'), backgroundPadding: new C.Cartesian2(6, 3), show: false }),
+    };
+  }
+  showDots();
   labelOnly(selectedPlace);
 }
 
@@ -167,9 +174,14 @@ function drawPlaceDots() {
 let hoverId = null;
 function labelOnly(...ids) {
   if (!viewer) return;
-  for (const e of viewer.entities.values) if (String(e.id).startsWith('place:')) e.label.show = ids.includes(String(e.id).slice(6));
+  for (const [id, m] of Object.entries(placeMarks)) m.l.show = m.b.show && ids.includes(id);
+  redraw();
 }
+// Hover labels: picking renders the scene again, so only on the case picker and at most ten times a second.
+let lastHover = 0;
 if (viewer) new C.ScreenSpaceEventHandler(viewer.scene.canvas).setInputAction((m) => {
+  if (!location.hash.startsWith('#/case') || performance.now() - lastHover < 100) return;
+  lastHover = performance.now();
   const id = viewer.scene.pick(m.endPosition)?.id?.id;
   const next = typeof id === 'string' && id.startsWith('place:') ? id.slice(6) : null;
   if (next !== hoverId) { hoverId = next; labelOnly(selectedPlace, hoverId); }
@@ -244,7 +256,9 @@ const matches = (p) => (!kindFilter || p.environment === kindFilter) && (!countr
   && (!searchText || /^\s*-?\d/.test(searchText) || `${p.name} ${p.short} ${countriesOf(p).join(' ')}`.toLowerCase().includes(searchText));
 // Dots on the globe follow the same filter, so the map shows what the list shows.
 function showDots() {
-  viewer?.entities.values.forEach((e) => { if (String(e.id).startsWith('place:')) e.show = !location.hash.startsWith('#/global') && matches(PLACES.find((p) => `place:${p.id}` === e.id) ?? {}); });
+  const off = location.hash.startsWith('#/global');
+  for (const p of PLACES) { const m = placeMarks[p.id]; if (m) { m.b.show = !off && matches(p); if (!m.b.show) m.l.show = false; } }
+  redraw();
 }
 
 function renderPlaces() {
@@ -302,6 +316,7 @@ function route() {
   if (v === 'player') classroom?.renderPlayer();
   const needs = { player: classroom?.active, lunar: lunarCase, evidence: current, projection: current, verdict: current, record: current, lineup: current, leads, compare: current?.other, global: GRID };
   if (v in needs && !needs[v]) { location.replace('#/case'); return; }
+  if (document.body.classList.contains('panel-down')) document.querySelector('.panel-toggle')?.click(); // a new view always opens
   for (const n of VIEWS) $(`view-${n}`).classList.toggle('active', n === v);
   $('skip').hidden = v !== 'home';
   $('compare-banner').hidden = !(v === 'case' && compareWith);
@@ -313,6 +328,13 @@ function route() {
   if (v === 'home') flyTo(-15.53, -72.65, 160000, 9);
 }
 addEventListener('hashchange', route);
+// Phones: every side panel gets a handle that slides it down to show the globe (or the Moon) and back.
+for (const v of document.querySelectorAll('.view.side')) v.prepend(Object.assign(document.createElement('button'), { type: 'button', className: 'panel-toggle', textContent: 'Hide panel' }));
+addEventListener('click', (e) => {
+  if (!e.target.closest('.panel-toggle')) return;
+  const down = document.body.classList.toggle('panel-down');
+  document.querySelectorAll('.panel-toggle').forEach((b) => { b.textContent = down ? 'Show panel' : 'Hide panel'; b.setAttribute('aria-expanded', String(!down)); });
+});
 $('skip').addEventListener('click', () => viewer?.camera.cancelFlight());
 // Home sheet: slides down to leave the globe in view; the handle brings it back.
 // A choice on the home sheet: the trapezoid sinks first, then the next panel slides in.
@@ -806,7 +828,8 @@ function drawGrid() {
   const top = mags[Math.floor(mags.length * 0.95)] || 1;
   const share = { up: 0, down: 0, unsure: 0, none: 0 };
   let total = 0;
-  const instances = [];
+  // Colour of each cell centre (premultiplied by its opacity), then blended smoothly between centres on a 2-pixels-per-degree image.
+  const nLat = Math.round(180 / step), nLon = Math.round(360 / step), cell = new Float32Array(nLat * nLon * 4);
   GRID.cells.forEach(([lat, lon], i) => {
     const w = area(lat); total += w;
     const x = t[i];
@@ -815,18 +838,29 @@ function drawGrid() {
     if (verdict === 'confirmed') share[slope > 0 ? 'up' : 'down'] += w; else share.unsure += w;
     const k = Math.min(1, Math.abs(slope) / top);
     const rgb = slope > 0 ? [1, 0.55 - 0.35 * k, 0.15] : [0.15, 0.55 - 0.15 * k, 1];
-    const alpha = verdict === 'confirmed' ? 0.2 + 0.4 * k : verdict === 'likely' ? 0.14 : 0.04;
-    if (viewer) instances.push(new C.GeometryInstance({
-      geometry: new C.RectangleGeometry({ rectangle: C.Rectangle.fromDegrees(lon - step / 2, lat - step / 2, lon + step / 2, lat + step / 2), height: 2000 }),
-      attributes: { color: C.ColorGeometryInstanceAttribute.fromColor(new C.Color(...rgb, alpha)) },
-    }));
+    const alpha = verdict === 'confirmed' ? 0.25 + 0.45 * k : verdict === 'likely' ? 0.16 : 0.05;
+    const o = (Math.floor((lat + 90) / step) * nLon + Math.floor((lon + 180) / step)) * 4;
+    cell.set([rgb[0] * alpha, rgb[1] * alpha, rgb[2] * alpha, alpha], o);
   });
   if (viewer) {
-    if (gridLayer) viewer.scene.primitives.remove(gridLayer);
-    // A plain primitive slightly above the surface: ground-clamped primitives need GPU features some browsers lack.
-    gridLayer = viewer.scene.primitives.add(new C.Primitive({
-      geometryInstances: instances, appearance: new C.PerInstanceColorAppearance({ flat: true, translucent: true }), asynchronous: false,
-    }));
+    const W = 720, H = 360, cv = Object.assign(document.createElement('canvas'), { width: W, height: H }), ctx = cv.getContext('2d'), img = ctx.createImageData(W, H);
+    for (let y = 0; y < H; y++) {
+      const fi = Math.min(nLat - 1, Math.max(0, (180 - (y + 0.5) * 180 / H) / step - 0.5)), i0 = Math.floor(fi), i1 = Math.min(nLat - 1, i0 + 1), di = fi - i0;
+      for (let x = 0; x < W; x++) {
+        const fj = ((x + 0.5) * 360 / W) / step - 0.5, j0 = Math.floor(fj), dj = fj - j0;
+        const a = (nLon + j0) % nLon, b = (a + 1) % nLon, px = (y * W + x) * 4; // longitude wraps around
+        const v = [0, 0, 0, 0];
+        for (const [ii, jj, wt] of [[i0, a, (1 - di) * (1 - dj)], [i0, b, (1 - di) * dj], [i1, a, di * (1 - dj)], [i1, b, di * dj]]) {
+          const o = (ii * nLon + jj) * 4;
+          for (let c = 0; c < 4; c++) v[c] += cell[o + c] * wt;
+        }
+        if (v[3] > 0) { img.data[px] = 255 * v[0] / v[3]; img.data[px + 1] = 255 * v[1] / v[3]; img.data[px + 2] = 255 * v[2] / v[3]; img.data[px + 3] = 255 * v[3]; }
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    if (gridLayer) viewer.imageryLayers.remove(gridLayer);
+    gridLayer = viewer.imageryLayers.addImageryProvider(new C.SingleTileImageryProvider({ url: cv.toDataURL(), tileWidth: W, tileHeight: H }));
+    gridLayer.show = location.hash.startsWith('#/global');
     redraw();
   }
   const pct = (x) => `${Math.round((100 * x) / total)}%`;
@@ -952,6 +986,9 @@ function setWorld(moon) {
   if (moon === onMoon && (!moon || moonViewer)) return;
   onMoon = moon;
   $('globe').hidden = moon; $('moon-globe').hidden = !moon;
+  // The hidden globe stops its frame loop entirely, so only one globe ever uses the CPU and GPU.
+  if (viewer) viewer.useDefaultRenderLoop = !moon;
+  if (moonViewer) moonViewer.useDefaultRenderLoop = moon;
   $('to-earth').setAttribute('aria-pressed', String(!moon)); $('to-moon').setAttribute('aria-pressed', String(moon));
   document.querySelector('.credits').textContent = moon
     ? 'Imagery: NASA LRO WAC global mosaic via NASA Moon Trek; Earth: NASA Blue Marble (GIBS) · Globe: CesiumJS (Apache 2.0)'

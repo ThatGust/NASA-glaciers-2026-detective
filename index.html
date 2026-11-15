@@ -9,7 +9,7 @@
 <style>
   /* Style variables taken from God's Eye View (MIT, (c) 2026 Bilawal Sidhu), src/ui/styles/foundation.css */
   :root {
-    --bg-dark:#0a0a0f; --glass-bg:rgba(12,12,20,.82); --glass-border:rgba(255,255,255,.08);
+    --bg-dark:#0a0a0f; --glass-bg:rgba(12,12,20,.9); --glass-border:rgba(255,255,255,.08);
     --accent:#00d4ff; --accent-dim:rgba(0,212,255,.15);
     --text-primary:#e8eaed;
     --text-secondary:rgba(232,234,237,.72); /* GEV uses .5; raised for WCAG AA contrast */
@@ -39,7 +39,7 @@
   .credits { position:fixed; bottom:8px; left:16px; z-index:3; margin:0; font-size:12px; color:var(--text-secondary); text-shadow:0 1px 2px #000; }
 
   /* Views: one visible at a time; the side panel is sized to fit the screen. */
-  .view { position:fixed; z-index:2; overflow:auto; background:var(--glass-bg); backdrop-filter:blur(14px);
+  .view { position:fixed; z-index:2; overflow:auto; background:var(--glass-bg);
           border:1px solid var(--glass-border); border-radius:var(--panel-radius); padding:16px 20px; }
   .view:not(.active) { display:none; }
   .side { top:64px; right:16px; bottom:36px; width:min(500px, calc(100vw - 32px)); display:flex; flex-direction:column; gap:8px; }
@@ -138,7 +138,7 @@
   .shares div { border:1px solid var(--glass-border); border-radius:var(--btn-radius); padding:6px; }
   .shares b { display:block; font-size:22px; }
   .shares .up b { color:var(--up); } .shares .down b { color:var(--down); }
-  .tour { position:fixed; z-index:4; left:16px; bottom:40px; width:min(500px, calc(100vw - 32px)); background:var(--glass-bg); backdrop-filter:blur(14px);
+  .tour { position:fixed; z-index:4; left:16px; bottom:40px; width:min(500px, calc(100vw - 32px)); background:var(--glass-bg);
           border:1px solid var(--accent); border-radius:var(--panel-radius); padding:12px 14px; }
   .tour p { margin:0 0 8px; }
   @media (max-width:640px) { .tour { top:64px; bottom:auto; } }
@@ -151,7 +151,7 @@
                   border:1px solid rgba(255,255,255,.3); border-radius:8px; }
   #country { width:150px; margin:0; font-size:14px; }
   .pop { position:fixed; z-index:3; left:16px; bottom:36px; width:min(320px, calc(100vw - 32px)); overflow:hidden;
-         background:var(--glass-bg); backdrop-filter:blur(14px); border:1px solid var(--glass-border); border-radius:var(--panel-radius); }
+         background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:var(--panel-radius); }
   .pop img { width:100%; height:180px; object-fit:cover; display:block; background:#1b1f2a; }
   .pop-body { padding:10px 12px; display:flex; flex-direction:column; gap:4px; font-size:14px; }
   .pop-body b { font-size:17px; }
@@ -243,6 +243,19 @@
     .side.active { animation-name:slideup; }
     #space svg { left:8px; top:100px; width:calc(100% - 16px); height:calc(30vh - 100px); }
     .space-cap { display:none; }
+  }
+  /* Phones: panels can slide down to reveal the 3D globe; credits stay under panels; the tour never covers a panel. */
+  .lead-btn { align-items:center; } .lead-btn .tag { flex:none; }
+  .panel-toggle { display:none; }
+  @media (max-width:640px) {
+    .credits { z-index:1; font-size:10px; }
+    .side { transition:transform 350ms cubic-bezier(.4,0,.2,1); }
+    .panel-toggle { display:block; position:sticky; top:-16px; z-index:1; margin:-16px -20px 0; padding:8px 0 4px; width:calc(100% + 40px); text-align:center;
+                    font:12px var(--font-mono); color:var(--text-secondary); background:var(--glass-bg); border:0; cursor:pointer; }
+    .panel-toggle::before { content:""; display:block; width:40px; height:4px; margin:0 auto 3px; border-radius:2px; background:rgba(255,255,255,.35); }
+    body.panel-down .side.active { transform:translateY(calc(100% - 34px)); overflow:hidden; }
+    body:has(#tour:not([hidden])) .side { max-height:calc(100vh - 290px); }
+    .lead-btn .tag { font-size:10px; }
   }
   [hidden] { display:none !important; }
 </style>
@@ -388,7 +401,7 @@
   <label class="note" for="global-var">What to map</label>
   <select id="global-var"></select>
   <div class="shares" id="global-summary"></div>
-  <p class="note"><span id="global-scale"></span> Faint cells: not confirmed yet. Click a cell to investigate it.</p>
+  <p class="note"><span id="global-scale"></span> Faint areas: not confirmed yet. Colours are blended between 5° cells; click anywhere to investigate that cell.</p>
   <h3>Big regions</h3>
   <ul class="leads" id="regions"></ul>
   <details><summary>How this map is made</summary><p class="note" id="global-note"></p></details>
