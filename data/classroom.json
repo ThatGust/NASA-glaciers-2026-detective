@@ -1,0 +1,11 @@
+{
+  "publicUrl": "https://nasa-glaciers-2026-detective.pages.dev/",
+  "firebase": {
+    "apiKey": "AIzaSyBN7iIxhACBODPfnok5B9hvt8_BaKmTem8",
+    "authDomain": "signal-or-noise-57684.firebaseapp.com",
+    "projectId": "signal-or-noise-57684",
+    "storageBucket": "signal-or-noise-57684.firebasestorage.app",
+    "messagingSenderId": "995073619257",
+    "appId": "1:995073619257:web:b3af3e3c07eb60e7d9e4e8"
+  }
+}
