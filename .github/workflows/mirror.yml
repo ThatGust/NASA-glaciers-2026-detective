@@ -1,0 +1,30 @@
+# Mirror on GitHub Pages for visitors whose networks throttle Cloudflare (Russia since June 2025).
+# Same files as the Cloudflare build, plus Cesium and qrcode-generator served from this origin instead of jsDelivr.
+name: Mirror (GitHub Pages)
+on:
+  push: { branches: [main] }
+  workflow_dispatch:
+permissions: { contents: read, pages: write, id-token: write }
+concurrency: { group: pages, cancel-in-progress: true }
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: { name: github-pages, url: '${{ steps.d.outputs.page_url }}' }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: node tools/build_site.mjs
+      - name: Self-host the CDN libraries
+        run: |
+          mkdir -p dist/vendor && cd dist/vendor
+          npm pack cesium@1.124.0 qrcode-generator@1.4.4 --silent
+          tar -xzf cesium-1.124.0.tgz package/Build/Cesium && mv package/Build/Cesium cesium && rm -rf package
+          tar -xzf qrcode-generator-1.4.4.tgz package/qrcode.js && mv package/qrcode.js qrcode.js && rm -rf package *.tgz
+          cd .. && sed -i -e 's#https://cdn.jsdelivr.net/npm/cesium@1.124.0/Build/Cesium/#vendor/cesium/#g' \
+                          -e 's#https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js#vendor/qrcode.js#' index.html
+          ! grep -n jsdelivr index.html
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: dist }
+      - id: d
+        uses: actions/deploy-pages@v4
