@@ -1,0 +1,133 @@
+{
+  "generated": "2026-11-15T00:24:00.345Z",
+  "renderer": "Public Kroki PlantUML service",
+  "endpoint": "https://kroki.io/plantuml/{svg,png}",
+  "local_probe": "Java 21.0.7 and Graphviz available; PlantUML command/JAR not found in the app or checked local tool locations. Public Kroki fallback explicitly authorized by the task.",
+  "disclosure": "Only the standalone .puml diagram text is submitted; no app source, data files, credentials or personal data are uploaded.",
+  "output_width_px": 1200,
+  "diagrams": [
+    {
+      "file": "00_overview.puml",
+      "source_sha256": "23d68cf494f3a78f239db03a0d979097dde274515fc071083cc235ee8e15ef4c",
+      "natural_width": 1628,
+      "natural_height": 1932,
+      "minimum_text_px_at_1200": 14.74,
+      "use_cases": [
+        "UC-01",
+        "UC-06",
+        "UC-11",
+        "UC-26",
+        "UC-30",
+        "UC-37",
+        "UC-39",
+        "UC-42",
+        "UC-44",
+        "UC-45",
+        "UC-47"
+      ]
+    },
+    {
+      "file": "01_explore_earth.puml",
+      "source_sha256": "811d205566b929c51300191ba3176ede476e7423fd646a6e44d506324b691e0a",
+      "natural_width": 1298,
+      "natural_height": 1206,
+      "minimum_text_px_at_1200": 18.49,
+      "use_cases": [
+        "UC-01",
+        "UC-02",
+        "UC-03",
+        "UC-04",
+        "UC-05"
+      ]
+    },
+    {
+      "file": "02_investigate_case.puml",
+      "source_sha256": "14700bf2cee0711e5ca3d922752fef5dfecfda05df61e0256854c189ef57a48a",
+      "natural_width": 1930,
+      "natural_height": 2011,
+      "minimum_text_px_at_1200": 12.44,
+      "use_cases": [
+        "UC-06",
+        "UC-07",
+        "UC-08",
+        "UC-09",
+        "UC-10",
+        "UC-11",
+        "UC-12",
+        "UC-13",
+        "UC-14",
+        "UC-15",
+        "UC-16",
+        "UC-17",
+        "UC-18",
+        "UC-19",
+        "UC-20",
+        "UC-21",
+        "UC-22",
+        "UC-23",
+        "UC-24",
+        "UC-25"
+      ]
+    },
+    {
+      "file": "03_global_monitor.puml",
+      "source_sha256": "2027948289beb3fe374bdb3643143c43a179d48f5a28cbb9b741f04da7151164",
+      "natural_width": 1306,
+      "natural_height": 1116,
+      "minimum_text_px_at_1200": 18.38,
+      "use_cases": [
+        "UC-06",
+        "UC-26",
+        "UC-27",
+        "UC-28",
+        "UC-29"
+      ]
+    },
+    {
+      "file": "04_moon.puml",
+      "source_sha256": "49a7e9c89570a8e60b241a805df86e38cc3f12739433a984b35ff04677b64742",
+      "natural_width": 1452,
+      "natural_height": 2010,
+      "minimum_text_px_at_1200": 16.53,
+      "use_cases": [
+        "UC-30",
+        "UC-31",
+        "UC-32",
+        "UC-33",
+        "UC-34",
+        "UC-35",
+        "UC-36",
+        "UC-37",
+        "UC-38",
+        "UC-39",
+        "UC-40"
+      ]
+    },
+    {
+      "file": "05_game_classroom.puml",
+      "source_sha256": "efed492348f5d52336650939f693f2f8c8c80fb6a5eda8ae12cd709962db5f25",
+      "natural_width": 1966,
+      "natural_height": 1451,
+      "minimum_text_px_at_1200": 12.21,
+      "use_cases": [
+        "UC-06",
+        "UC-41",
+        "UC-42",
+        "UC-43",
+        "UC-44",
+        "UC-45",
+        "UC-46",
+        "UC-47",
+        "UC-48"
+      ]
+    },
+    {
+      "file": "page_overview.puml",
+      "source_sha256": "4baef9787726a3031b7ee25a4cb5e5c3c43227482c1315cecb313e1aaa058104",
+      "natural_width": 1982,
+      "natural_height": 753,
+      "minimum_text_px_at_1200": 13.32,
+      "use_cases": []
+    }
+  ]
+}

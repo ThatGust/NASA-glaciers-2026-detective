@@ -101,6 +101,8 @@ try {
   viewer = new C.Viewer('globe', {
     baseLayer: new C.ImageryLayer(gibs), baseLayerPicker: false, geocoder: false, homeButton: false, sceneModePicker: false,
     navigationHelpButton: false, animation: false, timeline: false, fullscreenButton: false, infoBox: false, selectionIndicator: false,
+    // Draw only when something changes (camera, tiles, data) instead of 60 times a second: the idle globe then uses almost no CPU.
+    requestRenderMode: true, maximumRenderTimeChange: Infinity,
   });
   viewer.camera.setView({ destination: C.Cartesian3.fromDegrees(-60, -10, 22000000) });
   marker = viewer.entities.add({
@@ -329,13 +331,16 @@ function chosen() {
 }
 
 // Investigate one variable (or the second place of a comparison).
+// Each new request makes older ones stale: a slow answer must never replace a newer case.
+let op = 0;
 $('case-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const { v, lat, lon, place } = chosen();
+  const { v, lat, lon, place } = chosen(), hunch = new FormData(e.target).get('hunch') || null, my = ++op;
   $('status').textContent = 'Asking NASA POWER…';
   try {
     const series = await seriesFor(v, lat, lon, v.start);
-    const caseNow = { variable: v, place, lat, lon, series, r: analyze(series), hunch: new FormData(e.target).get('hunch') || null };
+    if (my !== op) return;
+    const caseNow = { variable: v, place, lat, lon, series, r: analyze(series), hunch };
     $('status').textContent = '';
     flyTo(lat, lon);
     if (compareWith && compareWith.variable.id === v.id) {
@@ -350,16 +355,17 @@ $('case-form').addEventListener('submit', async (e) => {
       location.hash = '#/evidence';
     }
   } catch (err) {
-    $('status').textContent = `The case could not be completed. ${powerError(err)}`;
+    if (my === op) $('status').textContent = `The case could not be completed. ${powerError(err)}`;
   }
 });
 
 // Scan every variable at the chosen place.
 $('scan').addEventListener('click', async () => {
-  const { lat, lon, place } = chosen();
+  const { lat, lon, place } = chosen(), my = ++op;
   $('status').textContent = 'Asking NASA POWER for every variable…';
   try {
     const all = await fetchPowerMany(VARIABLES.map((v) => ({ id: v.id, start: v.start ?? 1981 })), lat, lon);
+    if (my !== op) return;
     const pid = PLACES.find((p) => p.lat === lat && p.lon === lon)?.id;
     leads = { place, lat, lon, list: scan({ ...all, ...(EXTRA[pid] ?? {}) }) };
     renderLeads(leads);
@@ -367,7 +373,7 @@ $('scan').addEventListener('click', async () => {
     flyTo(lat, lon);
     location.hash = '#/leads';
   } catch (err) {
-    $('status').textContent = `The scan could not be completed. ${powerError(err)}`;
+    if (my === op) $('status').textContent = `The scan could not be completed. ${powerError(err)}`;
   }
 });
 
@@ -477,7 +483,7 @@ function render(c0) {
   // Clues start closed: the detective opens each one.
   $('checks').innerHTML = checks.map(([k, t, title], i) => `<li data-clue="${i}"><button type="button" class="clue">🔍 ${title}</button>
     <span hidden><span class="ic ${k}" aria-label="${said[k]}">${icon[k]}</span> ${t}</span></li>`).join('');
-  if (c.hunch && c.hunch !== 'unsure' && !c.demo) award(c.hunch === saw ? 1 : 0, 'hunch');
+  if (c.hunch && c.hunch !== 'unsure' && !c.demo && !c.hunchScored) { c.hunchScored = true; award(c.hunch === saw ? 1 : 0, 'hunch'); }
   resetGame(c.demo);
 
   $('details').innerHTML = [
@@ -497,7 +503,7 @@ function render(c0) {
   ].map((t) => `<li>${t}</li>`).join('');
 
   $('record').innerHTML = [
-    ['What', `${v.name} (${v.technical ?? v.name}, ${v.id})`], ['Where', lat == null ? `${place} (area-weighted mean of the grid cells in it)` : `${place} (${fmt(lat)}°, ${fmt(lon)}°)`],
+    ['What', `${v.name} (${v.technical ?? v.name}, ${v.id})`], ['Where', lat == null ? `${esc(place)} (area-weighted mean of the grid cells in it)` : `${esc(place)} (${fmt(lat)}°, ${fmt(lon)}°)`],
     ['How much', `${signed(r.slopePerDecade)} ${u} per decade, ${r.firstYear}–${r.lastYear}`], ['Verdict', `${vd.label}. ${clockText(r)}`],
     ['Checks', checks.map(([k, t]) => `${icon[k]} ${t}`).join('<br>')],
     ['Witnesses', c.witness ? `${sourceOf(v)}; ${c.witness.witness} (${c.witness.status.replace('-', ' ')})` : sourceOf(v)], ['Method', "Annual means · Sen's slope · Mann-Kendall (Hamed & Rao) · t-test"],
@@ -518,7 +524,7 @@ function renderCompare(c) {
   const unsure = [a, b].filter((x) => x.r.verdict === 'unknown');
   $('t-compare').textContent = `${v.name}: ${a.place} vs. ${b.place}`;
   $('compare-grid').innerHTML = [a, b].map((x) => `
-    <div class="card"><h3>${x.place}</h3>${chart(x.series, x.r)}
+    <div class="card"><h3>${esc(x.place)}</h3>${chart(x.series, x.r)}
     <p><strong>${VERDICTS[x.r.verdict].label}</strong> · ${signed(x.r.slopePerDecade)} ${unitOf(x.series)} per decade</p>
     <p class="note">${clockText(x.r)}</p></div>`).join('');
   const name = v.name.toLowerCase();
@@ -534,7 +540,18 @@ const RANKS = [[0, 'Rookie'], [5, 'Junior detective'], [12, 'Inspector'], [25, '
 let score = 0, classroom = null;
 try { score = +localStorage.getItem('td-score') || 0; } catch { score = 0; }
 function showScore() { $('score').textContent = `🕵 ${score} pts · ${RANKS.filter(([p]) => score >= p).at(-1)[1]}`; }
-function award(points) { classroom?.addPoints(points); score += points; try { localStorage.setItem('td-score', String(score)); } catch { /* private mode: keep it in memory */ } showScore(); }
+// Each question of each case scores once on this device, so replaying the same case does not farm points.
+let scored = new Set();
+try { scored = new Set(JSON.parse(localStorage.getItem('td-scored')) ?? []); } catch { /* private mode: in memory only */ }
+function award(points, what) {
+  if (!points) return false;
+  classroom?.addPoints(points, current?.key && what ? `${current.key}:${what}` : null);
+  if (what && current) {
+    const id = `${current.place}|${current.variable?.id}|${current.series?.years?.[0]}|${what}`;
+    if (scored.has(id)) return false;
+    scored.add(id); try { localStorage.setItem('td-scored', JSON.stringify([...scored])); } catch { /* keep in memory */ }
+  }
+  score += points; try { localStorage.setItem('td-score', String(score)); } catch { /* private mode: keep it in memory */ } showScore(); return true; }
 showScore();
 
 function resetGame(reveal) {
@@ -551,7 +568,7 @@ $('ask-trend').addEventListener('click', (e) => {
   const r = current.r, guess = b.dataset.trend, tilt = r.slopePerDecade > 0 ? 'up' : r.slopePerDecade < 0 ? 'down' : 'none';
   const truth = r.verdict === 'unknown' ? 'none' : tilt;
   b.setAttribute('aria-pressed', 'true'); $('ask-trend').classList.add('done'); $('stat-row').hidden = false;
-  if (guess === truth) { award(1); feedback('trend-feedback', 'good', '✓ Good eye! +1 point. ' + (truth === 'none' ? 'The ups and downs hide any steady change.' : 'The dashed trend line agrees with you.')); }
+  if (guess === truth) { const got = award(1, 'trend'); feedback('trend-feedback', 'good', `✓ Good eye! ${got ? '+1 point.' : '(Already scored on this case.)'} ` + (truth === 'none' ? 'The ups and downs hide any steady change.' : 'The dashed trend line agrees with you.')); }
   else if (truth === 'none' && guess === tilt) feedback('trend-feedback', 'close', '≈ Close: the line does tilt that way, but the change is too small to tell apart from normal ups and downs. No points this time.');
   else feedback('trend-feedback', 'miss', `✗ Not quite. Follow the dashed line from ${current.series.years[0]} to ${current.series.years.at(-1)}: ${truth === 'none' ? 'it stays almost flat compared with the ups and downs' : `it goes ${truth === 'up' ? 'up' : 'down'}`}. Detectives learn from misses!`);
 });
@@ -563,8 +580,8 @@ $('ask-verdict').addEventListener('click', (e) => {
   const gap = Math.abs(order.indexOf(call) - order.indexOf(truth));
   b.setAttribute('aria-pressed', 'true'); $('ask-verdict').classList.add('done'); $('verdict-block').hidden = false;
   const why = { confirmed: 'the tests say a change this clear would almost never come from chance', likely: 'there are signs, but chance could still explain them', unknown: 'the ups and downs are too big for the change to stand out yet' }[truth];
-  if (gap === 0) { award(2); feedback('verdict-feedback', 'good', `✓ Great call! +2 points: ${why}.`); }
-  else if (gap === 1) { award(1); feedback('verdict-feedback', 'close', `≈ Close, +1 point. The tests say "${VERDICTS[truth].label.slice(2)}": ${why}.`); }
+  if (gap === 0) { const got = award(2, 'verdict'); feedback('verdict-feedback', 'good', `✓ Great call!${got ? ' +2 points' : ' (Already scored on this case.)'}: ${why}.`); }
+  else if (gap === 1) { const got = award(1, 'verdict'); feedback('verdict-feedback', 'close', `≈ Close${got ? ', +1 point' : ' (already scored)'}. The tests say "${VERDICTS[truth].label.slice(2)}": ${why}.`); }
   else feedback('verdict-feedback', 'miss', `✗ The tests disagree: ${why}. Open the clues to see why.`);
 });
 
@@ -773,6 +790,7 @@ function drawGrid() {
     gridLayer = viewer.scene.primitives.add(new C.Primitive({
       geometryInstances: instances, appearance: new C.PerInstanceColorAppearance({ flat: true, translucent: true }), asynchronous: false,
     }));
+    redraw();
   }
   const pct = (x) => `${Math.round((100 * x) / total)}%`;
   const u = unitOf({ units: v.units });
@@ -871,6 +889,9 @@ $('moon-layers').addEventListener('click', (e) => {
   moonViewer?.entities.values.forEach((en) => { if (en.layer) en.show = moonLayerOn[en.layer]; });
 });
 renderMoonLayers();
+// Request-render mode: anything the UI changes on a globe asks for one new frame.
+function redraw() { requestAnimationFrame(() => { viewer?.scene.requestRender(); moonViewer?.scene.requestRender(); }); }
+for (const ev of ['click', 'input', 'hashchange', 'resize']) addEventListener(ev, redraw);
 async function loadMoonFeatures(M) {
   const data = await loadJson('data/moon_features.json');
   MOON_FEATURES = data?.features ?? [];
@@ -887,6 +908,7 @@ async function loadMoonFeatures(M) {
     });
     en.layer = id; en.show = moonLayerOn[id]; en.feature = f;
   }
+  redraw();
 }
 
 function setWorld(moon) {
@@ -903,6 +925,8 @@ function setWorld(moon) {
       moonViewer = new C.Viewer('moon-globe', {
         globe: new C.Globe(M), skyAtmosphere: false, baseLayerPicker: false, geocoder: false, homeButton: false, sceneModePicker: false,
         navigationHelpButton: false, animation: false, timeline: false, fullscreenButton: false, infoBox: false, selectionIndicator: false,
+    // Draw only when something changes (camera, tiles, data) instead of 60 times a second: the idle globe then uses almost no CPU.
+    requestRenderMode: true, maximumRenderTimeChange: Infinity,
         baseLayer: new C.ImageryLayer(new C.WebMapTileServiceImageryProvider({ url: MOON_TILES, layer: 'LRO_WAC_Mosaic_Global_303ppd_v02', style: 'default',
           tileMatrixSetID: 'default028mm', format: 'image/jpeg', maximumLevel: 7, tilingScheme: new C.GeographicTilingScheme({ ellipsoid: M }) })),
       });
@@ -972,13 +996,15 @@ const QUIZ = {
     why: 'A few nights after a full moon: moonlight helps thousands of corals spawn on the same night.' },
 };
 let lunarGuess = null;
+const quizScored = new Set(); // each quiz scores once, however many times it is reopened
 $('lunar-quiz').addEventListener('click', (e) => {
   const b = e.target.closest('[data-q]');
   if (!b || $('lunar-quiz').classList.contains('done')) return;
   const q = lunarCase.quiz ?? QUIZ[lunarCase.id], ok = +b.dataset.q === q.answer;
   b.setAttribute('aria-pressed', 'true'); $('lunar-quiz').classList.add('done'); $('lunar-note').hidden = false;
-  if (ok) award(1);
-  feedback('lunar-feedback', ok ? 'good' : 'miss', `${ok ? '✓ Right! +1 point.' : '✗ Not this time.'} ${q.why}`);
+  const first = !quizScored.has(lunarCase.id); quizScored.add(lunarCase.id);
+  if (ok && first) award(1);
+  feedback('lunar-feedback', ok ? 'good' : 'miss', `${ok ? (first ? '✓ Right! +1 point.' : '✓ Right!') : '✗ Not this time.'} ${q.why}`);
 });
 $('lunar-guess').addEventListener('click', (e) => {
   const b = e.target.closest('[data-lg]');
@@ -1000,7 +1026,7 @@ function openLunarCase() {
   $('lunar-facts').hidden = !c.facts;
   $('lunar-facts').innerHTML = (c.facts ?? []).map((f) => `<li><b>${esc(f.value)}${f.unit ? ' ' + esc(f.unit) : ''}</b> · ${esc(f.label)} (${esc(f.year_range ?? '')}) · <a href="${esc(f.source_url)}" target="_blank" rel="noopener">${esc(f.source_name)}</a></li>`).join('');
   $('lunar-quiz').hidden = !quiz;
-  if (quiz) $('lunar-quiz').innerHTML = `<p><b>🔍 Quick question:</b> ${quiz.q}</p><div class="row">${quiz.options.map((o, i) => `<button type="button" class="chip" data-q="${i}">${o}</button>`).join('')}</div>`;
+  if (quiz) $('lunar-quiz').innerHTML = `<p><b>🔍 Quick question:</b> ${esc(quiz.q)}</p><div class="row">${quiz.options.map((o, i) => `<button type="button" class="chip" data-q="${i}">${esc(o)}</button>`).join('')}</div>`;
   $('lunar-quiz').classList.remove('done');
   if (!testable) {
     $('lunar-note').hidden = true;
@@ -1010,6 +1036,7 @@ function openLunarCase() {
       : 'This effect is well documented by marine biologists; it shows that living things keep time with the Moon.';
     return;
   }
+  $('lunar-note').hidden = false;
   if (c.kinds === 'tides') {
     // Positive control: tide gauges, where the 18.6-year lunar cycle is known to act.
     $('lunar-place').innerHTML = (TIDES?.stations ?? []).map((s) => `<option value="tide:${esc(s.id)}">${esc(s.name)} tide gauge (${s.years[0]}–${s.years.at(-1)})</option>`).join('');
@@ -1026,7 +1053,9 @@ $('lunar-run').addEventListener('click', async () => {
   const tide = $('lunar-place').value.startsWith('tide:') && TIDES?.stations.find((x) => `tide:${x.id}` === $('lunar-place').value);
   const p = tide ? { short: tide.name } : PLACES.find((x) => x.id === $('lunar-place').value);
   const v = tide ? { name: 'Tidal range' } : varById($('lunar-var').value);
-  if (!p || !v) return;
+  if (!p || !v) { $('lunar-stat').textContent = 'Pick a place and a variable first.'; return; }
+  const my = ++op;
+  $('lunar-note').hidden = false;
   $('lunar-stat').textContent = tide ? 'Reading NOAA tide gauges…' : 'Asking NASA POWER…'; $('lunar-note').textContent = ''; $('lunar-chart').innerHTML = '';
   try {
     // Tide range is shown in centimetres so a few-cm lunar swing is readable.
@@ -1034,8 +1063,10 @@ $('lunar-run').addEventListener('click', async () => {
     // Seeded placebos: every student in a class gets exactly the same p-value for the same case.
     let seed = 20261114;
     const random = () => { seed = (seed + 0x6d2b79f5) | 0; let x = Math.imul(seed ^ (seed >>> 15), 1 | seed); x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x; return ((x ^ (x >>> 14)) >>> 0) / 4294967296; };
+    if (my !== op) return;
     const t = lunarTest(s, { random });
-    if (t.status === 'too-short') { $('lunar-stat').textContent = 'Record too short'; $('lunar-note').textContent = `The test needs at least ${LUNAR_MIN_YEARS} years (two full 18.6-year cycles); this record has ${t.n}.`; return; }
+    if (t.status === 'too-short') { $('lunar-stat').textContent = 'Record too short'; $('lunar-note').textContent = `The test needs at least ${LUNAR_MIN_YEARS} yearly values (about two 18.6-year cycles); this record has ${t.n}.`; return; }
+    if (t.status === 'flat' || t.status === 'invalid') { $('lunar-stat').textContent = 'Nothing to test here'; $('lunar-stat').className = 'stat'; $('lunar-note').textContent = `${v.name} at ${p.short} ${t.status === 'flat' ? 'does not vary from year to year (for example, no snow at all)' : 'has gaps'}, so there are no ups and downs for the Moon to explain. Try another variable.`; return; }
     const pv = t.p < 0.001 ? 'p < 0.001' : `p = ${fmt(t.p, 3)}`;
     $('lunar-stat').textContent = t.verdict === 'signal' ? `Moon-like signal (${pv})` : t.verdict === 'hint' ? `A hint, not convincing (${pv})` : `No lunar signal found (${pv})`;
     $('lunar-stat').className = `stat ${t.verdict === 'signal' ? 'up' : ''}`;
@@ -1049,7 +1080,7 @@ $('lunar-run').addEventListener('click', async () => {
     else feedback('lunar-feedback', 'miss', `✗ Your guess did not match the test${t.verdict === 'hint' ? ' (there is only a weak hint)' : ''}. That is how real research goes!`);
     lunarGuess = null;
     $('lunar-guess').querySelectorAll('.chip').forEach((x) => x.setAttribute('aria-pressed', 'false'));
-  } catch (err) { $('lunar-stat').textContent = 'The test could not run'; $('lunar-note').textContent = powerError(err); }
+  } catch (err) { if (my !== op) return; $('lunar-stat').textContent = 'The test could not run'; $('lunar-note').textContent = powerError(err); }
 });
 
 function lunarChart(s, t) {
@@ -1125,9 +1156,10 @@ selectPlace(PLACES.find((p) => p.id === 'coropuna')?.id ?? PLACES[0].id);
 renderDemos();
 fillGlobal();
 // Classroom mode: mission cases arrive with their NASA series bundled, so a whole class does not hit NASA POWER at once.
-classroom = await createClassroom({ $, esc, loadJson, openCase: ({ place, variable, series }) => {
+classroom = await createClassroom({ $, esc, loadJson, openCase: ({ place, variable, series, key }) => {
   const p = PLACES.find((x) => x.id === place), v = varById(variable);
-  current = { variable: v, place: p.name, lat: p.lat, lon: p.lon, series, r: analyze(series) };
+  op++; // a mission case replaces any request still running
+  current = { variable: v, place: p.name, lat: p.lat, lon: p.lon, series, r: analyze(series), key };
   render(current);
   flyTo(p.lat, p.lon);
   location.hash = '#/evidence';

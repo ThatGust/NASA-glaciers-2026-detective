@@ -1,0 +1,92 @@
+@startuml
+left to right direction
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 20
+skinparam ActorStereotypeFontSize 20
+skinparam UsecaseStereotypeFontSize 20
+skinparam TitleFontSize 24
+skinparam ArrowFontSize 20
+skinparam NoteFontSize 20
+skinparam LegendFontSize 20
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor #F2F7FB
+skinparam usecaseBorderColor #23475B
+skinparam actorBorderColor #23475B
+skinparam ArrowColor #405B6B
+skinparam nodesep 30
+skinparam ranksep 45
+title Signal or Noise — implemented use cases
+
+actor Explorer as E
+actor "Classroom player\n(anonymous detective)" as P
+actor "Teacher / host" as H
+actor "NASA POWER API\nlive request\n(temperature and rain\nalso bundled)" as POWER <<system>>
+actor "NASA imagery\nGIBS / Moon Trek" as IMG <<system>>
+actor "Bundled datasets\nNASA / NOAA / USGS" as DATA <<data source>>
+actor "Firebase Firestore\n(optional)" as FB <<system>>
+
+rectangle "Signal or Noise — browser application" {
+  package "1 · Explore the Earth" {
+    usecase "UC-01\nBrowse Earth globe" as U1
+  }
+  package "2 · Investigate a case" {
+    usecase "UC-06\nInvestigate case" as U6
+    usecase "UC-11\nGet verdict" as U11
+    U6 ..> U11 : <<include>>
+  }
+  package "3 · Global monitor" {
+    usecase "UC-26\nMap global trends" as U26
+  }
+  package "4 · Moon" {
+    usecase "UC-30\nSwitch world" as U30
+    usecase "UC-37\nTest lunar association" as U37
+    usecase "UC-39\nRead Moon discovery" as U39
+  }
+  package "5 · Game and classroom" {
+    usecase "UC-42\nHost session" as U42
+    usecase "UC-44\nJoin session" as U44
+    usecase "UC-45\nPlay five-case mission" as U45
+    usecase "UC-47\nView live leaderboard" as U47
+  }
+}
+E -- U1
+E -- U6
+E -- U26
+E -- U30
+E -- U37
+E -- U39
+P -- U44
+P -- U45
+H -- U42
+H -- U47
+U45 ..> U6 : <<include>>
+U6 -- POWER
+U1 -- IMG
+U30 -- IMG
+U6 -- DATA
+U26 -- DATA
+U37 -- DATA
+U37 -- POWER
+U39 -- DATA
+U42 -- FB : shared mode only
+U44 -- FB : shared mode only
+U47 -- FB : shared mode only
+note bottom of U45
+  Fixed mission: five bundled cases.
+  Players also use the ordinary
+  evidence and verdict screens.
+end note
+note bottom of FB
+  Without optional configuration,
+  classroom rooms work only across
+  tabs of the same browser.
+end note
+legend bottom
+  Solid lines: actor participation.
+  Dashed arrows: reuse / optional extension, not screen order.
+  Details and conditional extensions: package diagrams and USE_CASES.md.
+  Worldview snapshots and photos are bundled assets.
+endlegend
+@enduml

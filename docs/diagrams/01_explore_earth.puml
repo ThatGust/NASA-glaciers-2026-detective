@@ -1,0 +1,60 @@
+@startuml
+left to right direction
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 20
+skinparam ActorStereotypeFontSize 20
+skinparam UsecaseStereotypeFontSize 20
+skinparam TitleFontSize 24
+skinparam ArrowFontSize 20
+skinparam NoteFontSize 20
+skinparam LegendFontSize 20
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor #F2F7FB
+skinparam usecaseBorderColor #23475B
+skinparam actorBorderColor #23475B
+skinparam ArrowColor #405B6B
+skinparam nodesep 34
+skinparam ranksep 48
+title Signal or Noise · 1 — Explore the Earth
+
+actor Explorer as E
+actor "Classroom player" as P
+actor "NASA GIBS imagery" as IMG <<system>>
+actor "Bundled catalog, facts\nand credited images" as DATA <<data source>>
+rectangle "Signal or Noise" {
+  package "Explore the Earth" {
+    usecase "UC-01\nBrowse Earth globe" as U1
+    usecase "UC-02\nFilter places" as U2
+    usecase "UC-03\nSearch places" as U3
+    usecase "UC-04\nInspect place card" as U4
+    usecase "UC-05\nSelect Earth point" as U5
+  }
+}
+E -- U1
+P -- U1
+U2 ..> U1 : <<extend>>\n[filter while exploring]
+U3 ..> U1 : <<extend>>\n[search while exploring]
+U4 ..> U1 : <<extend>>\n[select a catalog place]
+U5 ..> U1 : <<extend>>\n[pick or type coordinates]
+U1 -- IMG
+U1 -- DATA
+U4 -- DATA
+note right of U2
+  Phenomenon + country filters
+  combine with name search.
+  Four place cards per page.
+end note
+note right of U4
+  Ground photo when available;
+  bundled satellite snapshot otherwise.
+  An arbitrary point has no named photo.
+end note
+legend bottom
+  Classroom players use the same exploration controls.
+  No separate player restrictions exist.
+  Named-place picking and arbitrary-point selection are active on #/case, not #/home.
+  A failed 3D globe leaves the place list and typed-coordinate path available.
+endlegend
+@enduml

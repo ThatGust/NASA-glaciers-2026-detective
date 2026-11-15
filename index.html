@@ -156,7 +156,12 @@
   .clue { width:100%; text-align:left; font:14px var(--font-sans); color:var(--accent); background:none; border:0; padding:0; cursor:pointer; }
   @media (max-width:640px) { .score { left:auto; right:16px; } }
   .mission-bar { position:fixed; z-index:3; top:62px; left:50%; transform:translateX(-50%); margin:0; font:600 13px var(--font-sans);
-                 background:var(--accent); color:var(--bg-dark); border-radius:999px; padding:6px 14px; white-space:nowrap; }
+                 background:var(--accent); color:var(--bg-dark); border-radius:999px; padding:6px 14px; white-space:nowrap; cursor:pointer; }
+  #join-btn:disabled { opacity:.5; cursor:wait; }
+  /* Phones: the brand and score move to a second row so the Earth/Moon switch is never covered. */
+  /* Phones: brand, then score, each on its own row below the Earth/Moon switch; panels leave room for the image credits. */
+  @media (max-width:640px) { .brand { top:62px; } .score { top:104px; left:16px; right:auto; } .mission-bar { top:146px; max-width:calc(100vw - 32px); overflow:hidden; text-overflow:ellipsis; }
+                             .view { padding-bottom:40px; } }
   .side.wide { width:min(760px, calc(100vw - 32px)); }
   .host-grid { display:grid; grid-template-columns:minmax(220px, 320px) 1fr; gap:16px; align-items:start; }
   @media (max-width:640px) { .host-grid { grid-template-columns:1fr; } }
@@ -183,7 +188,7 @@
 </div>
 <div class="no3d" hidden id="no3d">Your browser cannot display the 3D globe.</div>
 <a class="brand" href="#/home">Signal or Noise</a>
-<p class="mission-bar" id="mission-bar" hidden aria-live="polite"></p>
+<p class="mission-bar" id="mission-bar" hidden aria-live="polite" role="button" tabindex="0" title="Back to your mission"></p>
 <p class="score" id="score" title="Your detective score: right calls earn points" aria-live="polite"></p>
 <p class="credits">Imagery: NASA Blue Marble and Worldview (GIBS) · Globe: CesiumJS (Apache 2.0)</p>
 <a class="btn sec skip" href="#/case" id="skip">Skip</a>

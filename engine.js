@@ -418,7 +418,11 @@ export function lunarTest({ years, values }, { placebos = 999, random = Math.ran
     const b = t.reduce((s, ti, i) => s + (ti - mt) * (x[i] - mx), 0) / stt;
     return x.map((xi, i) => xi - mx - b * (t[i] - mt));
   };
+  if (!values.every(Number.isFinite)) return { status: 'invalid', n };
   const L = years.map(lunarIndex), r = detrend(values), l = detrend(L);
+  // A flat (or perfectly straight) record has nothing left after removing the trend: there is nothing to test.
+  const rss = r.reduce((s, x) => s + x * x, 0), vals = values.map(Math.abs);
+  if (rss <= 1e-12 * Math.max(1, ...vals) ** 2 * n) return { status: 'flat', n };
   const corr = (a, b) => { const ab = a.reduce((s, x, i) => s + x * b[i], 0); return ab / Math.sqrt(a.reduce((s, x) => s + x * x, 0) * b.reduce((s, x) => s + x * x, 0)); };
   const observed = corr(r, l);
   let num = 0, den = 0;

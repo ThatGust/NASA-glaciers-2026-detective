@@ -6,3 +6,6 @@ __pycache__/
 .env.*
 !.env.example
 data/catalog.ready
+dist/
+test/e2e/run-*/
+docs/diagrams/.render_cache/

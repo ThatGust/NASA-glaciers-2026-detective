@@ -13,7 +13,15 @@ async function firebaseBackend(config) {
   const db = fs.getFirestore(initializeApp(config));
   return {
     shared: true,
-    async createRoom(code) { await fs.setDoc(fs.doc(db, 'rooms', code), { created: Date.now(), next: 0, open: true }); },
+    // Create only if absent: hosting must never reset an existing room (returns false on a code collision).
+    async createRoom(code) {
+      const ref = fs.doc(db, 'rooms', code);
+      return fs.runTransaction(db, async (t) => {
+        if ((await t.get(ref)).exists()) return false;
+        t.set(ref, { created: Date.now(), next: 0, open: true });
+        return true;
+      });
+    },
     async join(code) {
       const ref = fs.doc(db, 'rooms', code);
       const id = await fs.runTransaction(db, async (t) => {
@@ -35,18 +43,31 @@ function localBackend() {
   const key = (code) => `sn-room-${code}`;
   const read = (code) => { try { return JSON.parse(localStorage.getItem(key(code))); } catch { return null; } };
   const write = (code, room) => { localStorage.setItem(key(code), JSON.stringify(room)); new BroadcastChannel(key(code)).postMessage('changed'); };
+  // Tabs share one localStorage room: serialize read-modify-write with a Web Lock so two joins never get the same number.
+  const locked = (code, fn) => (navigator.locks ? navigator.locks.request(key(code), fn) : fn());
   return {
     shared: false,
-    async createRoom(code) { write(code, { next: 0, open: true, players: {} }); },
-    async join(code) {
-      const room = read(code);
-      if (!room?.open) throw new Error('There is no open session with that code (local mode: open the host in this same browser).');
-      const id = ++room.next;
-      room.players[id] = { id, score: 0, done: 0, updated: Date.now() };
-      write(code, room);
-      return id;
+    async createRoom(code) {
+      return locked(code, () => { if (read(code)) return false; write(code, { next: 0, open: true, players: {} }); return true; });
     },
-    async report(code, id, score, done) { const room = read(code); if (!room) return; room.players[id] = { id, score, done, updated: Date.now() }; write(code, room); },
+    async join(code) {
+      return locked(code, () => {
+        const room = read(code);
+        if (!room?.open) throw new Error('There is no open session with that code (local mode: the host must be open in this same browser).');
+        const id = ++room.next;
+        room.players[id] = { id, score: 0, done: 0, updated: Date.now() };
+        write(code, room);
+        return id;
+      });
+    },
+    async report(code, id, score, done) {
+      return locked(code, () => {
+        const room = read(code);
+        if (!room) throw new Error('This session no longer exists.');
+        room.players[id] = { id, score, done, updated: Date.now() };
+        write(code, room);
+      });
+    },
     watch(code, cb) {
       const push = () => cb(Object.values(read(code)?.players ?? {}));
       const ch = new BroadcastChannel(key(code));
@@ -81,8 +102,9 @@ export async function createClassroom({ $, esc, openCase, loadJson }) {
   }
 
   async function host() {
-    const code = newCode();
-    await backend.createRoom(code);
+    let code = null;
+    for (let tries = 0; tries < 6 && !code; tries++) { const c = newCode(); if (await backend.createRoom(c)) code = c; }
+    if (!code) { $('class-mode').textContent = 'Could not create a session code. Please try again.'; return; }
     $('host-code').textContent = code;
     $('host-url').textContent = joinUrl(code);
     $('host-url').href = joinUrl(code);
@@ -95,23 +117,40 @@ export async function createClassroom({ $, esc, openCase, loadJson }) {
     location.hash = '#/host';
   }
 
+  let joining = false;
   async function join(code) {
     code = String(code || '').trim().toUpperCase();
-    if (!/^[A-Z2-9]{4}$/.test(code)) { $('join-status').textContent = 'The code has 4 letters or numbers.'; return; }
+    if (!/^[A-Z2-9]{4}$/.test(code)) { $('join-status').textContent = 'The code has 4 letters or numbers.'; location.hash = '#/class'; return; }
+    if (me?.code === code) { location.hash = '#/player'; return; } // already in this room: reconnect, never a second detective
+    if (joining) return;
+    joining = true; $('join-btn').disabled = true;
     try {
       $('join-status').textContent = 'Joining…';
       const id = await backend.join(code);
-      me = { code, id, score: 0, done: 0 };
+      me = { code, id, score: 0, done: 0, answered: [], unsynced: false };
       store('sn-me', me);
       $('join-status').textContent = '';
       location.hash = '#/player';
-    } catch (err) { $('join-status').textContent = err.message; }
+    } catch (err) {
+      $('join-status').textContent = err.message;
+      location.hash = '#/class'; // show the error where the player can see it and try again
+    } finally { joining = false; $('join-btn').disabled = false; }
+  }
+
+  // Progress is saved locally first; until the backend confirms it, the player sees it is not synced and it is retried.
+  async function sync() {
+    if (!me) return;
+    try { await backend.report(me.code, me.id, me.score, me.done); me.unsynced = false; }
+    catch (err) { me.unsynced = true; console.warn('report failed', err); }
+    store('sn-me', me);
+    if (location.hash === '#/player') renderPlayer();
   }
 
   function renderPlayer() {
     if (!me) return;
     $('player-id').textContent = `#${me.id}`;
-    $('player-score').textContent = `${me.score} pts · session ${me.code}`;
+    $('player-score').textContent = `${me.score} pts · session ${me.code}${me.unsynced ? ' · not synced yet, retrying…' : ''}`;
+    if (me.unsynced) setTimeout(sync, 3000);
     $('player-cases').innerHTML = mission.map((c, i) => `<li class="${i < me.done ? 'done' : ''}">${i < me.done ? '✓' : i === me.done ? '▶' : '·'} Case ${i + 1}</li>`).join('');
     $('player-next').hidden = me.done >= mission.length;
     $('player-finished').hidden = me.done < mission.length;
@@ -120,14 +159,14 @@ export async function createClassroom({ $, esc, openCase, loadJson }) {
   function showBar() {
     const playing = !!me && location.hash !== '#/player' && me.done < mission.length && inCase;
     $('mission-bar').hidden = !playing;
-    if (playing) $('mission-bar').textContent = `Mission · case ${me.done + 1} of ${mission.length} · Detective #${me.id} · ${me.score} pts`;
+    if (playing) $('mission-bar').textContent = `Mission · case ${me.done + 1} of ${mission.length} · Detective #${me.id} · ${me.score} pts · ↩ mission`;
     $('mission-next').hidden = !playing;
   }
   let inCase = false;
   function startNext() {
     if (!me || me.done >= mission.length) return;
     inCase = true;
-    openCase(mission[me.done]);
+    openCase({ ...mission[me.done], key: `mission:${me.done}` });
     showBar();
   }
   async function finishCase() {
@@ -135,8 +174,8 @@ export async function createClassroom({ $, esc, openCase, loadJson }) {
     inCase = false;
     me.done += 1;
     store('sn-me', me);
-    await backend.report(me.code, me.id, me.score, me.done).catch((err) => console.warn('report failed', err));
     location.hash = '#/player';
+    await sync();
   }
 
   $('host-btn').addEventListener('click', host);
@@ -144,18 +183,25 @@ export async function createClassroom({ $, esc, openCase, loadJson }) {
   $('join-code').addEventListener('keydown', (e) => { if (e.key === 'Enter') join($('join-code').value); });
   $('player-next').addEventListener('click', startNext);
   $('mission-next').addEventListener('click', finishCase);
+  $('mission-bar').addEventListener('click', () => { location.hash = '#/player'; });
   addEventListener('hashchange', showBar);
 
   // Arriving from the QR code: ?room=CODE joins right away (once per tab).
   const fromQr = new URLSearchParams(location.search).get('room');
   if (fromQr && (!me || me.code !== fromQr.toUpperCase())) join(fromQr);
+  // A player who reloads mid-mission goes back to the mission screen instead of a stranded case.
+  else if (me && me.done < mission.length && !['#/host', '#/class'].includes(location.hash)) location.hash = '#/player';
 
   return {
-    addPoints(points) {
-      if (!me || !inCase || !points) return;
+    // Only answers that belong to the active mission case count, and each answer counts once (also after a reload).
+    addPoints(points, key) {
+      if (!me || !inCase || !points || !key?.startsWith(`mission:${me.done}:`)) return;
+      me.answered ??= [];
+      if (me.answered.includes(key)) return;
+      me.answered.push(key);
       me.score += points;
       store('sn-me', me);
-      backend.report(me.code, me.id, me.score, me.done).catch(() => {});
+      sync();
       showBar();
     },
     renderPlayer,

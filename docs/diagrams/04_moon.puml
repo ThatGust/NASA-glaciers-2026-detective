@@ -1,0 +1,78 @@
+@startuml
+left to right direction
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 20
+skinparam ActorStereotypeFontSize 20
+skinparam UsecaseStereotypeFontSize 20
+skinparam TitleFontSize 24
+skinparam ArrowFontSize 20
+skinparam NoteFontSize 20
+skinparam LegendFontSize 20
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor #F2F7FB
+skinparam usecaseBorderColor #23475B
+skinparam actorBorderColor #23475B
+skinparam ArrowColor #405B6B
+skinparam nodesep 30
+skinparam ranksep 42
+title Signal or Noise · 4 — Moon
+
+actor Explorer as E
+actor "Classroom player" as P
+actor "NASA Moon Trek\nLRO imagery" as IMG <<system>>
+actor "Bundled NOAA tides,\nNASA series / Moon facts,\nIAU-USGS features" as DATA <<data source>>
+actor "NASA POWER API\nlive request\n(temperature and rain\nalso bundled)" as POWER <<system>>
+rectangle "Signal or Noise" {
+  package "Moon" {
+    usecase "UC-30\nSwitch world" as U30
+    usecase "UC-31\nToggle lunar layers" as U31
+    usecase "UC-32\nInspect lunar feature" as U32
+    usecase "UC-33\nOpen Moon-Earth case" as U33
+    usecase "UC-34\nTest tidal control" as U34
+    usecase "UC-35\nTest glacier climate" as U35
+    usecase "UC-36\nTest rain climate" as U36
+    usecase "UC-37\nTest lunar association" as U37
+    usecase "UC-38\nRecord lunar hunch" as U38
+    usecase "UC-39\nRead Moon discovery" as U39
+    usecase "UC-40\nAnswer Moon quiz" as U40
+  }
+}
+E -- U30
+P -- U30
+E -- U33
+E -- U39
+U31 ..> U30 : <<extend>>\n[Moon active; toggle layer]
+U32 ..> U30 : <<extend>>\n[Moon active; select marker]
+U34 ..> U33 : <<extend>>\n[tides case; press Test]
+U35 ..> U33 : <<extend>>\n[glacier case; press Test]
+U36 ..> U33 : <<extend>>\n[rain case; press Test]
+U34 ..> U37 : <<include>>
+U35 ..> U37 : <<include>>
+U36 ..> U37 : <<include>>
+U38 ..> U37 : <<extend>>\n[optional guess before Test]
+U40 ..> U33 : <<extend>>\n[tides / corals quiz]
+U40 ..> U39 : <<extend>>\n[answer discovery quiz]
+U30 -- IMG
+U32 -- DATA
+U34 -- DATA
+U35 -- DATA
+U36 -- DATA
+U35 -- POWER
+U36 -- POWER
+U39 -- DATA
+note bottom of U37
+  Needs at least 37 annual values in code.
+  Seeded AR(1) placebos; no causal claim.
+  Too-short and POWER-busy paths are explicit.
+end note
+note bottom of U39
+  Cited facts and quiz, not an annual-series test.
+  Coral spawning is also informational + quiz.
+end note
+legend bottom
+  Seas/lakes, mountains/valleys, craters and landing sites are marker layers, not imagery layers.
+  Ten fixed landmark markers coexist with the gazetteer and do not follow those toggles.
+endlegend
+@enduml

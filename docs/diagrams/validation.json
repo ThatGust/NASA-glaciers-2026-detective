@@ -1,0 +1,60 @@
+{
+  "checked": "2026-11-15T00:31:49.118124+00:00",
+  "status": "passed",
+  "specifications": 48,
+  "diagrams": 7,
+  "source_hashes_unchanged": true,
+  "checks": [
+    "3\u20137 ordered steps and required fields per specification",
+    "all 48 IDs in package diagrams",
+    "code functions, element IDs, file links and line bounds",
+    "UML relationship endpoints and mission include direction",
+    "public counts/data hashes, public diagram labels and two-line legend",
+    "render/source hashes, SVG XML, PNG signatures, 1200 px width, text >=12 px"
+  ],
+  "images": [
+    {
+      "diagram": "00_overview",
+      "width": 1200,
+      "height": 1424,
+      "minimum_text_px": 14.74
+    },
+    {
+      "diagram": "01_explore_earth",
+      "width": 1200,
+      "height": 1115,
+      "minimum_text_px": 18.49
+    },
+    {
+      "diagram": "02_investigate_case",
+      "width": 1200,
+      "height": 1250,
+      "minimum_text_px": 12.44
+    },
+    {
+      "diagram": "03_global_monitor",
+      "width": 1200,
+      "height": 1025,
+      "minimum_text_px": 18.38
+    },
+    {
+      "diagram": "04_moon",
+      "width": 1200,
+      "height": 1661,
+      "minimum_text_px": 16.53
+    },
+    {
+      "diagram": "05_game_classroom",
+      "width": 1200,
+      "height": 885,
+      "minimum_text_px": 12.21
+    },
+    {
+      "diagram": "page_overview",
+      "width": 1200,
+      "height": 456,
+      "minimum_text_px": 13.32
+    }
+  ],
+  "limits": "Static documentation checks only; no application tests, browser behavior or deployed backend verification."
+}

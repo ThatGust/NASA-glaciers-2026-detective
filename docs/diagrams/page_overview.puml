@@ -1,0 +1,61 @@
+@startuml
+left to right direction
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 22
+skinparam TitleFontSize 28
+skinparam LegendFontSize 22
+skinparam ArrowColor #405B6B
+skinparam usecaseBackgroundColor #F2F7FB
+skinparam usecaseBorderColor #23475B
+skinparam rectangleBackgroundColor #FFFFFF
+skinparam rectangleBorderColor #78909C
+skinparam actorBorderColor #23475B
+skinparam nodesep 35
+skinparam ranksep 32
+
+title Signal or Noise — follow the evidence
+
+actor "Student / teacher" as Learner
+actor "Classroom player" as Player
+
+rectangle "Investigate Earth" {
+  usecase "Pick a place and\na NASA variable\n919 places · 15 variables" as Pick
+  usecase "Get NASA data\n(up to 45 years)" as Get
+  usecase "See the\ntime series" as See
+  usecase "Test significance\n(Mann-Kendall, t-test)" as Test
+  usecase "Get a verdict + clock\n(N more years, if needed)" as Verdict
+}
+
+usecase "Map global trends\n(2,592 cells)" as Map
+usecase "Explore the Moon and\ntest lunar effects" as Moon
+usecase "Play and compete\nin class" as Class
+
+rectangle "NASA POWER\n(live; temperature\nand rain bundled)" as POWER #EAF4EA
+rectangle "NASA imagery\n(GIBS, Moon Trek)" as Images #EAF4EA
+rectangle "Precomputed\nNASA/NOAA/USGS data" as Data #EAF4EA
+
+Learner --> Pick
+Pick --> Get
+Get --> See
+See --> Test
+Test --> Verdict
+
+Pick --> Map
+Pick --> Moon
+Player --> Class
+Class --> See
+
+POWER .. Get
+Images .. Pick
+Images .. Moon
+Data .. Map
+Data .. Moon
+Data .. Class
+
+legend bottom
+  Arrows show a learning journey; record length and the clock depend on the selected case.
+  Classroom uses tabs of one browser; multiple devices need a configured shared backend.
+endlegend
+@enduml

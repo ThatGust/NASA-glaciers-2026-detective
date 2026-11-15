@@ -1,0 +1,74 @@
+@startuml
+left to right direction
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 20
+skinparam ActorStereotypeFontSize 20
+skinparam UsecaseStereotypeFontSize 20
+skinparam TitleFontSize 24
+skinparam ArrowFontSize 20
+skinparam NoteFontSize 20
+skinparam LegendFontSize 20
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor #F2F7FB
+skinparam usecaseBorderColor #23475B
+skinparam actorBorderColor #23475B
+skinparam ArrowColor #405B6B
+skinparam nodesep 32
+skinparam ranksep 44
+title Signal or Noise · 5 — Game and classroom
+
+actor Explorer as E
+actor "Classroom player\n(anonymous detective)" as P
+actor "Teacher / host" as H
+actor "Bundled five-case\nNASA mission" as DATA <<data source>>
+actor "Firebase Firestore\n(optional shared mode)" as FB <<system>>
+rectangle "Signal or Noise" {
+  package "Game and classroom" {
+    usecase "UC-41\nTrack score and rank" as U41
+    usecase "UC-42\nHost session" as U42
+    usecase "UC-43\nDisplay join invite" as U43
+    usecase "UC-44\nJoin session" as U44
+    usecase "UC-45\nPlay five-case mission" as U45
+    usecase "UC-46\nComplete mission case" as U46
+    usecase "UC-47\nView live leaderboard" as U47
+    usecase "UC-48\nPublish mission progress" as U48
+    usecase "UC-06\nInvestigate case" as U6 <<cross-package>>
+  }
+}
+E -- U41
+P -- U41
+P -- U44
+P -- U45
+H -- U42
+U42 ..> U43 : <<include>>
+U42 ..> U47 : <<include>>
+U45 ..> U6 : <<include>>
+U45 ..> U46 : <<include>>\n[each completed case]
+U46 .up.> U48 : <<include>>
+U45 -- DATA
+U42 -- FB : shared mode only
+U44 -- FB : shared mode only
+U47 -- FB : shared mode only
+U48 -- FB : shared mode only
+note bottom of U43
+  Four-character code + QR + join link.
+  QR failure leaves the link available.
+  No player names or accounts.
+end note
+note bottom of FB
+  No classroom config in this checkout:
+  localStorage + BroadcastChannel,
+  same browser tabs only.
+  Firestore requires optional configuration;
+  initialization failure falls back locally.
+end note
+legend bottom
+  Local/shared mode is deployment configuration.
+  Finishing a case reports progress.
+  Answering both calls first is not enforced.
+  Host board shows the top ten.
+  Players use the host display at mission end.
+endlegend
+@enduml

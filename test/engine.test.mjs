@@ -258,3 +258,11 @@ test('lunar test: about 5% false alarms on noise with a trend, and finds a plant
   assert.ok(hit / 200 > 0.6, `power ${hit / 200}`);
   assert.equal(lunarTest({ years: years.slice(0, 30), values: years.slice(0, 30) }).status, 'too-short');
 });
+
+test('lunar test refuses flat and perfectly straight records instead of reporting a signal', async () => {
+  const { lunarTest } = await import('../engine.js');
+  const years = Array.from({ length: 45 }, (_, i) => 1981 + i);
+  assert.equal(lunarTest({ years, values: years.map(() => 0) }).status, 'flat');
+  assert.equal(lunarTest({ years, values: years.map((y) => 0.02 * y) }).status, 'flat');
+  assert.equal(lunarTest({ years, values: years.map((y, i) => (i === 3 ? NaN : 1)) }).status, 'invalid');
+});

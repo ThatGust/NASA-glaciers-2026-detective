@@ -1,0 +1,57 @@
+@startuml
+left to right direction
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 20
+skinparam ActorStereotypeFontSize 20
+skinparam UsecaseStereotypeFontSize 20
+skinparam TitleFontSize 24
+skinparam ArrowFontSize 20
+skinparam NoteFontSize 20
+skinparam LegendFontSize 20
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor #F2F7FB
+skinparam usecaseBorderColor #23475B
+skinparam actorBorderColor #23475B
+skinparam ArrowColor #405B6B
+skinparam nodesep 32
+skinparam ranksep 48
+title Signal or Noise · 3 — Global monitor
+
+actor Explorer as E
+actor "Classroom player" as P
+actor "Bundled NASA grids\nand regional series" as DATA <<data source>>
+actor "NASA POWER API\nlive request\n(temperature and rain\nalso bundled)" as POWER <<system>>
+actor "NASA GIBS imagery" as IMG <<system>>
+rectangle "Signal or Noise" {
+  package "Global monitor" {
+    usecase "UC-26\nMap global trends" as U26
+    usecase "UC-27\nChange map variable" as U27
+    usecase "UC-28\nInvestigate big region" as U28
+    usecase "UC-29\nInvestigate map location" as U29
+    usecase "UC-06\nInvestigate case" as U6 <<cross-package>>
+  }
+}
+E -- U26
+P -- U26
+U27 ..> U26 : <<extend>>\n[select another variable]
+U28 ..> U26 : <<extend>>\n[choose a region]
+U29 ..> U26 : <<extend>>\n[click globe location]
+U28 ..> U6 : <<include>>
+U29 ..> U6 : <<include>>
+U26 -- DATA
+U26 -- IMG
+U28 -- DATA
+U29 -- DATA : Earthdata stored cell
+U29 -- POWER
+note bottom of U29
+  POWER: investigate the clicked coordinates.
+  Earthdata: open the stored 5-degree cell.
+  These are different sampling paths.
+end note
+legend bottom
+  The map itself is precomputed, not a live global download.
+  Region cases use bundled area-weighted means. A missing stored cell reports no data.
+endlegend
+@enduml

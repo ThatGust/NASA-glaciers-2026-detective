@@ -1,0 +1,93 @@
+@startuml
+left to right direction
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 20
+skinparam ActorStereotypeFontSize 20
+skinparam UsecaseStereotypeFontSize 20
+skinparam TitleFontSize 24
+skinparam ArrowFontSize 20
+skinparam NoteFontSize 20
+skinparam LegendFontSize 20
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor #F2F7FB
+skinparam usecaseBorderColor #23475B
+skinparam actorBorderColor #23475B
+skinparam ArrowColor #405B6B
+skinparam nodesep 26
+skinparam ranksep 40
+title Signal or Noise · 2 — Investigate a case
+
+actor Explorer as E
+actor "Classroom player" as P
+actor "NASA POWER API\nlive request\n(temperature and rain\nalso bundled)" as POWER <<system>>
+actor "Bundled NASA / NOAA\nseries and witnesses" as DATA <<data source>>
+rectangle "Signal or Noise" {
+  package "Investigate a case" {
+    usecase "UC-06\nInvestigate case" as U6
+    usecase "UC-07\nChoose variable" as U7
+    usecase "UC-08\nRecord hunch" as U8
+    usecase "UC-09\nInspect evidence" as U9
+    usecase "UC-10\nCall direction" as U10
+    usecase "UC-11\nGet verdict" as U11
+    usecase "UC-12\nInspect clock" as U12
+    usecase "UC-13\nCross-check methods" as U13
+    usecase "UC-14\nCheck prediction skill" as U14
+    usecase "UC-15\nCheck climate alibi" as U15
+    usecase "UC-16\nCompare data witness" as U16
+    usecase "UC-17\nRead projection lesson" as U17
+    usecase "UC-18\nView future projection" as U18
+    usecase "UC-19\nSpot real series" as U19
+    usecase "UC-20\nCompare places" as U20
+    usecase "UC-21\nScan variables" as U21
+    usecase "UC-22\nInspect case file" as U22
+    usecase "UC-23\nDownload case file" as U23
+    usecase "UC-24\nPlay guided demo" as U24
+    usecase "UC-25\nControl guided tour" as U25
+  }
+}
+E -- U6
+P -- U6
+E -- U21
+E -- U24
+U6 ..> U9 : <<include>>
+U6 ..> U11 : <<include>>
+U7 ..> U6 : <<extend>>\n[change default variable]
+U8 ..> U6 : <<extend>>\n[record a hunch]
+U10 ..> U9 : <<extend>>\n[make a direction call]
+U12 ..> U11 : <<extend>>\n[open clock clue]
+U13 ..> U11 : <<extend>>\n[open second-test clue]
+U14 ..> U11 : <<extend>>\n[prediction test available]
+U15 ..> U11 : <<extend>>\n[aligned indices available]
+U16 ..> U11 : <<extend>>\n[open witness clue]
+U17 ..> U9 : <<extend>>\n[open Projection]
+U18 ..> U17 : <<extend>>\n[skill > 0.1 AND\nverdict not unknown]
+U19 ..> U11 : <<extend>>\n[open line-up]
+U20 ..> U11 : <<extend>>\n[point case + POWER variable]
+U22 ..> U11 : <<extend>>\n[open Case file]
+U23 ..> U22 : <<extend>>\n[press Download]
+U25 ..> U24 : <<extend>>\n[pause / next / exit]
+U6 -- DATA
+U6 -- POWER
+U21 -- POWER
+U21 -- DATA : available extras
+U24 -- DATA
+note right of U16
+  Missing witness: one-dataset message.
+  Contradicting credible witness can
+  lower Confirmed to Likely.
+end note
+note bottom of U18
+  The lesson is always reachable.
+  Only the future band is conditional.
+  No forecast is shown when the gate fails.
+end note
+legend bottom
+  <<include>> describes the successful investigation goal; users may leave it unfinished.
+  Direction calls are optional.
+  Verdict calls reveal results; demos reveal them directly.
+  Scan and comparison have their own paths.
+  Arrows do not prescribe screen order.
+endlegend
+@enduml

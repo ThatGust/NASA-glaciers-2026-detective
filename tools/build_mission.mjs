@@ -6,7 +6,7 @@ import { fetchPower, analyze } from '../engine.js';
 
 const catalog = JSON.parse(readFileSync(new URL('../data/catalog.json', import.meta.url), 'utf8'));
 const CASES = [
-  ['coropuna', 'T2M', 1981], ['jakobshavn', 'T2M', 1981], ['congo', 'PRECTOTCORR', 1981],
+  ['coropuna', 'T2M', 1981], ['jakobshavn', 'T2M', 1981], ['lake_huron', 'PRECTOTCORR', 1981],
   ['cape_good_hope', 'AOD_55', 2001], ['tokyo', 'T2M_MIN', 1981],
 ];
 const out = { generated: new Date().toISOString().slice(0, 10), source: 'NASA POWER monthly point API (annual means)', cases: [] };

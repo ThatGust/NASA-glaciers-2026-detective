@@ -1,0 +1,132 @@
+{
+  "captured": "2026-11-15T00:29:11.472665+00:00",
+  "git_head": "00a635765e5e2ff955771aea72bce1b7a6c04418",
+  "classroom_config_present": false,
+  "scope": "Static source inspection, not a deployment or browser test. Application code/data remain read-only.",
+  "sources": [
+    {
+      "file": "index.html",
+      "sha256": "8cfbc1dc3b1435293a373c49dd4d6121b7c366a456b02c107d412505e6b711d2",
+      "bytes": 31333,
+      "lines": 464
+    },
+    {
+      "file": "main.js",
+      "sha256": "26296d6e372d651d4f00838c72ee9e422ab4ef9af17bbc3ab2ac9d92b7c89092",
+      "bytes": 81998,
+      "lines": 1147
+    },
+    {
+      "file": "classroom.js",
+      "sha256": "38a15185d3594f23827aa53182cb86f926f3a999d23cebc8c3385d0e093c4abc",
+      "bytes": 10493,
+      "lines": 210
+    },
+    {
+      "file": "engine.js",
+      "sha256": "847ea031a80cafe0783b37b2d4a2413a5b694dcd5dd67dca92893d85445f3363",
+      "bytes": 24043,
+      "lines": 443
+    },
+    {
+      "file": "README.md",
+      "sha256": "661199d0876a37d06092240f2828e28e89a3543cf2d61ccc55224a977dc798bd",
+      "bytes": 3471,
+      "lines": 51
+    },
+    {
+      "file": "data/mission.json",
+      "sha256": "5ea6013092b1f26f20c7415c54729aac16cbf818f1a0981b63d967a3673fca8f",
+      "bytes": 4773,
+      "lines": 1
+    },
+    {
+      "file": "data/moon_cases.json",
+      "sha256": "1ad9c10de7373bd246da275989df9ce4123488f1dc682887eb940ab729b4c618",
+      "bytes": 9138,
+      "lines": 169
+    }
+  ],
+  "public_counts": {
+    "verified": "2026-11-15T00:22:43.461428+00:00",
+    "catalog_places": 919,
+    "ordinary_variables": 15,
+    "bundle_place_ids": 927,
+    "bundled_variables": {
+      "EVLAND": 24,
+      "GWETROOT": 24,
+      "GWETTOP": 30,
+      "PRECTOTCORR": 927,
+      "RH2M": 30,
+      "SNODP": 24,
+      "T2M": 927,
+      "T2M_MAX": 30,
+      "T2M_MIN": 30,
+      "TS": 30
+    },
+    "global_cells": 2592,
+    "maximum_record_label": "up to 45 annual values, 1981-2025; several variables start in 2001",
+    "files": {
+      "data/catalog.json": {
+        "sha256": "42ee809beca7f60b4fe2f347d87ad8d7f2d45f9342923fbf2a99bb816467ff46",
+        "bytes": 1372335
+      },
+      "data/place_series.json": {
+        "sha256": "2c8ff3b4e6339c3a05c81392bc42cdae7673ed359f275ca674e751052a7636a3",
+        "bytes": 1165354
+      },
+      "data/grid.json": {
+        "sha256": "7e986dbc9562dbc02a34b9107bcb205818ee22403b03aa27943613b85603c045",
+        "bytes": 994449
+      }
+    }
+  },
+  "previous_source_review": {
+    "captured": "2026-11-14T23:52:07.291Z",
+    "git_head": "00a635765e5e2ff955771aea72bce1b7a6c04418",
+    "sources": [
+      {
+        "file": "index.html",
+        "sha256": "8cfbc1dc3b1435293a373c49dd4d6121b7c366a456b02c107d412505e6b711d2",
+        "bytes": 31333,
+        "lines": 464
+      },
+      {
+        "file": "main.js",
+        "sha256": "26296d6e372d651d4f00838c72ee9e422ab4ef9af17bbc3ab2ac9d92b7c89092",
+        "bytes": 81998,
+        "lines": 1147
+      },
+      {
+        "file": "classroom.js",
+        "sha256": "38a15185d3594f23827aa53182cb86f926f3a999d23cebc8c3385d0e093c4abc",
+        "bytes": 10493,
+        "lines": 210
+      },
+      {
+        "file": "engine.js",
+        "sha256": "847ea031a80cafe0783b37b2d4a2413a5b694dcd5dd67dca92893d85445f3363",
+        "bytes": 24043,
+        "lines": 443
+      },
+      {
+        "file": "README.md",
+        "sha256": "661199d0876a37d06092240f2828e28e89a3543cf2d61ccc55224a977dc798bd",
+        "bytes": 3471,
+        "lines": 51
+      },
+      {
+        "file": "data/mission.json",
+        "sha256": "5ea6013092b1f26f20c7415c54729aac16cbf818f1a0981b63d967a3673fca8f",
+        "bytes": 4773,
+        "lines": 1
+      },
+      {
+        "file": "data/moon_cases.json",
+        "sha256": "1ad9c10de7373bd246da275989df9ce4123488f1dc682887eb940ab729b4c618",
+        "bytes": 9138,
+        "lines": 169
+      }
+    ]
+  }
+}
