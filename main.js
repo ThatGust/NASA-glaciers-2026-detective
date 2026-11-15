@@ -55,6 +55,27 @@ const ENVIRONMENTS = { glacier: 'Glaciers', polar: 'Polar', tundra: 'Tundra', vo
   rainforest: 'Rainforests', wetland: 'Wetlands', lake: 'Lakes', river: 'Rivers', coast: 'Coasts', coral_reef: 'Coral reefs', ocean: 'Oceans', city: 'Cities' };
 const KIND_COLOR = { glacier: '#cfefff', polar: '#ffffff', tundra: '#9fd3c7', volcano: '#ff6b4a', desert: '#e8c27a', savanna: '#c9b458',
   rainforest: '#3ddc97', wetland: '#5fc9a0', lake: '#4d9bff', river: '#3aa0ff', coast: '#7fd6ff', coral_reef: '#ff8fb1', ocean: '#2b6cff', city: '#b9b9c9' };
+// One symbol per kind of place (24-unit grid), drawn in the kind's colour on a dark badge: used on the globe and in the filter chips.
+const KIND_ICON = {
+  glacier: '<path d="M2 20L9 7l4 6 3-4 6 11z"/><path d="M7 10.7L9 12l1.8-1.6"/>',
+  polar: '<path d="M12 2v20M3.3 7l17.4 10M3.3 17L20.7 7M9.5 3.5L12 6l2.5-2.5M9.5 20.5L12 18l2.5 2.5"/>',
+  tundra: '<path d="M2 20h20M5 20c0-4 1-6 2-7M8 20c0-3 1-5 3-6M12 20c0-4-1-6-2-8M15 20c0-3 1-6 3-7M19 20c0-2 0-4-1-5"/>',
+  volcano: '<path d="M2 21l6-11h8l6 11z"/><path d="M10 9c0-2-2-3-1-6M13 8c0-3 2-3 1-6M15 9c1-2 2-3 2-5"/>',
+  desert: '<path d="M12 21V4M12 13H8V8M12 11h4V7M4 21h16"/>',
+  savanna: '<path d="M12 21V11M3 9c3-3 15-3 18 0zM8 10l4 2 4-2M2 21h20"/>',
+  rainforest: '<path d="M12 22v-5M12 2L5 11h4l-5 6h16l-5-6h4z"/>',
+  wetland: '<path d="M2 19c2 1.5 4 1.5 6 0s4-1.5 6 0 4 1.5 6 0M8 17V9M12 16V6M16 17V10"/><ellipse cx="8" cy="7" rx="1.3" ry="2.5"/><ellipse cx="12" cy="4" rx="1.3" ry="2.5"/><ellipse cx="16" cy="8" rx="1.3" ry="2.5"/>',
+  lake: '<ellipse cx="12" cy="13" rx="10" ry="7"/><path d="M6 13c2-1.5 4-1.5 6 0s4 1.5 6 0"/>',
+  river: '<path d="M8 2c-4 5 6 7 2 12s4 6 2 8M14 2c-4 5 6 7 2 12s4 6 2 8"/>',
+  coast: '<path d="M2 18c3-1 4-7 10-7 3 0 4 2 3 4-1 1-3 0-3-1M2 22h20"/><circle cx="18" cy="5" r="2.5"/>',
+  coral_reef: '<path d="M12 22V12M12 15l-5-4V6M12 13l5-4V4M7 11L4 8M17 9l3-2M4 22h16"/>',
+  ocean: '<path d="M2 7c2-1.5 4-1.5 6 0s4 1.5 6 0 4-1.5 6 0M2 12c2-1.5 4-1.5 6 0s4 1.5 6 0 4-1.5 6 0M2 17c2-1.5 4-1.5 6 0s4 1.5 6 0 4-1.5 6 0"/>',
+  city: '<path d="M3 21V10h6v11M9 21V4h7v17M16 21v-8h5v8M2 21h20M12 8h1M12 12h1M12 16h1"/>',
+};
+const iconCache = {};
+const kindIcon = (k) => iconCache[k] ??= 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="48" height="48">
+  <circle cx="12" cy="12" r="11.2" fill="#0a0a0f" fill-opacity=".85" stroke="${KIND_COLOR[k] ?? '#fff'}" stroke-width="1.2"/>
+  <g transform="translate(5 5) scale(.5833)" fill="none" stroke="${KIND_COLOR[k] ?? '#fff'}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${KIND_ICON[k] ?? '<circle cx="12" cy="12" r="5"/>'}</g></svg>`);
 // Plain-language names for students; the technical name stays in the details.
 const PLAIN = { T2M: 'Air temperature', T2M_MAX: 'Monthly highs', T2M_MIN: 'Monthly lows', TS: 'Ground temperature', PRECTOTCORR: 'Rain and snow',
   EVLAND: 'Evaporation', GWETTOP: 'Topsoil moisture', GWETROOT: 'Root soil moisture', SNODP: 'Snow depth', RH2M: 'Humidity', QV2M: 'Water vapor',
@@ -133,9 +154,9 @@ function drawPlaceDots() {
   viewer.entities.values.filter((e) => String(e.id).startsWith('place:')).forEach((e) => viewer.entities.remove(e));
   for (const p of PLACES) viewer.entities.add({
     id: `place:${p.id}`, position: C.Cartesian3.fromDegrees(p.lon, p.lat),
-    point: { pixelSize: 7, color: C.Color.fromCssColorString(KIND_COLOR[p.environment] ?? '#ffffff'), outlineColor: C.Color.BLACK, outlineWidth: 1.5 },
+    billboard: { image: kindIcon(p.environment), width: 22, height: 22 },
     // The label sits above the dot (bottom-anchored with a gap) and only appears when the camera is close enough.
-    label: { text: p.short, font: '600 13px Inter, sans-serif', verticalOrigin: C.VerticalOrigin.BOTTOM, pixelOffset: new C.Cartesian2(0, -12),
+    label: { text: p.short, font: '600 13px Inter, sans-serif', verticalOrigin: C.VerticalOrigin.BOTTOM, pixelOffset: new C.Cartesian2(0, -15),
              fillColor: C.Color.WHITE, showBackground: true, backgroundColor: C.Color.fromCssColorString('rgba(10,10,15,.88)'),
              backgroundPadding: new C.Cartesian2(6, 3), show: false },
   });
@@ -183,7 +204,7 @@ function selectPlace(id) {
 function renderKinds() {
   const present = Object.keys(ENVIRONMENTS).filter((k) => PLACES.some((p) => p.environment === k));
   $('kinds').innerHTML = [['', 'All'], ...present.map((k) => [k, ENVIRONMENTS[k]])].map(([k, label]) =>
-    `<li><button type="button" class="chip" data-kind="${k}" aria-pressed="${k === kindFilter}">${k ? `<span class="dot" style="background:${KIND_COLOR[k]}"></span>` : ''}${label}</button></li>`).join('');
+    `<li><button type="button" class="chip" data-kind="${k}" aria-pressed="${k === kindFilter}">${k ? `<img class="kind-ic" src="${kindIcon(k)}" alt="">` : ''}${label}</button></li>`).join('');
 }
 $('kinds').addEventListener('click', (e) => {
   const b = e.target.closest('[data-kind]');
@@ -277,6 +298,7 @@ function route() {
   let v = location.hash.replace('#/', '') || 'home';
   if (!VIEWS.includes(v)) v = 'home';
   setWorld(v === 'moon' || v === 'lunar');
+  $('space').hidden = v !== 'lunar';
   if (v === 'player') classroom?.renderPlayer();
   const needs = { player: classroom?.active, lunar: lunarCase, evidence: current, projection: current, verdict: current, record: current, lineup: current, leads, compare: current?.other, global: GRID };
   if (v in needs && !needs[v]) { location.replace('#/case'); return; }
@@ -292,6 +314,21 @@ function route() {
 }
 addEventListener('hashchange', route);
 $('skip').addEventListener('click', () => viewer?.camera.cancelFlight());
+// Home sheet: slides down to leave the globe in view; the handle brings it back.
+// A choice on the home sheet: the trapezoid sinks first, then the next panel slides in.
+$('view-home').addEventListener('click', (e) => {
+  const a = e.target.closest('a[href^="#/"]');
+  if (!a || reducedMotion) return;
+  e.preventDefault();
+  $('view-home').classList.add('leaving');
+  setTimeout(() => { $('view-home').classList.remove('leaving'); location.hash = a.getAttribute('href'); }, 380);
+});
+$('sheet-toggle').addEventListener('click', () => {
+  const down = $('view-home').classList.toggle('down');
+  $('sheet-toggle').textContent = down ? 'Show' : 'Hide';
+  $('sheet-toggle').setAttribute('aria-expanded', String(!down));
+  for (const el of $('view-home').children) if (el.id !== 'sheet-toggle') el.inert = down; // hidden buttons leave the tab order
+});
 
 // --- Step 1: what and where. ---
 function fillVariables(env) {
@@ -693,7 +730,7 @@ $('lineup-grid').addEventListener('click', (e) => {
 // --- Demos: precomputed cases that play without the network. ---
 function renderDemos() {
   $('demos').hidden = DEMOS.length === 0;
-  $('demo-list').innerHTML = DEMOS.map((d, i) => `<li><button type="button" class="btn sec demo-btn" data-i="${i}">${d.title}</button></li>`).join('');
+  $('demo-list').innerHTML = DEMOS.map((d, i) => `<li><button type="button" class="chip demo-btn" data-i="${i}">${d.title}</button></li>`).join('');
 }
 $('demo-list').addEventListener('click', (e) => {
   const b = e.target.closest('.demo-btn');
@@ -917,7 +954,7 @@ function setWorld(moon) {
   $('globe').hidden = moon; $('moon-globe').hidden = !moon;
   $('to-earth').setAttribute('aria-pressed', String(!moon)); $('to-moon').setAttribute('aria-pressed', String(moon));
   document.querySelector('.credits').textContent = moon
-    ? 'Imagery: NASA LRO WAC global mosaic via NASA Moon Trek · Globe: CesiumJS (Apache 2.0)'
+    ? 'Imagery: NASA LRO WAC global mosaic via NASA Moon Trek; Earth: NASA Blue Marble (GIBS) · Globe: CesiumJS (Apache 2.0)'
     : 'Imagery: NASA Blue Marble and Worldview (GIBS) · Globe: CesiumJS (Apache 2.0)';
   if (moon && !moonViewer && C) {
     try {
@@ -1013,8 +1050,26 @@ $('lunar-guess').addEventListener('click', (e) => {
   $('lunar-guess').querySelectorAll('.chip').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
 });
 
+// Moon cases: a drawn Earth–Moon scene (index.html #space) explains why each case works.
+const SCENE_TEXT = {
+  tides: 'The Moon pulls hardest on the side of the Earth facing it and least on the far side, so the oceans stretch into two bulges. As the Earth turns through them, most coasts get two high tides a day.',
+  corals: 'Corals can sense moonlight. A few nights after the full moon, many corals on a reef release their eggs on the same night.',
+  rain: 'The Moon\'s tilted orbit slowly turns: every 18.6 years the Moon swings highest, then lowest, in our sky. Studies find tiny effects on air pressure and rain. Test a place below.',
+  glaciers: 'The same 18.6-year rhythm. Can it reach the climate of a tropical glacier like Coropuna? Nobody knows yet: test it below.',
+  moon_recession: 'Telescopes fire lasers at mirrors left on the Moon (1969–1973) and time the echo. The Moon drifts about 3.8 cm farther away every year.',
+  new_craters: 'Space rocks still hit the Moon. Photos of the same ground taken years apart (2009–2015) revealed 222 fresh craters.',
+  impact_flashes: 'When a rock hits the Moon\'s dark side it flashes for a split second. Two telescopes watch together, so a flash both see is a real impact.',
+  apollo_moonquakes: 'Apollo astronauts left seismometers on the Moon (1969–1977). Re-reading their old records found about 22,000 more shaking events.',
+};
+function showScene(id) {
+  const s = $('space');
+  s.querySelectorAll('[data-for]').forEach((g) => { g.style.display = g.dataset.for.split(' ').includes(id) ? '' : 'none'; });
+  $('space-cap').textContent = SCENE_TEXT[id] ?? '';
+  s.classList.remove('in'); void s.offsetWidth; s.classList.add('in'); // restart the pull-back
+}
 function openLunarCase() {
   const c = lunarCase, testable = c.kinds !== undefined;
+  showScene(c.id);
   $('lunar-step').innerHTML = `Moon case · <span class="tag ${c.tag[0]}">${c.tag[1]}</span>`;
   $('t-lunar').textContent = c.title.replace('★ ', '');
   $('lunar-intro').textContent = c.text;

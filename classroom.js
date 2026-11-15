@@ -10,7 +10,10 @@ const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O or 1/I: easy to r
 async function firebaseBackend(config) {
   const { initializeApp } = await import(`${FIREBASE}firebase-app.js`);
   const fs = await import(`${FIREBASE}firebase-firestore.js`);
-  const db = fs.getFirestore(initializeApp(config));
+  const { getAuth, signInAnonymously } = await import(`${FIREBASE}firebase-auth.js`);
+  const app = initializeApp(config), db = fs.getFirestore(app);
+  // Anonymous sign-in: no names or emails, but each phone gets a private id so the rules (firestore.rules) only let it edit its own score.
+  const uid = (await signInAnonymously(getAuth(app))).user.uid;
   return {
     shared: true,
     // Create only if absent: hosting must never reset an existing room (returns false on a code collision).
@@ -18,7 +21,7 @@ async function firebaseBackend(config) {
       const ref = fs.doc(db, 'rooms', code);
       return fs.runTransaction(db, async (t) => {
         if ((await t.get(ref)).exists()) return false;
-        t.set(ref, { created: Date.now(), next: 0, open: true });
+        t.set(ref, { created: Date.now(), next: 0, open: true, host: uid });
         return true;
       });
     },
@@ -31,7 +34,7 @@ async function firebaseBackend(config) {
         t.update(ref, { next: n });
         return n;
       });
-      await fs.setDoc(fs.doc(db, 'rooms', code, 'players', String(id)), { id, score: 0, done: 0, updated: Date.now() });
+      await fs.setDoc(fs.doc(db, 'rooms', code, 'players', String(id)), { id, uid, score: 0, done: 0, updated: Date.now() });
       return id;
     },
     async report(code, id, score, done) { await fs.updateDoc(fs.doc(db, 'rooms', code, 'players', String(id)), { score, done, updated: Date.now() }); },
@@ -88,7 +91,10 @@ export async function createClassroom({ $, esc, openCase, loadJson }) {
   let me = store('sn-me'); // { code, id, score, done }
   let unwatch = null;
 
-  const joinUrl = (code) => `${location.origin}${location.pathname}?room=${code}#/player`;
+  // Phones cannot reach localhost: when the host runs locally, the QR points to the public site (publicUrl in data/classroom.json).
+  const local = /^(localhost|127\.|\[::1\])/.test(location.hostname);
+  const base = local && backend.shared && cfg?.publicUrl ? cfg.publicUrl.replace(/\/?$/, '/') : `${location.origin}${location.pathname}`;
+  const joinUrl = (code) => `${base}?room=${code}#/player`;
   const newCode = () => Array.from({ length: 4 }, () => ALPHABET[Math.floor(Math.random() * ALPHABET.length)]).join('');
   $('class-mode').textContent = backend.shared
     ? 'Live mode: everyone joins from their own phone.'

@@ -32,8 +32,10 @@
   .tag.proven { color:var(--ok); } .tag.weak { color:var(--warn); } .tag.open { color:var(--up); }
   .no3d { position:fixed; inset:0; display:grid; place-items:center; color:var(--text-secondary); }
 
-  .brand { position:fixed; top:16px; left:16px; z-index:3; font:13px var(--font-mono); letter-spacing:.08em; text-transform:uppercase;
-           color:var(--accent); background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:var(--btn-radius); padding:8px 12px; text-decoration:none; }
+  .brand { position:fixed; top:12px; left:16px; z-index:3; display:flex; align-items:center; gap:14px; padding:6px 14px;
+           background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:var(--btn-radius); }
+  .brand img { display:block; height:40px; width:auto; }
+  .brand-sep { width:1px; height:34px; background:rgba(255,255,255,.3); }
   .credits { position:fixed; bottom:8px; left:16px; z-index:3; margin:0; font-size:12px; color:var(--text-secondary); text-shadow:0 1px 2px #000; }
 
   /* Views: one visible at a time; the side panel is sized to fit the screen. */
@@ -69,6 +71,7 @@
   .chip input { position:absolute; opacity:0; pointer-events:none; }
   .chip.suggested::before { content:"★ "; color:var(--accent); }
   .chip .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; }
+  .chip .kind-ic { width:16px; height:16px; vertical-align:-3px; margin-right:4px; }
 
   /* Place cards: real NASA satellite image + key facts. */
   .places { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
@@ -115,7 +118,19 @@
   .lead-btn span:last-child { white-space:nowrap; color:var(--text-secondary); font-size:13px; }
   .banner { border:1px solid var(--accent); background:var(--accent-dim); border-radius:var(--btn-radius); padding:8px 10px; font-size:13px; }
   .banner button { font:inherit; background:none; border:0; color:var(--accent); text-decoration:underline; cursor:pointer; padding:0; }
-  .demos { list-style:none; padding:0; margin:10px 0 0; display:flex; flex-wrap:wrap; gap:6px; justify-content:center; }
+  .demos { list-style:none; padding:0; margin:6px 0 0; display:flex; flex-wrap:wrap; gap:6px; justify-content:center; }
+  /* Home: three equal ways in, then the solved cases as smaller, clearly secondary chips. */
+  .paths { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-top:14px; }
+  .path { display:flex; flex-direction:column; align-items:center; gap:2px; padding:12px 10px; text-decoration:none; color:var(--text-primary);
+          background:color-mix(in srgb, var(--c) 7%, transparent); border:1px solid color-mix(in srgb, var(--c) 45%, transparent);
+          border-top:3px solid var(--c); border-radius:var(--btn-radius); transition:border-color var(--transition-fast), background var(--transition-fast); }
+  .path:hover, .path:focus-visible { border-color:var(--c); background:color-mix(in srgb, var(--c) 16%, transparent); }
+  .path-ic { width:36px; height:36px; margin-bottom:2px; }
+  .path b { font-size:15px; } .path small { font-size:12.5px; color:var(--text-secondary); }
+  .demos-title { margin-top:14px; padding-top:10px; border-top:1px solid var(--glass-border); }
+  .demos .demo-btn { font-size:13px; padding:5px 12px; }
+  @media (max-width:640px) { .paths { grid-template-columns:1fr; gap:6px; } .path { flex-direction:row; flex-wrap:wrap; column-gap:10px; padding:8px 12px; text-align:left; }
+                             .path small { flex-basis:100%; padding-left:38px; margin-top:-2px; } .path-ic { width:28px; height:28px; margin:0; } }
   #view-compare { width:min(760px, calc(100vw - 32px)); }
   .compare { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:8px; }
   .compare .card { border:1px solid var(--glass-border); border-radius:var(--btn-radius); padding:8px 10px; }
@@ -154,13 +169,11 @@
   .feedback { font-size:14px; } .feedback:empty { display:none; }
   .feedback.good { color:var(--ok); } .feedback.close { color:var(--warn); } .feedback.miss { color:var(--up); }
   .clue { width:100%; text-align:left; font:14px var(--font-sans); color:var(--accent); background:none; border:0; padding:0; cursor:pointer; }
-  @media (max-width:640px) { .score { left:auto; right:16px; } }
   .mission-bar { position:fixed; z-index:3; top:62px; left:50%; transform:translateX(-50%); margin:0; font:600 13px var(--font-sans);
                  background:var(--accent); color:var(--bg-dark); border-radius:999px; padding:6px 14px; white-space:nowrap; cursor:pointer; }
   #join-btn:disabled { opacity:.5; cursor:wait; }
-  /* Phones: the brand and score move to a second row so the Earth/Moon switch is never covered. */
-  /* Phones: brand, then score, each on its own row below the Earth/Moon switch; panels leave room for the image credits. */
-  @media (max-width:640px) { .brand { top:62px; } .score { top:104px; left:16px; right:auto; } .mission-bar { top:146px; max-width:calc(100vw - 32px); overflow:hidden; text-overflow:ellipsis; }
+  /* Phones: the mission bar and demo tour sit below the options column; panels leave room for the image credits. */
+  @media (max-width:640px) { .mission-bar { top:104px; max-width:calc(100vw - 32px); overflow:hidden; text-overflow:ellipsis; } .tour { top:104px; }
                              .view { padding-bottom:40px; } }
   .side.wide { width:min(760px, calc(100vw - 32px)); }
   .host-grid { display:grid; grid-template-columns:minmax(220px, 320px) 1fr; gap:16px; align-items:start; }
@@ -176,20 +189,163 @@
   .mission li.done { color:var(--ok); border-color:var(--ok); }
   .facts { margin:0; padding-left:18px; font-size:13px; display:flex; flex-direction:column; gap:4px; }
   .facts b { color:var(--accent); } .facts a { color:var(--text-secondary); }
+
+  /* Top bar: logo on the left; world switch and score (options + points) on the right. */
+  .opts { position:fixed; z-index:3; top:16px; right:16px; display:flex; gap:8px; align-items:center; }
+  .opts .world, .opts .score { position:static; transform:none; }
+  /* Home: a bottom sheet that slides down out of the way to show the globe. */
+  .cover { bottom:0; width:min(840px, 100vw); padding:30px 9% 46px; border:0; border-radius:0;
+           clip-path:polygon(7% 0, 93% 0, 100% 100%, 0 100%); transition:transform 400ms cubic-bezier(.4,0,.2,1);
+           background:linear-gradient(var(--accent), var(--accent)) top / 100% 2px no-repeat, var(--glass-bg); }
+  .cover.active { animation:riseup .55s cubic-bezier(.2,.7,.2,1); }
+  .cover.down { transform:translate(-50%, calc(100% - 30px)); }
+  .cover.leaving { animation:sinkdown .38s cubic-bezier(.5,0,.8,.4) forwards; }
+  .side.active { animation:slidein .45s cubic-bezier(.2,.7,.2,1); }
+  @keyframes riseup { from { transform:translate(-50%, 100%); } to { transform:translate(-50%, 0); } }
+  @keyframes sinkdown { to { transform:translate(-50%, 105%); } }
+  @keyframes slidein { from { transform:translateX(60px); opacity:0; } to { transform:none; opacity:1; } }
+  @keyframes slideup { from { transform:translateY(60px); opacity:0; } to { transform:none; opacity:1; } }
+  .sheet-toggle { position:absolute; top:0; left:50%; transform:translateX(-50%); font:12px var(--font-mono); color:var(--text-secondary);
+                  background:none; border:0; padding:6px 16px; cursor:pointer; }
+  .sheet-toggle::before { content:""; display:block; width:40px; height:4px; margin:0 auto 3px; border-radius:2px; background:rgba(255,255,255,.35); }
+  /* Moon cases: the camera pulls back from the Moon to show the Earth, then draws why the case works. */
+  #space { position:fixed; inset:0; z-index:1; background:radial-gradient(1px 1px at 12% 18%, #fff8, transparent),
+           radial-gradient(1px 1px at 33% 72%, #fff6, transparent), radial-gradient(1px 1px at 58% 12%, #fff7, transparent),
+           radial-gradient(1px 1px at 8% 88%, #fff5, transparent), radial-gradient(1px 1px at 47% 44%, #fff4, transparent), var(--bg-dark); }
+  #space svg { position:absolute; left:16px; top:64px; width:calc(100% - 564px); height:calc(100% - 184px); overflow:visible; }
+  #space.in svg { animation:pullback 1.8s cubic-bezier(.2,.7,.2,1) both; transform-origin:76% 76%; }
+  @keyframes pullback { from { transform:scale(3.2); opacity:.2; } to { transform:none; opacity:1; } }
+  .space-cap { position:absolute; left:16px; bottom:40px; width:min(560px, calc(100% - 580px)); margin:0; font-size:15px; padding:10px 14px;
+               background:var(--glass-bg); border:1px solid var(--glass-border); border-left:3px solid var(--accent); border-radius:var(--btn-radius); }
+  #space text { font:600 15px var(--font-sans); fill:var(--text-primary); paint-order:stroke; stroke:#0a0a0f; stroke-width:4px; }
+  #space text.small { font-size:13px; font-weight:400; fill:var(--text-secondary); }
+  #space .pulse { animation:pulse 2.4s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+  #space .flow { stroke-dasharray:10 14; animation:flow 1.2s linear infinite; }
+  #space .blink { animation:blink 2.6s ease-out infinite; }
+  #space .ripple { animation:ripple 2.4s ease-out infinite; transform-box:fill-box; transform-origin:center; }
+  #space .ripple.d2 { animation-delay:.8s; } #space .ripple.d3 { animation-delay:1.6s; }
+  #space .swing { animation:swing 4s ease-in-out infinite alternate; }
+  #space .fall { animation:fall 2.6s ease-in infinite; }
+  #space .rise { animation:rise 3s ease-out infinite; }
+  @keyframes pulse { 50% { transform:scale(1.06); opacity:.75; } }
+  @keyframes flow { to { stroke-dashoffset:-24; } }
+  @keyframes blink { 0%, 55%, 100% { opacity:0; } 60% { opacity:1; } 80% { opacity:.4; } }
+  @keyframes ripple { from { transform:scale(.3); opacity:.9; } to { transform:scale(2.2); opacity:0; } }
+  @keyframes swing { from { transform:translateY(-34px); } to { transform:translateY(34px); } }
+  @keyframes fall { 0% { transform:translate(0,0); opacity:0; } 15% { opacity:1; } 70%, 100% { transform:translate(-150px,150px); opacity:0; } }
+  @keyframes rise { from { transform:translate(0,0); opacity:1; } to { transform:translate(10px,-40px); opacity:0; } }
+  @media (prefers-reduced-motion: reduce) { #space *, #space.in svg, .cover, .side { animation:none !important; transition:none !important; } }
+  @media (max-width:640px) {
+    .opts { flex-direction:column; align-items:flex-end; gap:6px; }
+    .brand { gap:8px; padding:5px 8px; } .brand img { height:28px; } .brand-sep { height:24px; }
+    #brand-home img { content:url(img/logo_mark.png); }
+    .cover { padding:26px 6% 76px; clip-path:polygon(4% 0, 96% 0, 100% 100%, 0 100%); }
+    .side.active { animation-name:slideup; }
+    #space svg { left:8px; top:100px; width:calc(100% - 16px); height:calc(30vh - 100px); }
+    .space-cap { display:none; }
+  }
   [hidden] { display:none !important; }
 </style>
 </head>
 <body>
 <div id="globe" aria-hidden="true"></div>
 <div id="moon-globe" aria-hidden="true" hidden></div>
+<div id="space" hidden>
+  <svg viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="space-cap">
+    <defs>
+      <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#ffc857"/></marker>
+      <radialGradient id="glow"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+    </defs>
+    <line x1="345" y1="256" x2="705" y2="444" stroke="#ffffff55" stroke-width="2" stroke-dasharray="4 10"/>
+    <g data-for="tides">
+      <ellipse class="pulse" cx="210" cy="190" rx="196" ry="156" transform="rotate(27 210 190)" fill="#4d9bff33" stroke="#4d9bff" stroke-width="2"/>
+    </g>
+    <image href="img/earth_disk.png" x="60" y="40" width="300" height="300"/>
+    <g data-for="rain glaciers"><g class="swing">
+      <image href="img/moon_disk.png" x="700" y="410" width="120" height="120" opacity=".25"/>
+    </g></g>
+    <image href="img/moon_disk.png" x="700" y="410" width="120" height="120"/>
+    <text x="210" y="372" text-anchor="middle">Earth</text>
+    <text x="760" y="552" text-anchor="middle">Moon</text>
+    <text class="small" x="530" y="372" text-anchor="middle" transform="rotate(27 530 372)">384,400 km away (not to scale)</text>
+
+    <g data-for="tides">
+      <path d="M690 420 L440 290" stroke="#ffc857" stroke-width="3" marker-end="url(#arr)" class="flow"/>
+      <text x="580" y="330">The Moon pulls</text>
+      <text x="300" y="322">High tide</text>
+      <text x="10" y="70">High tide (far side)</text>
+      <text x="300" y="34">Low tide</text>
+    </g>
+    <g data-for="corals">
+      <circle cx="760" cy="470" r="95" fill="url(#glow)" class="pulse"/>
+      <path d="M712 440 L330 250 M720 455 L338 268 M728 470 L344 286" stroke="#ffe9a8" stroke-width="2" class="flow"/>
+      <circle cx="330" cy="262" r="7" fill="#ff8a3d"/>
+      <g fill="#ffd1e0"><circle class="rise" cx="322" cy="250" r="3"/><circle class="rise" cx="334" cy="244" r="2.5" style="animation-delay:.7s"/><circle class="rise" cx="328" cy="256" r="3" style="animation-delay:1.4s"/></g>
+      <text x="400" y="240">Coral reef</text>
+      <text x="830" y="420">Full moon</text>
+    </g>
+    <g data-for="rain glaciers">
+      <path d="M865 405 Q900 470 865 535" stroke="#ffc857" stroke-width="3" fill="none" marker-start="url(#arr)" marker-end="url(#arr)"/>
+      <text x="760" y="590" text-anchor="middle">Its path swings higher, then lower</text>
+      <text class="small" x="760" y="610" text-anchor="middle">one full swing every 18.6 years</text>
+      <path d="M420 470 q20 -30 40 0 t40 0 t40 0 t40 0" stroke="#00d4ff" stroke-width="2.5" fill="none"/>
+      <text class="small" x="420" y="510">the 18.6-year rhythm</text>
+    </g>
+    <g data-for="rain">
+      <g transform="translate(200 208)"><circle r="7" fill="#00d4ff"/><path class="flow" d="M-14 -22 v18 M0 -26 v18 M14 -22 v18" stroke="#9ecbff" stroke-width="2"/></g>
+      <text x="40" y="420">Rain and air: a tiny pull?</text>
+    </g>
+    <g data-for="glaciers">
+      <g transform="translate(200 208)"><path d="M-12 8 L0 -12 L12 8 Z" fill="#fff" stroke="#0a0a0f" stroke-width="2"/></g>
+      <text x="40" y="420">Coropuna glacier, Peru: does the rhythm reach it?</text>
+      <text x="180" y="190" style="font-size:22px">?</text>
+    </g>
+    <g data-for="moon_recession">
+      <circle cx="133" cy="96" r="6" fill="#3ddc97"/>
+      <path d="M133 96 L740 450" stroke="#3ddc97" stroke-width="2.5" class="flow"/>
+      <image href="img/moon_disk.png" x="760" y="440" width="120" height="120" opacity=".22"/>
+      <path d="M800 400 L850 427" stroke="#ffc857" stroke-width="3" marker-end="url(#arr)"/>
+      <text x="40" y="70">Laser telescope</text>
+      <text x="890" y="395" text-anchor="middle">+3.8 cm farther each year</text>
+      <text class="small" x="520" y="300">laser pulse to mirrors on the Moon and back</text>
+    </g>
+    <g data-for="new_craters">
+      <circle class="fall" cx="930" cy="290" r="5" fill="#ffc857"/>
+      <circle cx="782" cy="440" r="5" fill="#fff"/><circle cx="782" cy="440" r="13" fill="none" stroke="#ffc857" stroke-width="2"/>
+      <text x="690" y="400" text-anchor="end">New crater</text>
+      <text class="small" x="690" y="420" text-anchor="end">same ground, photographed years apart</text>
+    </g>
+    <g data-for="impact_flashes">
+      <circle class="blink" cx="790" cy="505" r="26" fill="url(#glow)"/><circle cx="790" cy="505" r="3" fill="#ffc857"/>
+      <path d="M790 505 L300 290" stroke="#ffffff66" stroke-width="1.5" stroke-dasharray="2 6"/>
+      <text x="760" y="590" text-anchor="middle">Flash on the dark side</text>
+      <text x="300" y="440">Telescopes on Earth catch it</text>
+    </g>
+    <g data-for="apollo_moonquakes">
+      <circle class="ripple" cx="752" cy="462" r="20" fill="none" stroke="#ffc857" stroke-width="2"/>
+      <circle class="ripple d2" cx="752" cy="462" r="20" fill="none" stroke="#ffc857" stroke-width="2"/>
+      <circle class="ripple d3" cx="752" cy="462" r="20" fill="none" stroke="#ffc857" stroke-width="2"/>
+      <circle cx="752" cy="462" r="5" fill="#3ddc97"/>
+      <path d="M470 520 h30 l6 -18 l8 34 l8 -40 l8 30 l6 -12 h30" stroke="#3ddc97" stroke-width="2" fill="none"/>
+      <text x="470" y="568">Apollo sensor record</text>
+    </g>
+  </svg>
+  <p class="space-cap" id="space-cap"></p>
+</div>
+<div class="opts">
 <div class="world" role="group" aria-label="Choose a world">
   <button type="button" id="to-earth" aria-pressed="true">Earth</button>
   <button type="button" id="to-moon" aria-pressed="false">Moon</button>
 </div>
-<div class="no3d" hidden id="no3d">Your browser cannot display the 3D globe.</div>
-<a class="brand" href="#/home">Signal or Noise</a>
-<p class="mission-bar" id="mission-bar" hidden aria-live="polite" role="button" tabindex="0" title="Back to your mission"></p>
 <p class="score" id="score" title="Your detective score: right calls earn points" aria-live="polite"></p>
+</div>
+<div class="no3d" hidden id="no3d">Your browser cannot display the 3D globe.</div>
+<div class="brand">
+  <a href="https://www.spaceappschallenge.org/" target="_blank" rel="noopener"><img src="img/space_apps_logo.png" alt="NASA Space Apps Challenge" height="40"></a>
+  <span class="brand-sep" aria-hidden="true"></span>
+  <a href="#/home" id="brand-home"><img src="img/logo.png" alt="Signal or Noise: Earth and Moon trend detective, home" height="40"></a>
+</div>
+<p class="mission-bar" id="mission-bar" hidden aria-live="polite" role="button" tabindex="0" title="Back to your mission"></p>
 <p class="credits">Imagery: NASA Blue Marble and Worldview (GIBS) · Globe: CesiumJS (Apache 2.0)</p>
 <a class="btn sec skip" href="#/case" id="skip">Skip</a>
 <aside class="pop" id="place-pop" hidden aria-live="polite">
@@ -212,15 +368,16 @@
 
 <main>
 <section class="view cover" id="view-home" aria-labelledby="t0">
+  <button type="button" class="sheet-toggle" id="sheet-toggle" aria-expanded="true" aria-controls="view-home">Hide</button>
   <h1 id="t0" tabindex="-1">Is the Earth really changing here?</h1>
   <p>Be a detective: pick a place, test NASA data, get an honest verdict.</p>
-  <div class="row">
-    <a class="btn" href="#/global" id="global-link">See the planet's trends</a>
-    <a class="btn sec" href="#/case">Investigate a place</a>
-    <a class="btn sec" href="#/class">Play in class</a>
+  <div class="paths">
+    <a class="path" href="#/global" id="global-link" style="--c:#00d4ff"><svg class="path-ic" viewBox="0 0 40 40" aria-hidden="true"><circle cx="18" cy="21" r="15" fill="#1d6fd6"/><path d="M8 13c4-2 6 2 9 0s3 4 6 3 2 5-1 6-4 4-7 2-3-4-6-4-2-4-1-7z" fill="#3ddc97"/><path d="M24 31c2-2 5-1 6-4" stroke="#3ddc97" stroke-width="3" stroke-linecap="round" fill="none"/><circle cx="18" cy="21" r="15" fill="none" stroke="#9ecbff" stroke-width="1.5"/><path d="M22 14l6-6 4 4 6-6" stroke="#ff8a3d" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M33 6h5v5" stroke="#ff8a3d" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><b>See the planet's trends</b><small>Where Earth is changing</small></a>
+    <a class="path" href="#/case" style="--c:#ffc857"><svg class="path-ic" viewBox="0 0 40 40" aria-hidden="true"><path d="M26 26l10 10" stroke="#c98a1e" stroke-width="6" stroke-linecap="round"/><circle cx="17" cy="17" r="13" fill="#0b3d91" stroke="#ffc857" stroke-width="4"/><path d="M9 21l4-5 4 3 5-7 4 3" stroke="#3ddc97" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 10a9 9 0 0 1 6-3" stroke="#ffffff99" stroke-width="2" fill="none" stroke-linecap="round"/></svg><b>Investigate a place</b><small>Test NASA data yourself</small></a>
+    <a class="path" href="#/class" style="--c:#3ddc97"><svg class="path-ic" viewBox="0 0 40 40" aria-hidden="true"><rect x="22" y="3" width="15" height="15" rx="2" fill="#fff"/><path d="M24 5h4v4h-4zM31 5h4v4h-4zM24 12h4v4h-4zM31 12h2v2h-2zM33 14h2v2h-2z" fill="#0a0a0f"/><circle cx="10" cy="17" r="4.5" fill="#ff8fb1"/><path d="M2 33c0-6 3.5-9 8-9s8 3 8 9z" fill="#ff8fb1"/><circle cx="26" cy="25" r="4.5" fill="#3ddc97"/><path d="M18 39c0-6 3.5-9 8-9s8 3 8 9z" fill="#3ddc97"/><circle cx="17" cy="23" r="5" fill="#ffc857"/><path d="M8 39c0-7 4-10 9-10s9 3 9 10z" fill="#ffc857"/></svg><b>Play in class</b><small>A live game with a QR code</small></a>
   </div>
   <div id="demos" hidden>
-    <p class="note" style="margin-top:12px">Or watch a solved case:</p>
+    <p class="note demos-title">▶ Or watch a solved case</p>
     <ul class="demos" id="demo-list"></ul>
   </div>
 </section>

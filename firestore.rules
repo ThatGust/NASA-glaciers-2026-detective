@@ -1,23 +1,35 @@
 rules_version = '2';
-// Firestore rules for Signal or Noise classroom mode. Rooms and players hold no personal data:
-// a player is only a number with a score. Scores can only grow, by at most 10 points per write.
+// Classroom mode (classroom.js). Every phone signs in anonymously; nobody can read or write without that.
+// A room holds a join counter; each player document belongs to the phone (uid) that created it.
 service cloud.firestore {
-  match /databases/{database}/documents {
+  match /databases/{db}/documents {
     match /rooms/{code} {
-      allow read: if true;
-      allow create: if request.resource.data.keys().hasOnly(['created', 'next', 'open'])
-        && request.resource.data.next == 0 && request.resource.data.open == true;
-      // Joining takes the next number: the counter may only go up by one.
-      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['next'])
-        && request.resource.data.next == resource.data.next + 1;
-      match /players/{pid} {
-        allow read: if true;
-        allow create: if request.resource.data.keys().hasOnly(['id', 'score', 'done', 'updated'])
-          && request.resource.data.score == 0 && request.resource.data.done == 0
-          && string(request.resource.data.id) == pid && request.resource.data.id <= get(/databases/$(database)/documents/rooms/$(code)).data.next;
-        allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['score', 'done', 'updated'])
-          && request.resource.data.score >= resource.data.score && request.resource.data.score <= resource.data.score + 10
-          && request.resource.data.done >= resource.data.done && request.resource.data.done <= 5;
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && code.matches('[A-Z2-9]{4}')
+        && request.resource.data.keys().hasOnly(['created', 'next', 'open', 'host'])
+        && request.resource.data.next == 0 && request.resource.data.open == true
+        && request.resource.data.host == request.auth.uid;
+      // Joining only adds one to the counter; only the host may close the room.
+      allow update: if request.auth != null && (
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['next'])
+          && request.resource.data.next == resource.data.next + 1)
+        || (resource.data.host == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['open'])));
+
+      match /players/{id} {
+        allow read: if request.auth != null;
+        allow create: if request.auth != null
+          && request.resource.data.keys().hasOnly(['id', 'uid', 'score', 'done', 'updated'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.id == int(id)
+          && int(id) <= get(/databases/$(db)/documents/rooms/$(code)).data.next
+          && request.resource.data.score == 0 && request.resource.data.done == 0;
+        // A player only updates its own score; 5 cases x 4 points max, and progress never goes back.
+        allow update: if request.auth != null && resource.data.uid == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['score', 'done', 'updated'])
+          && request.resource.data.score is int && request.resource.data.score >= 0 && request.resource.data.score <= 20
+          && request.resource.data.done is int && request.resource.data.done >= resource.data.done && request.resource.data.done <= 5;
+        allow delete: if false;
       }
     }
   }

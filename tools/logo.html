@@ -1,0 +1,29 @@
+<!doctype html>
+<!-- Source of img/logo.png. Render: chrome --headless=new --default-background-color=00000000 --force-device-scale-factor=2
+     --window-size=520,120 --screenshot=img/logo.png http://localhost:8765/tools/logo.html -->
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  html, body { margin:0; background:transparent; }
+  .logo { display:flex; align-items:center; gap:12px; padding:14px 10px; }
+  svg { width:84px; height:84px; flex:none; }
+  .name { font:800 38px/1 Inter, sans-serif; letter-spacing:.02em; color:#e8eaed; }
+  .name .or { font-weight:400; font-style:italic; font-size:26px; color:#00d4ff; margin:0 4px; }
+  .name .noise span { display:inline-block; }
+  .tag { font:500 11.5px JetBrains Mono, monospace; letter-spacing:.24em; color:#00d4ff; margin-top:8px; }
+</style></head><body>
+<div class="logo">
+  <svg viewBox="0 0 84 84" aria-hidden="true">
+    <defs><radialGradient id="e" cx=".35" cy=".35"><stop offset="0" stop-color="#4d9bff"/><stop offset="1" stop-color="#0b3d91"/></radialGradient></defs>
+    <circle cx="34" cy="44" r="26" fill="url(#e)"/>
+    <path d="M14 38c7-6 12 3 19-1s7-9 13-7" stroke="#3ddc97" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <circle cx="70" cy="14" r="8" fill="#c8c8d0"/>
+    <path d="M54 30 L64 20" stroke="#ffffff88" stroke-width="2" stroke-dasharray="2 4"/>
+    <path d="M4 76 q6-10 12 0 t12 0 t12 0 t12 0 t12 0" stroke="#00d4ff" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  </svg>
+  <div>
+    <div class="name">SIGNAL<span class="or">or</span><span class="noise"><span style="transform:translateY(-3px)">N</span><span style="transform:translateY(2px) rotate(-4deg)">O</span><span style="transform:translateY(-1px)">I</span><span style="transform:translateY(3px) rotate(5deg)">S</span><span style="transform:translateY(-2px)">E</span></span></div>
+    <div class="tag">EARTH &amp; MOON TREND DETECTIVE</div>
+  </div>
+</div>
+</body></html>

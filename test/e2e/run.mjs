@@ -151,6 +151,8 @@ async function newTab(name, url = base) {
   await client.send('Fetch.enable', { patterns: [{ urlPattern: '*://power.larc.nasa.gov/*', requestStage: 'Request' }] });
   await client.send('Page.setDownloadBehavior', { behavior: 'allow', downloadPath: downloads });
   await client.send('Emulation.setDeviceMetricsOverride', { width: 1920, height: 940, deviceScaleFactor: 1, mobile: false });
+  // Functional checks measure layout right after a view change; reduced motion turns the panel animations off so they never catch a panel mid-slide.
+  await client.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
   await tab.front(); await client.send('Page.navigate', { url });
   await until(() => tab.evaluate("!!document.querySelector('#demo-list .demo-btn')"), 'app initialized', 35000);
   return tab;
@@ -317,7 +319,7 @@ async function homeAndTours() {
   await mainTab.route('home');
   await auditView(mainTab, 'home', ['#view-home a[href="#/global"]', '#view-home a[href="#/case"]', '#view-home a[href="#/class"]']);
   await step('Home: classroom button and Back', 'major', 'Play in class opens host/join controls; Back returns home.', async () => { await mainTab.route('home'); await mainTab.click('#view-home a[href="#/class"]'); await mainTab.view('class'); await mainTab.waitVisible('#host-btn'); await mainTab.click('#view-class a[href="#/home"]'); await mainTab.view('home'); return 'Classroom host/join and home visible.'; });
-  await step('Home: Skip and brand navigation', 'major', 'Skip opens the case picker and the brand returns home.', async () => { await mainTab.click('#skip'); await mainTab.view('case'); await mainTab.click('.brand'); await mainTab.view('home'); return 'Skip → case → brand → home.'; });
+  await step('Home: Skip and brand navigation', 'major', 'Skip opens the case picker and the brand returns home.', async () => { await mainTab.click('#skip'); await mainTab.view('case'); await mainTab.click('#brand-home'); await mainTab.view('home'); return 'Skip → case → brand → home.'; });
   const demos = await mainTab.evaluate(`[...document.querySelectorAll('#demo-list .demo-btn')].map(b=>({index:b.dataset.i,title:b.textContent}))`);
   for (const demo of demos) {
     await step(`Demo ${demo.index}: start and Next — ${demo.title}`, 'major', 'Tour overlay opens; Next advances its visible step counter and view.', async () => {
