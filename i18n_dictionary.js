@@ -1,6 +1,7 @@
 // Hand-written UI translations: English | Spanish | Portuguese | French | Russian | Simplified Chinese.
 // Names of methods, missions, organizations and published sources retain their official spelling.
 export const rows = `
+Photo of Miguel|Foto de Miguel|Foto de Miguel|Photo de Miguel|Фото Мигеля|Miguel 的照片
 Our team|Nuestro equipo|Nossa equipe|Notre équipe|Наша команда|我们的团队
 We built Signal or Noise to help everyone learn to tell a real trend in data from random noise.|Creamos Signal or Noise para ayudar a todos a distinguir una tendencia real en los datos del ruido al azar.|Criamos o Signal or Noise para ajudar todos a distinguir uma tendência real nos dados do ruído aleatório.|Nous avons créé Signal or Noise pour aider chacun à distinguer une vraie tendance dans les données du bruit aléatoire.|Мы создали Signal or Noise, чтобы помочь каждому отличать настоящую тенденцию в данных от случайного шума.|我们开发了 Signal or Noise，帮助每个人分辨数据中的真实趋势和随机噪声。
 Previous hackathons: NASA Space Apps Challenge 2023 and 2025.|Hackatones anteriores: NASA Space Apps Challenge 2023 y 2025.|Hackathons anteriores: NASA Space Apps Challenge 2023 e 2025.|Hackathons précédents : NASA Space Apps Challenge 2023 et 2025.|Предыдущие хакатоны: NASA Space Apps Challenge 2023 и 2025.|此前参加的黑客松：NASA Space Apps Challenge 2023 和 2025。
