@@ -45,7 +45,11 @@ async function firebaseBackend(config) {
 function localBackend() {
   const key = (code) => `sn-room-${code}`;
   const read = (code) => { try { return JSON.parse(localStorage.getItem(key(code))); } catch { return null; } };
-  const write = (code, room) => { localStorage.setItem(key(code), JSON.stringify(room)); new BroadcastChannel(key(code)).postMessage('changed'); };
+  const write = (code, room) => {
+    try { localStorage.setItem(key(code), JSON.stringify(room)); }
+    catch { throw new Error('Local storage is unavailable. Allow storage to play in local mode.'); }
+    new BroadcastChannel(key(code)).postMessage('changed');
+  };
   // Tabs share one localStorage room: serialize read-modify-write with a Web Lock so two joins never get the same number.
   const locked = (code, fn) => (navigator.locks ? navigator.locks.request(key(code), fn) : fn());
   return {
@@ -138,7 +142,8 @@ export async function createClassroom({ $, esc, openCase, loadJson }) {
       $('join-status').textContent = '';
       location.hash = '#/player';
     } catch (err) {
-      $('join-status').textContent = err.message;
+      console.warn('Could not join classroom:', err);
+      $('join-status').textContent = /^(There is no open session|This session|Local storage)/.test(err.message) ? err.message : 'Could not connect. Please try again.';
       location.hash = '#/class'; // show the error where the player can see it and try again
     } finally { joining = false; $('join-btn').disabled = false; }
   }
