@@ -1,6 +1,12 @@
 // Hand-written UI translations: English | Spanish | Portuguese | French | Russian | Simplified Chinese.
 // Names of methods, missions, organizations and published sources retain their official spelling.
 export const rows = `
+Welcome, detective|Bienvenido, detective|Bem-vindo, detetive|Bienvenue, détective|Добро пожаловать, детектив|欢迎你，侦探
+Where are you from?|¿De dónde eres?|De onde você é?|D'où venez-vous ?|Откуда вы?|你来自哪里？
+The globe will start over your country. You can change it at any time on the home screen.|El globo empezará sobre tu país. Puedes cambiarlo cuando quieras en la portada.|O globo vai começar sobre o seu país. Você pode mudar quando quiser na tela inicial.|Le globe commencera au-dessus de votre pays. Vous pouvez le changer à tout moment sur l'écran d'accueil.|Глобус начнётся над вашей страной. Её можно сменить в любой момент на главном экране.|地球仪会先显示你的国家。你可以随时在首页更改。
+Your country|Tu país|Seu país|Votre pays|Ваша страна|你的国家
+The whole world|Todo el mundo|O mundo todo|Le monde entier|Весь мир|全世界
+Start|Empezar|Começar|Commencer|Начать|开始
 🌎 Focus on a country|🌎 Enfócate en un país|🌎 Foque em um país|🌎 Zoomer sur un pays|🌎 Выберите страну|🌎 聚焦一个国家
 Focus on a country|Enfócate en un país|Foque em um país|Zoomer sur un pays|Выберите страну|聚焦一个国家
 Information|Información|Informações|Informations|Информация|信息

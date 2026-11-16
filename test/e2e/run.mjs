@@ -153,6 +153,8 @@ async function newTab(name, url = base) {
   await client.send('Emulation.setDeviceMetricsOverride', { width: 1920, height: 940, deviceScaleFactor: 1, mobile: false });
   // Functional checks measure layout right after a view change; reduced motion turns the panel animations off so they never catch a panel mid-slide.
   await client.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
+  // The first-visit country question is answered as 'whole world' so every check starts from the same state.
+  await client.send('Page.addScriptToEvaluateOnNewDocument', { source: "try { localStorage.getItem('sn-country') === null && localStorage.setItem('sn-country', '') } catch {}" });
   await tab.front(); await client.send('Page.navigate', { url });
   await until(() => tab.evaluate("!!document.querySelector('#demo-list .demo-btn')"), 'app initialized', 35000);
   return tab;

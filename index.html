@@ -273,6 +273,9 @@
     .lead-btn .tag { font-size:10px; }
   }
   [hidden] { display:none !important; }
+  #welcome { max-width:min(440px, calc(100vw - 32px)); padding:22px 24px; background:var(--glass-bg); color:var(--text-primary); border:1px solid var(--glass-border); border-top:3px solid var(--accent); border-radius:16px; }
+  #welcome::backdrop { background:rgba(5,5,10,.6); }
+  #welcome h2 { margin:4px 0 8px; } #welcome select { width:100%; margin:6px 0 14px; font-size:16px; padding:8px; }
   .info-btn { display:flex; align-items:center; gap:6px; color:var(--text-primary); text-decoration:none; font:600 14px var(--font-sans); }
   .info-btn:hover, .info-btn:focus-visible { color:var(--accent); }
   .author { display:flex; align-items:center; gap:16px; margin:6px 0 10px; }
@@ -387,6 +390,15 @@
   </svg>
   <p class="space-cap" id="space-cap"></p>
 </div>
+<dialog id="welcome" aria-labelledby="t-welcome">
+  <form method="dialog">
+    <p class="step">Welcome, detective</p>
+    <h2 id="t-welcome">Where are you from?</h2>
+    <p class="note">The globe will start over your country. You can change it at any time on the home screen.</p>
+    <select id="welcome-country" aria-label="Your country"></select>
+    <div class="row"><button class="btn" value="ok">Start</button></div>
+  </form>
+</dialog>
 <div class="opts">
 <select id="language-picker" aria-label="Language">
   <option value="en" lang="en">English</option><option value="es" lang="es">Español</option>

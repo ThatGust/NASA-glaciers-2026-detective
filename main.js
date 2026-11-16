@@ -242,7 +242,8 @@ let countryFilter = '', searchText = '';
 function fillCountries() {
   const all = [...new Set(PLACES.flatMap(countriesOf))].filter((c) => !/catalog point|international/i.test(c)).sort();
   $('country').innerHTML = `<option value="">All countries</option>${all.map((c) => `<option>${esc(c)}</option>`).join('')}`;
-  $('home-country').innerHTML = $('country').innerHTML;
+  $('home-country').innerHTML = $('country').innerHTML.replace('>All countries<', '>The whole world<');
+  $('welcome-country').innerHTML = $('country').innerHTML.replace('>All countries<', '>The whole world<');
 }
 // Focusing a country frames all of its catalogue places (wrapping across the 180° meridian when needed, e.g. Russia).
 function flyToCountry(c) {
@@ -259,12 +260,14 @@ function flyToCountry(c) {
   if (reducedMotion) viewer.camera.setView({ destination }); else viewer.camera.flyTo({ destination, duration: 2.5 });
 }
 $('country').addEventListener('change', () => { countryFilter = $('country').value; page = 0; renderPlaces(); showDots(); if (countryFilter) flyToCountry(countryFilter); });
-$('home-country').addEventListener('change', () => {
-  const c = $('home-country').value;
-  $('country').value = c; $('country').dispatchEvent(new Event('change'));
-  $('home-country').value = '';
-  location.hash = '#/case';
-});
+// The visitor's country only moves the camera; it never filters the places.
+let focusCountry = '';
+function setFocusCountry(c) {
+  focusCountry = c;
+  try { localStorage.setItem('sn-country', c); } catch { /* private mode: this visit only */ }
+  if (c) flyToCountry(c); else flyTo(-15.53, -72.65, 160000, 3);
+}
+$('home-country').addEventListener('change', () => setFocusCountry($('home-country').value));
 $('place-search').addEventListener('input', () => { searchText = $('place-search').value.trim().toLowerCase(); page = 0; renderPlaces(); showDots(); });
 // Typing "lat, lon" and pressing Enter investigates any point on Earth.
 $('place-search').addEventListener('keydown', (e) => {
@@ -349,7 +352,7 @@ function route() {
   showDots();
   showPop();
   if (v === 'global') { drawGrid(); flyTo(10, -40, 22000000, 2); }
-  if (v === 'home') flyTo(-15.53, -72.65, 160000, 9);
+  if (v === 'home') { if (focusCountry) flyToCountry(focusCountry); else flyTo(-15.53, -72.65, 160000, 9); }
 }
 addEventListener('hashchange', route);
 // Phones: every side panel gets a handle that slides it down to show the globe (or the Moon) and back.
@@ -1272,6 +1275,17 @@ renderKinds();
 fillCountries();
 drawPlaceDots();
 selectPlace(PLACES.find((p) => p.id === 'coropuna')?.id ?? PLACES[0].id);
+// First visit: ask the visitor's country so the globe and the case list start there. A saved answer ('' = whole world) is reused.
+let savedCountry = null;
+try { savedCountry = localStorage.getItem('sn-country'); } catch { /* private mode: ask, keep for this visit */ }
+if (savedCountry && [...$('country').options].some((o) => o.value === savedCountry)) { focusCountry = savedCountry; $('home-country').value = savedCountry; }
+else if (savedCountry === null && !new URLSearchParams(location.search).has('room') && /^(#\/home)?$/.test(location.hash)) {
+  $('welcome').addEventListener('close', () => {
+    $('home-country').value = $('welcome-country').value;
+    setFocusCountry($('welcome-country').value);
+  }, { once: true });
+  $('welcome').showModal();
+}
 renderDemos();
 fillGlobal();
 // Classroom mode: mission cases arrive with their NASA series bundled, so a whole class does not hit NASA POWER at once.

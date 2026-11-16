@@ -55,7 +55,7 @@ export function startI18n(document, browser = window) {
   language = initialLanguage(browser.location.search, storage, browser.navigator.language);
   const originals = new WeakMap();
   const attributes = ['aria-label', 'title', 'placeholder', 'alt', 'label'];
-  const excluded = 'script, style, #language-picker, [data-i18n-skip], #host-url, #host-code, #player-id, #country option:not([value=""]), #home-country option:not([value=""]), #lunar-place option:not([value^="tide:"]), .place b, .cesium-credit-textContainer';
+  const excluded = 'script, style, #language-picker, [data-i18n-skip], #host-url, #host-code, #player-id, #country option:not([value=""]), #home-country option:not([value=""]), #welcome-country option:not([value=""]), #lunar-place option:not([value^="tide:"]), .place b, .cesium-credit-textContainer';
   const numberFormat = (source, lang) => lang === 'en' ? source : source.replace(/(?<![\p{L}\d])[-+]?\d+(?:,\d{3})*\.\d+(?![\p{L}\d])/gu, token => {
     const value = Number(token.replaceAll(',', ''));
     const digits = token.split('.')[1].length;
