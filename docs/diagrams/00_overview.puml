@@ -25,9 +25,14 @@ actor "Teacher / host" as H
 actor "NASA POWER API\nlive request\n(temperature and rain\nalso bundled)" as POWER <<system>>
 actor "NASA imagery\nGIBS / Moon Trek" as IMG <<system>>
 actor "Bundled datasets\nNASA / NOAA / USGS" as DATA <<data source>>
-actor "Firebase Firestore\n(optional)" as FB <<system>>
+actor "Firebase\n(Firestore + anonymous sign-in)" as FB <<system>>
 
 rectangle "Signal or Noise — browser application" {
+  package "0 · On every screen" {
+    usecase "UC-49\nChoose language\n(6 languages)" as U49
+    usecase "UC-50\nSet home country\n(first visit)" as U50
+    usecase "UC-51\nRead author information" as U51
+  }
   package "1 · Explore the Earth" {
     usecase "UC-01\nBrowse Earth globe" as U1
   }
@@ -58,6 +63,10 @@ E -- U30
 E -- U37
 E -- U39
 P -- U44
+E -- U49
+P -- U49
+E -- U50
+E -- U51
 P -- U45
 H -- U42
 H -- U47
@@ -70,18 +79,22 @@ U26 -- DATA
 U37 -- DATA
 U37 -- POWER
 U39 -- DATA
-U42 -- FB : shared mode only
-U44 -- FB : shared mode only
-U47 -- FB : shared mode only
+U42 -- FB
+U44 -- FB
+U47 -- FB
 note bottom of U45
   Fixed mission: five bundled cases.
   Players also use the ordinary
   evidence and verdict screens.
 end note
 note bottom of FB
-  Without optional configuration,
-  classroom rooms work only across
-  tabs of the same browser.
+  Students join from their own phones.
+  Security rules: each phone changes
+  only its own score.
+end note
+note bottom of U50
+  Moves the camera only;
+  no place is filtered out.
 end note
 legend bottom
   Solid lines: actor participation.

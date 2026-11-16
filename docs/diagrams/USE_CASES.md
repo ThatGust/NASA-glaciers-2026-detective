@@ -686,3 +686,14 @@ The following distinguish observed source behavior from matters requiring runtim
 | G-21 | **Resolved during the follow-up: lunar explanatory text is now restored.** Informational cases still hide the extra note until a quiz answer, but opening/running a testable case explicitly shows it. | `openLunarCase()` restoration at [main.js:1019](../../main.js#L1019), lunar-run restoration at [main.js:1038](../../main.js#L1038), quiz restoration at [main.js:984](../../main.js#L984). The previous hidden-test-explanation sequence is no longer supported by this source snapshot. Browser confirmation remains outside this lane. |
 
 No account registration, named profiles, chat/AI assistant, teacher-created missions, session closing, user-selectable backend, free-form hunch, custom date-window selector, always-available forecast, live NOAA tide retrieval, or annual-series Moon-discovery analysis was found in the inspected implementation. These must not be presented as current use cases. Browser behavior, deployed services and scientific validity beyond the implemented checks remain outside this static documentation review.
+
+
+## Update · 15 November 2026
+
+| ID | Use case | Actor | What happens |
+|---|---|---|---|
+| UC-49 | Choose language | Explorer, classroom player | A selector next to the Earth/Moon switch offers English, Español, Português, Français, Русский and 中文. The first language comes from `?lang=`, then the saved choice, then the browser language. Changing it never restarts a case, quiz or room. Translations are static, hand-written dictionaries (`i18n_dictionary.js`); no AI or machine translation runs in the app. |
+| UC-50 | Set home country | Explorer | On the first visit a dialog asks "Where are you from?". The globe flies to that country; the answer is saved and can be changed with "Focus on a country" on the home sheet. It only moves the camera: places are never filtered. Players who join a room through a QR link are not asked. |
+| UC-51 | Read author information | Explorer | "Information" in the brand bar opens the author panel: name, Computer Science, data analysis, previous hackathons, LinkedIn and e-mail links. |
+
+Changed: classroom rooms (UC-42 to UC-48) now use the configured Firebase project (Firestore + anonymous sign-in), so players join from their own phones; the same-browser local mode remains only as a fallback.

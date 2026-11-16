@@ -23,7 +23,7 @@ actor Explorer as E
 actor "Classroom player\n(anonymous detective)" as P
 actor "Teacher / host" as H
 actor "Bundled five-case\nNASA mission" as DATA <<data source>>
-actor "Firebase Firestore\n(optional shared mode)" as FB <<system>>
+actor "Firebase\n(Firestore + anonymous sign-in)" as FB <<system>>
 rectangle "Signal or Noise" {
   package "Game and classroom" {
     usecase "UC-41\nTrack score and rank" as U41
@@ -48,24 +48,23 @@ U45 ..> U6 : <<include>>
 U45 ..> U46 : <<include>>\n[each completed case]
 U46 .up.> U48 : <<include>>
 U45 -- DATA
-U42 -- FB : shared mode only
-U44 -- FB : shared mode only
-U47 -- FB : shared mode only
-U48 -- FB : shared mode only
+U42 -- FB
+U44 -- FB
+U47 -- FB
+U48 -- FB
 note bottom of U43
   Four-character code + QR + join link.
   QR failure leaves the link available.
   No player names or accounts.
 end note
 note bottom of FB
-  No classroom config in this checkout:
-  localStorage + BroadcastChannel,
-  same browser tabs only.
-  Firestore requires optional configuration;
-  initialization failure falls back locally.
+  Configured: players join from their own phones.
+  Each phone signs in anonymously; rules let it
+  change only its own score.
+  If Firebase cannot start, rooms fall back to
+  tabs of the same browser.
 end note
 legend bottom
-  Local/shared mode is deployment configuration.
   Finishing a case reports progress.
   Answering both calls first is not enforced.
   Host board shows the top ten.

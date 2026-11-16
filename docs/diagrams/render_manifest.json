@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-15T00:24:00.345Z",
+  "generated": "2026-11-16T01:48:09.650Z",
   "renderer": "Public Kroki PlantUML service",
   "endpoint": "https://kroki.io/plantuml/{svg,png}",
   "local_probe": "Java 21.0.7 and Graphviz available; PlantUML command/JAR not found in the app or checked local tool locations. Public Kroki fallback explicitly authorized by the task.",
@@ -8,10 +8,10 @@
   "diagrams": [
     {
       "file": "00_overview.puml",
-      "source_sha256": "23d68cf494f3a78f239db03a0d979097dde274515fc071083cc235ee8e15ef4c",
-      "natural_width": 1628,
-      "natural_height": 1932,
-      "minimum_text_px_at_1200": 14.74,
+      "source_sha256": "4de85cb3d92dccf53fd5aa15b0a2dbdea6ec2590043f0ea679e5f28e8a9aa21c",
+      "natural_width": 1574,
+      "natural_height": 2410,
+      "minimum_text_px_at_1200": 15.25,
       "use_cases": [
         "UC-01",
         "UC-06",
@@ -23,21 +23,25 @@
         "UC-42",
         "UC-44",
         "UC-45",
-        "UC-47"
+        "UC-47",
+        "UC-49",
+        "UC-50",
+        "UC-51"
       ]
     },
     {
       "file": "01_explore_earth.puml",
-      "source_sha256": "811d205566b929c51300191ba3176ede476e7423fd646a6e44d506324b691e0a",
-      "natural_width": 1298,
-      "natural_height": 1206,
-      "minimum_text_px_at_1200": 18.49,
+      "source_sha256": "d4c78659a49febe2e600fac05990d40ec0eac9c18b936f2afc2542ec865bae0a",
+      "natural_width": 1343,
+      "natural_height": 1287,
+      "minimum_text_px_at_1200": 17.87,
       "use_cases": [
         "UC-01",
         "UC-02",
         "UC-03",
         "UC-04",
-        "UC-05"
+        "UC-05",
+        "UC-50"
       ]
     },
     {
@@ -105,10 +109,10 @@
     },
     {
       "file": "05_game_classroom.puml",
-      "source_sha256": "efed492348f5d52336650939f693f2f8c8c80fb6a5eda8ae12cd709962db5f25",
-      "natural_width": 1966,
-      "natural_height": 1451,
-      "minimum_text_px_at_1200": 12.21,
+      "source_sha256": "b925b35d84d4df6852bec2b7a8d24dd91549e0d2f52811c0a2e20533c5510292",
+      "natural_width": 1853,
+      "natural_height": 1332,
+      "minimum_text_px_at_1200": 12.95,
       "use_cases": [
         "UC-06",
         "UC-41",

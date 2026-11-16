@@ -30,6 +30,7 @@ rectangle "Signal or Noise" {
     usecase "UC-03\nSearch places" as U3
     usecase "UC-04\nInspect place card" as U4
     usecase "UC-05\nSelect Earth point" as U5
+    usecase "UC-50\nFocus home country" as U50
   }
 }
 E -- U1
@@ -38,6 +39,7 @@ U2 ..> U1 : <<extend>>\n[filter while exploring]
 U3 ..> U1 : <<extend>>\n[search while exploring]
 U4 ..> U1 : <<extend>>\n[select a catalog place]
 U5 ..> U1 : <<extend>>\n[pick or type coordinates]
+U50 ..> U1 : <<extend>>\n[first visit or home selector]
 U1 -- IMG
 U1 -- DATA
 U4 -- DATA
@@ -45,6 +47,11 @@ note right of U2
   Phenomenon + country filters
   combine with name search.
   Four place cards per page.
+end note
+note right of U50
+  Asked once on the first visit;
+  the globe flies to that country.
+  Camera only: nothing is filtered.
 end note
 note right of U4
   Ground photo when available;
