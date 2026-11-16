@@ -242,8 +242,7 @@ let countryFilter = '', searchText = '';
 function fillCountries() {
   const all = [...new Set(PLACES.flatMap(countriesOf))].filter((c) => !/catalog point|international/i.test(c)).sort();
   $('country').innerHTML = `<option value="">All countries</option>${all.map((c) => `<option>${esc(c)}</option>`).join('')}`;
-  $('home-country').innerHTML = $('country').innerHTML.replace('>All countries<', '>The whole world<');
-  $('welcome-country').innerHTML = $('country').innerHTML.replace('>All countries<', '>The whole world<');
+  $('country-list').innerHTML = all.map((c) => `<option value="${esc(c)}">`).join('');
 }
 // Focusing a country frames all of its catalogue places (wrapping across the 180° meridian when needed, e.g. Russia).
 function flyToCountry(c) {
@@ -267,7 +266,10 @@ function setFocusCountry(c) {
   try { localStorage.setItem('sn-country', c); } catch { /* private mode: this visit only */ }
   if (c) flyToCountry(c); else flyTo(-15.53, -72.65, 160000, 3);
 }
-$('home-country').addEventListener('change', () => setFocusCountry($('home-country').value));
+// Typed country names match without case or accents ("perú" finds Peru); anything else means the whole world.
+const fold = (t) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+const matchCountry = (t) => [...$('country').options].find((o) => o.value && fold(o.value) === fold(t))?.value ?? '';
+$('home-country').addEventListener('change', () => { const c = matchCountry($('home-country').value); $('home-country').value = c; setFocusCountry(c); });
 $('place-search').addEventListener('input', () => { searchText = $('place-search').value.trim().toLowerCase(); page = 0; renderPlaces(); showDots(); });
 // Typing "lat, lon" and pressing Enter investigates any point on Earth.
 $('place-search').addEventListener('keydown', (e) => {
@@ -1281,8 +1283,9 @@ try { savedCountry = localStorage.getItem('sn-country'); } catch { /* private mo
 if (savedCountry && [...$('country').options].some((o) => o.value === savedCountry)) { focusCountry = savedCountry; $('home-country').value = savedCountry; }
 else if (savedCountry === null && !new URLSearchParams(location.search).has('room') && /^(#\/home)?$/.test(location.hash)) {
   $('welcome').addEventListener('close', () => {
-    $('home-country').value = $('welcome-country').value;
-    setFocusCountry($('welcome-country').value);
+    const c = matchCountry($('welcome-country').value);
+    $('home-country').value = c;
+    setFocusCountry(c);
   }, { once: true });
   $('welcome').showModal();
 }
