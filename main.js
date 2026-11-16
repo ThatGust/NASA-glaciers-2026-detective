@@ -242,8 +242,29 @@ let countryFilter = '', searchText = '';
 function fillCountries() {
   const all = [...new Set(PLACES.flatMap(countriesOf))].filter((c) => !/catalog point|international/i.test(c)).sort();
   $('country').innerHTML = `<option value="">All countries</option>${all.map((c) => `<option>${esc(c)}</option>`).join('')}`;
+  $('home-country').innerHTML = $('country').innerHTML;
 }
-$('country').addEventListener('change', () => { countryFilter = $('country').value; page = 0; renderPlaces(); showDots(); });
+// Focusing a country frames all of its catalogue places (wrapping across the 180° meridian when needed, e.g. Russia).
+function flyToCountry(c) {
+  const ps = PLACES.filter((p) => countriesOf(p).includes(c));
+  if (!viewer || !ps.length) return;
+  let lons = ps.map((p) => p.lon);
+  const wrap = Math.max(...lons) - Math.min(...lons) > 180;
+  if (wrap) lons = lons.map((l) => (l < 0 ? l + 360 : l));
+  const pad = 2, lats = ps.map((p) => p.lat);
+  const s = Math.max(-89, Math.min(...lats) - pad), n = Math.min(89, Math.max(...lats) + pad);
+  let w = Math.min(...lons) - pad, e = Math.max(...lons) + pad;
+  if (wrap) { if (w > 180) w -= 360; if (e > 180) e -= 360; }
+  const destination = C.Rectangle.fromDegrees(w, s, e, n);
+  if (reducedMotion) viewer.camera.setView({ destination }); else viewer.camera.flyTo({ destination, duration: 2.5 });
+}
+$('country').addEventListener('change', () => { countryFilter = $('country').value; page = 0; renderPlaces(); showDots(); if (countryFilter) flyToCountry(countryFilter); });
+$('home-country').addEventListener('change', () => {
+  const c = $('home-country').value;
+  $('country').value = c; $('country').dispatchEvent(new Event('change'));
+  $('home-country').value = '';
+  location.hash = '#/case';
+});
 $('place-search').addEventListener('input', () => { searchText = $('place-search').value.trim().toLowerCase(); page = 0; renderPlaces(); showDots(); });
 // Typing "lat, lon" and pressing Enter investigates any point on Earth.
 $('place-search').addEventListener('keydown', (e) => {

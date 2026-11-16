@@ -1,6 +1,8 @@
 // Hand-written UI translations: English | Spanish | Portuguese | French | Russian | Simplified Chinese.
 // Names of methods, missions, organizations and published sources retain their official spelling.
 export const rows = `
+🌎 Focus on a country|🌎 Enfócate en un país|🌎 Foque em um país|🌎 Zoomer sur un pays|🌎 Выберите страну|🌎 聚焦一个国家
+Focus on a country|Enfócate en un país|Foque em um país|Zoomer sur un pays|Выберите страну|聚焦一个国家
 Information|Información|Informações|Informations|Информация|信息
 Computer Science · Data analysis specialist|Ciencias de la Computación · Especialista en análisis de datos|Ciência da Computação · Especialista em análise de dados|Informatique · Spécialiste de l'analyse de données|Компьютерные науки · Специалист по анализу данных|计算机科学 · 数据分析专家
 I built Signal or Noise on my own to help everyone learn to tell a real trend in data from random noise.|Creé Signal or Noise por mi cuenta para ayudar a todos a distinguir una tendencia real en los datos del ruido al azar.|Criei o Signal or Noise sozinho para ajudar todos a distinguir uma tendência real nos dados do ruído aleatório.|J'ai créé Signal or Noise seul pour aider chacun à distinguer une vraie tendance dans les données du bruit aléatoire.|Я в одиночку создал Signal or Noise, чтобы помочь каждому отличать настоящую тенденцию в данных от случайного шума.|我独立开发了 Signal or Noise，帮助每个人分辨数据中的真实趋势和随机噪声。
