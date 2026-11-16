@@ -64,6 +64,6 @@ test('all authored HTML text and accessibility labels have translations', async 
   const decode = text => text.replaceAll('&amp;', '&').replaceAll('&quot;', '"').trim();
   const texts = [...html.matchAll(/>([^<>]+)</g)].map(m => decode(m[1]));
   const labels = [...html.matchAll(/(?:aria-label|title|placeholder|alt)="([^"]+)"/g)].map(m => decode(m[1]));
-  const names = new Set([...Object.values(languages), 'NASA Space Apps Challenge']);
+  const names = new Set([...Object.values(languages), 'NASA Space Apps Challenge', 'Alvaro Sergio Cano Luque', 'LinkedIn', 'alvaro.cano.luque@gmail.com']);
   for (const text of [...texts, ...labels].filter(t => /[a-z]/i.test(t) && !names.has(t))) assert.notEqual(translate(text, 'zh'), text, text);
 });

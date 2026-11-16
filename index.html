@@ -271,6 +271,16 @@
     .lead-btn .tag { font-size:10px; }
   }
   [hidden] { display:none !important; }
+  .info-btn { display:flex; align-items:center; gap:6px; color:var(--text-primary); text-decoration:none; font:600 14px var(--font-sans); }
+  .info-btn:hover, .info-btn:focus-visible { color:var(--accent); }
+  .author { display:flex; align-items:center; gap:16px; margin:6px 0 10px; }
+  .author img { width:96px; height:96px; border-radius:50%; object-fit:cover; border:2px solid var(--accent); flex:none; }
+  .author h2 { margin:0 0 4px; }
+  .contact { display:flex; flex-wrap:wrap; gap:10px; }
+  .contact a { display:flex; align-items:center; gap:8px; padding:8px 12px; border:1px solid var(--glass-border); border-radius:var(--btn-radius); color:var(--text-primary); text-decoration:none; overflow-wrap:anywhere; }
+  .contact a:hover, .contact a:focus-visible { border-color:var(--accent); }
+  .contact svg { flex:none; }
+  @media (max-width:640px) { .info-btn span { display:none; } }
   #language-picker { width:108px; max-width:100%; margin:0; font-size:13px; }
   .btn, .chip, .lead-btn, .path { overflow-wrap:anywhere; }
   .chip { white-space:normal; }
@@ -392,6 +402,8 @@
   <a href="https://www.spaceappschallenge.org/" target="_blank" rel="noopener"><img src="img/space_apps_logo.png" alt="NASA Space Apps Challenge" height="40"></a>
   <span class="brand-sep" aria-hidden="true"></span>
   <a href="#/home" id="brand-home"><img src="img/logo.png" alt="Signal or Noise: Earth and Moon trend detective, home" height="40"></a>
+  <span class="brand-sep" aria-hidden="true"></span>
+  <a href="#/about" class="info-btn" aria-label="Information"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 10.5v6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="7.3" r="1.4" fill="currentColor"/></svg><span>Information</span></a>
 </div>
 <p class="mission-bar" id="mission-bar" hidden aria-live="polite" role="button" tabindex="0" title="Back to your mission"></p>
 <p class="credits">Imagery: NASA Blue Marble and Worldview (GIBS) · Globe: CesiumJS (Apache 2.0)</p>
@@ -442,6 +454,24 @@
   <details><summary>How this map is made</summary><p class="note" id="global-note"></p></details>
   <div class="spacer"></div>
   <div class="row"><a class="btn sec" href="#/home">Back</a><a class="btn" href="#/case">Investigate a place</a></div>
+</section>
+
+<section class="view side" id="view-about" aria-labelledby="t-about">
+  <p class="step">Information</p>
+  <div class="author">
+    <img src="img/author.jpg" alt="Photo of Alvaro Sergio Cano Luque" width="96" height="96">
+    <div><h2 id="t-about" tabindex="-1">Alvaro Sergio Cano Luque</h2>
+    <p class="note">Computer Science · Data analysis specialist</p></div>
+  </div>
+  <p>I built Signal or Noise on my own to help everyone learn to tell a real trend in data from random noise.</p>
+  <p>I have competed in two previous hackathons: NASA Space Apps Challenge 2023 and 2025.</p>
+  <h3>Contact</h3>
+  <div class="contact">
+    <a href="https://www.linkedin.com/in/alvaro-cano-a3937a25b/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect width="24" height="24" rx="4" fill="#0a66c2"/><path fill="#fff" d="M6.9 9.6h2.5V18H6.9zM8.2 5.6a1.45 1.45 0 1 1 0 2.9 1.45 1.45 0 0 1 0-2.9zM11 9.6h2.4v1.15h.04c.33-.63 1.15-1.3 2.37-1.3 2.54 0 3 1.67 3 3.84V18h-2.5v-4.15c0-.99-.02-2.26-1.38-2.26-1.38 0-1.6 1.08-1.6 2.19V18H11z"/></svg><span>LinkedIn</span></a>
+    <a href="mailto:alvaro.cano.luque@gmail.com"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="3" fill="#fff"/><path d="M1.5 6.5 12 14l10.5-7.5" fill="none" stroke="#ea4335" stroke-width="2.4" stroke-linejoin="round"/><path d="M2.6 19.3V8l3.4 2.4v8.9z" fill="#4285f4"/><path d="M21.4 19.3V8L18 10.4v8.9z" fill="#34a853"/><path d="M18 10.4 21.4 8V6.6L18 9z" fill="#fbbc04"/></svg><span data-i18n-skip>alvaro.cano.luque@gmail.com</span></a>
+  </div>
+  <div class="spacer"></div>
+  <div class="row"><a class="btn sec" href="#/home">Back</a></div>
 </section>
 
 <section class="view side" id="view-class" aria-labelledby="t-class">

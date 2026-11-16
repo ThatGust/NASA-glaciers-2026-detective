@@ -1,6 +1,12 @@
 // Hand-written UI translations: English | Spanish | Portuguese | French | Russian | Simplified Chinese.
 // Names of methods, missions, organizations and published sources retain their official spelling.
 export const rows = `
+Information|Información|Informações|Informations|Информация|信息
+Computer Science · Data analysis specialist|Ciencias de la Computación · Especialista en análisis de datos|Ciência da Computação · Especialista em análise de dados|Informatique · Spécialiste de l'analyse de données|Компьютерные науки · Специалист по анализу данных|计算机科学 · 数据分析专家
+I built Signal or Noise on my own to help everyone learn to tell a real trend in data from random noise.|Creé Signal or Noise por mi cuenta para ayudar a todos a distinguir una tendencia real en los datos del ruido al azar.|Criei o Signal or Noise sozinho para ajudar todos a distinguir uma tendência real nos dados do ruído aleatório.|J'ai créé Signal or Noise seul pour aider chacun à distinguer une vraie tendance dans les données du bruit aléatoire.|Я в одиночку создал Signal or Noise, чтобы помочь каждому отличать настоящую тенденцию в данных от случайного шума.|我独立开发了 Signal or Noise，帮助每个人分辨数据中的真实趋势和随机噪声。
+I have competed in two previous hackathons: NASA Space Apps Challenge 2023 and 2025.|He participado antes en dos hackatones: NASA Space Apps Challenge 2023 y 2025.|Já participei de dois hackathons: NASA Space Apps Challenge 2023 e 2025.|J'ai déjà participé à deux hackathons : NASA Space Apps Challenge 2023 et 2025.|Ранее я участвовал в двух хакатонах: NASA Space Apps Challenge 2023 и 2025.|我此前参加过两次黑客松：NASA Space Apps Challenge 2023 和 2025。
+Contact|Contacto|Contato|Contact|Контакты|联系方式
+Photo of Alvaro Sergio Cano Luque|Foto de Alvaro Sergio Cano Luque|Foto de Alvaro Sergio Cano Luque|Photo d'Alvaro Sergio Cano Luque|Фото Альваро Серхио Кано Луке|Alvaro Sergio Cano Luque 的照片
 Language|Idioma|Idioma|Langue|Язык|语言
 Signal or Noise · An Earth & Moon trend detective|Signal or Noise · Detecta cambios en la Tierra y la Luna|Signal or Noise · Investigue mudanças na Terra e na Lua|Signal or Noise · Enquête sur la Terre et la Lune|Signal or Noise · Изучаем изменения Земли и Луны|Signal or Noise · 探索地球与月球的变化
 Signal or Noise: Earth and Moon trend detective, home|Signal or Noise: detective de la Tierra y la Luna, inicio|Signal or Noise: detetive da Terra e da Lua, início|Signal or Noise : enquête sur la Terre et la Lune, accueil|Signal or Noise: исследуем Землю и Луну, главная|Signal or Noise：地球与月球变化侦探，首页

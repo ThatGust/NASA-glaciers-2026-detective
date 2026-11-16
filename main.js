@@ -310,7 +310,7 @@ const placeName = (lat, lon) => PLACES.find((p) => p.lat === lat && p.lon === lo
 const shortName = (c) => PLACES.find((p) => p.lat === c.lat && p.lon === c.lon)?.short ?? c.place;
 
 // --- Views: one at a time, each with its own address so the Back button works. ---
-const VIEWS = ['home', 'class', 'host', 'player', 'global', 'moon', 'lunar', 'case', 'leads', 'evidence', 'projection', 'verdict', 'lineup', 'compare', 'record'];
+const VIEWS = ['home', 'about', 'class', 'host', 'player', 'global', 'moon', 'lunar', 'case', 'leads', 'evidence', 'projection', 'verdict', 'lineup', 'compare', 'record'];
 function route() {
   let v = location.hash.replace('#/', '') || 'home';
   if (!VIEWS.includes(v)) v = 'home';
