@@ -271,6 +271,23 @@
     .lead-btn .tag { font-size:10px; }
   }
   [hidden] { display:none !important; }
+  #language-picker { width:108px; max-width:100%; margin:0; font-size:13px; }
+  .btn, .chip, .lead-btn, .path { overflow-wrap:anywhere; }
+  .chip { white-space:normal; }
+  .lead-btn > span { min-width:0; }
+  .lead-btn span:last-child { white-space:normal; }
+  #var-def { white-space:normal; }
+  @media (max-width:640px) {
+    .opts { top:12px; right:12px; display:grid; grid-template-columns:auto 108px; gap:14px 6px; max-width:calc(100vw - 24px); }
+    .opts .world { grid-column:1; grid-row:2; }
+    .opts #language-picker { grid-column:2; grid-row:2; }
+    .opts .score { grid-column:1 / -1; justify-self:end; max-width:160px; padding:5px 8px; font-size:10px; overflow-wrap:anywhere; }
+    .opts .world button { padding:6px 10px; font-size:12px; }
+    .mission-bar, .tour { top:112px; }
+    .credits { max-width:calc(100vw - 32px); }
+    .cover { max-height:calc(100dvh - 112px); overflow:auto; }
+    .shares { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  }
 </style>
 </head>
 <body>
@@ -359,6 +376,11 @@
   <p class="space-cap" id="space-cap"></p>
 </div>
 <div class="opts">
+<select id="language-picker" aria-label="Language">
+  <option value="en" lang="en">English</option><option value="es" lang="es">Español</option>
+  <option value="pt" lang="pt">Português</option><option value="fr" lang="fr">Français</option>
+  <option value="ru" lang="ru">Русский</option><option value="zh" lang="zh">中文</option>
+</select>
 <div class="world" role="group" aria-label="Choose a world">
   <button type="button" id="to-earth" aria-pressed="true">Earth</button>
   <button type="button" id="to-moon" aria-pressed="false">Moon</button>

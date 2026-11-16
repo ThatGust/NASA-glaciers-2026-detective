@@ -1,6 +1,8 @@
 // Signal or Noise UI: ties the form, NASA POWER and the engine together. Data formats: see README.
 import { createClassroom } from './classroom.js';
+import { startI18n } from './i18n.js';
 import { alibiTest, analyze, blockShuffle, lunarIndex, lunarTest, LUNAR_MIN_YEARS, projection, compareWitnesses, fetchPower, fetchPowerMany, predictionTest, scan } from './engine.js';
+const i18n = startI18n(document);
 
 // Built-in fallback catalog. data/catalog.json (verified sources, more variables and places) replaces it when present.
 let VARIABLES = [
@@ -281,6 +283,7 @@ function renderPlaces() {
 let PHOTOS = {};
 function showPop() {
   const p = PLACES.find((x) => x.id === selectedPlace), f = p && FACTS[p.id], ph = p && PHOTOS[p.id];
+  for (const id of ['pop-name', 'pop-line']) $(id).toggleAttribute('data-i18n-skip', !!p);
   $('place-pop').hidden = !location.hash.startsWith('#/case') || !$('tour').hidden;
   if (!p) {
     $('pop-img').hidden = true;
@@ -297,7 +300,7 @@ function showPop() {
   $('pop-country').textContent = [ENVIRONMENTS[p.environment], countriesOf(p).join(', ')].filter(Boolean).join(' · ');
   $('pop-line').textContent = f?.one_line ?? '';
   $('pop-facts').textContent = f ? [f.elevation_m != null && `${Math.round(f.elevation_m).toLocaleString('en-US')} m up`, factLine(p)].filter(Boolean).join(' · ') : '';
-  $('pop-credit').innerHTML = ph ? `${esc(ph.attribution)} · <a href="${esc(ph.page)}" target="_blank" rel="noopener">source</a>` : 'Satellite image: NASA Worldview (public domain)';
+  $('pop-credit').innerHTML = ph ? `<span data-i18n-skip>${esc(ph.attribution)}</span> · <a href="${esc(ph.page)}" target="_blank" rel="noopener">source</a>` : 'Satellite image: NASA Worldview (public domain)';
 }
 $('place-cards').addEventListener('click', (e) => { const b = e.target.closest('.place'); if (b) selectPlace(b.dataset.id); });
 $('prev-page').addEventListener('click', () => { page--; renderPlaces(); });
@@ -381,7 +384,7 @@ async function seriesFor(v, lat, lon, start) {
 // Plain explanation when NASA POWER is busy (it answers 429, which browsers often report as a network error).
 const powerError = (err) => (/429|Failed to fetch|NetworkError|Load failed/i.test(err.message)
   ? 'NASA POWER is busy right now (too many requests). Wait a minute and try again, or pick a place from the list: their main series are stored in the app.'
-  : err.message);
+  : /^(NASA POWER answered|At least |years and values)/.test(err.message) ? err.message : 'The data could not be read. Please try again.');
 
 function chosen() {
   const id = new FormData($('case-form')).get('variable');
@@ -767,8 +770,8 @@ $('demo-list').addEventListener('click', (e) => {
   const [a, b2] = d.places;
   current = { ...make(a), other: b2 ? make(b2) : undefined };
   render(current);
-  if (b2) { renderCompare(current); $('compare-summary').textContent += ` ${d.why}`; }
-  else $('chart-caption').textContent += ` ${d.why}`;
+  if (b2) { renderCompare(current); $('compare-summary').append(document.createTextNode(` ${d.why}`)); }
+  else $('chart-caption').append(document.createTextNode(` ${d.why}`));
   const first = PLACES.find((x) => x.id === a);
   if (first) flyTo(first.lat, first.lon, 4000000);
   playTour([
@@ -798,7 +801,7 @@ function stopTour() { clearTimeout(tourTimer); $('tour').hidden = true; showPop(
 $('tour-next').addEventListener('click', nextStep);
 $('tour-stop').addEventListener('click', stopTour);
 $('tour-pause').addEventListener('click', () => {
-  if ($('tour-pause').textContent === 'Pause') { clearTimeout(tourTimer); $('tour-pause').textContent = 'Play'; }
+  if (i18n.sourceText($('tour-pause').firstChild) === 'Pause') { clearTimeout(tourTimer); $('tour-pause').textContent = 'Play'; }
   else { $('tour-pause').textContent = 'Pause'; tourTimer = setTimeout(nextStep, 4000); }
 });
 
@@ -1019,13 +1022,15 @@ function setWorld(moon) {
         const g = ent?.feature;
         if (!f && !g) return;
         $('place-pop').hidden = false; $('pop-img').hidden = true;
+        for (const id of ['pop-name', 'pop-line']) $(id).setAttribute('data-i18n-skip', '');
         if (f) {
           $('pop-name').textContent = f[0]; $('pop-country').textContent = `Moon · ${fmt(f[1], 2)}°, ${fmt(f[2], 2)}°`;
           $('pop-line').textContent = f[3]; $('pop-facts').textContent = '';
           $('pop-credit').innerHTML = `Coordinates: <a href="https://en.wikipedia.org/wiki/${encodeURIComponent(f[0].replace(/ /g, '_'))}" target="_blank" rel="noopener">Wikipedia</a>`;
         } else {
           $('pop-name').textContent = g.name; $('pop-country').textContent = `${g.type} · ${fmt(g.lat, 1)}°, ${fmt(g.lon, 1)}°`;
-          $('pop-line').textContent = g.origin ? `Name: ${g.origin}` : '';
+          $('pop-line').removeAttribute('data-i18n-skip');
+          $('pop-line').innerHTML = g.origin ? `Name: <span data-i18n-skip>${esc(g.origin)}</span>` : '';
           $('pop-facts').textContent = [g.diameter_km && `About ${Math.round(g.diameter_km).toLocaleString('en-US')} km across`, g.approval_year && `named in ${g.approval_year}`].filter(Boolean).join(' · ');
           $('pop-credit').innerHTML = `IAU/USGS Gazetteer of Planetary Nomenclature · <a href="${esc(g.link)}" target="_blank" rel="noopener">feature page</a>`;
         }
@@ -1117,7 +1122,7 @@ function openLunarCase() {
   $('lunar-guess').querySelectorAll('.chip').forEach((b) => b.setAttribute('aria-pressed', 'false'));
   const quiz = c.quiz ? { q: c.quiz.q, options: c.quiz.options, answer: c.quiz.answer, why: c.quiz.why } : QUIZ[c.id];
   $('lunar-facts').hidden = !c.facts;
-  $('lunar-facts').innerHTML = (c.facts ?? []).map((f) => `<li><b>${esc(f.value)}${f.unit ? ' ' + esc(f.unit) : ''}</b> · ${esc(f.label)} (${esc(f.year_range ?? '')}) · <a href="${esc(f.source_url)}" target="_blank" rel="noopener">${esc(f.source_name)}</a></li>`).join('');
+  $('lunar-facts').innerHTML = (c.facts ?? []).map((f) => `<li><b>${esc(f.value)}${f.unit ? ' ' + esc(f.unit) : ''}</b> · ${esc(f.label)} (${esc(f.year_range ?? '')}) · <a data-i18n-skip href="${esc(f.source_url)}" target="_blank" rel="noopener">${esc(f.source_name)}</a></li>`).join('');
   $('lunar-quiz').hidden = !quiz;
   if (quiz) $('lunar-quiz').innerHTML = `<p><b>🔍 Quick question:</b> ${esc(quiz.q)}</p><div class="row">${quiz.options.map((o, i) => `<button type="button" class="chip" data-q="${i}">${esc(o)}</button>`).join('')}</div>`;
   $('lunar-quiz').classList.remove('done');
@@ -1166,7 +1171,7 @@ $('lunar-run').addEventListener('click', async () => {
     const u = unitOf(s);
     $('lunar-note').textContent = `${v.name} at ${p.short}, ${s.years[0]}–${s.years.at(-1)}: the Moon's rhythm lines up with ${Math.round(t.share * 100)}% of the year-to-year ups and downs (after removing the trend). From minor to major standstill: ${signed(t.swing)}${u ? ' ' + u : ''}. A signal is not proof of cause.`;
     $('lunar-chart').innerHTML = lunarChart(s, t);
-    if (tide) $('lunar-note').textContent += ' Source: NOAA CO-OPS tide gauge (monthly mean high and low water).';
+    if (tide) $('lunar-note').append(document.createTextNode(' Source: NOAA CO-OPS tide gauge (monthly mean high and low water).'));
     const sawMoon = t.verdict === 'signal' ? 'yes' : 'no';
     if (!lunarGuess) feedback('lunar-feedback', 'close', 'Tip: make a guess before testing to earn points.');
     else if (lunarGuess === sawMoon) { award(1); feedback('lunar-feedback', 'good', `✓ Your guess matched the test. +1 point.`); }
